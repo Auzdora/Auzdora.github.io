@@ -2,16 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://example.com/2023/03/22/Extendible_Hash_Table/</loc>
+    <loc>http://example.com/2023/03/26/LRU-K_Replacement_Policy/</loc>
     
-    <lastmod>2023-05-26</lastmod>
+    <lastmod>2023-05-27</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://example.com/2023/03/26/LRU-K_Replacement_Policy/</loc>
+    <loc>http://example.com/2023/03/22/Extendible_Hash_Table/</loc>
     
     <lastmod>2023-05-26</lastmod>
     
