@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Abstract: Per-pixel ground truth depth data is challenging to acquire at scale. To overcome this limitation, self-supervised learning has emerged as a promising alternative for training models to per">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Monodepth2 Paper Note">
+<meta property="og:url" content="https://auzdora.github.io/2022/12/23/Monodepth2/index.html">
+<meta property="og:site_name" content="Auzdora&#39;s Blog">
+<meta property="og:description" content="Abstract: Per-pixel ground truth depth data is challenging to acquire at scale. To overcome this limitation, self-supervised learning has emerged as a promising alternative for training models to per">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/project3d.jpeg">
+<meta property="og:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/monodepth2model.png">
+<meta property="og:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/Monodepth2Loss.png">
+<meta property="article:published_time" content="2022-12-23T13:20:14.000Z">
+<meta property="article:modified_time" content="2023-05-27T13:50:55.775Z">
+<meta property="article:author" content="Auzdora">
+<meta property="article:tag" content="Paper Reading Note">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/project3d.jpeg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/hummingbird.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/hummingbird.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/hummingbird.png">
+        
+      
+    
+    <!-- title -->
+    <title>Monodepth2 Paper Note</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2022/12/23/Monodepth2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2022/12/23/Monodepth2/&text=Monodepth2 Paper Note"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2022/12/23/Monodepth2/&is_video=false&description=Monodepth2 Paper Note"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Monodepth2 Paper Note&body=Check out this article: https://auzdora.github.io/2022/12/23/Monodepth2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2022/12/23/Monodepth2/&name=Monodepth2 Paper Note&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2022/12/23/Monodepth2/&t=Monodepth2 Paper Note"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%85%88%E9%AA%8C%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">1. 先验知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%9C%AC%E6%96%87%E7%9A%84%E4%B8%BB%E8%A6%81%E8%B4%A1%E7%8C%AE"><span class="toc-number">2.</span> <span class="toc-text">2. 本文的主要贡献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">3. 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 自监督学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E4%BC%98%E5%8C%96"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 自监督学习优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E9%80%90%E5%83%8F%E7%B4%A0%E6%9C%80%E5%B0%8F%E9%87%8D%E5%BB%BA%E6%8A%95%E5%BD%B1%E8%AF%AF%E5%B7%AE"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 逐像素最小重建投影误差</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E9%9D%99%E6%80%81%E5%83%8F%E7%B4%A0%E8%87%AA%E5%8A%A8%E6%8E%A9%E7%A0%81"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 静态像素自动掩码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%A4%9A%E5%B0%BA%E5%BA%A6%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.2.3.</span> <span class="toc-text">3.2.3 多尺度估计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%85%B6%E4%BB%96%E8%80%83%E8%99%91"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 其他考虑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 数据集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">4. 源码解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-layers-py"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 layers.py</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#disp-to-depth"><span class="toc-number">4.1.1.</span> <span class="toc-text">disp_to_depth</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#transformation-from-parameters"><span class="toc-number">4.1.2.</span> <span class="toc-text">transformation_from_parameters</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rot-from-axisangle"><span class="toc-number">4.1.3.</span> <span class="toc-text">rot_from_axisangle</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-translation-matrix"><span class="toc-number">4.1.4.</span> <span class="toc-text">get_translation_matrix</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-smooth-loss"><span class="toc-number">4.1.5.</span> <span class="toc-text">get_smooth_loss</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BackprojectDepth"><span class="toc-number">4.1.6.</span> <span class="toc-text">BackprojectDepth</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Project3D"><span class="toc-number">4.1.7.</span> <span class="toc-text">Project3D</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Monodepth2 Paper Note
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Auzdora</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-12-23T13:20:14.000Z" class="dt-published" itemprop="datePublished">2022-12-23</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Paper-Reading-Note/" rel="tag">Paper Reading Note</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p><strong>Abstract</strong>: Per-pixel ground truth depth data is challenging to acquire at scale. To overcome this limitation, self-supervised learning has emerged as a promising alternative for training models to perform monocular depth estimation. In this paper, we propose a set of improvements, which together result in both quantitatively and qualitatively improved depth maps compared to competing self-supervised methods.</p>
+<p>Research on self-supervised monocular training usually explores increasingly complex architectures, loss functions, and image formation models, all of which have recently helped to close the gap with fully-supervised methods. We show that a surprisingly simple model, and associated design choices, lead to superior predictions. In particular, we propose (i) a minimum reproduction loss, designed to robustly handle occlusions, (ii) a full-resolution multi-scale sampling method that reduces visual artifacts, and (iii) an auto-masking loss to ignore training pixels that violate camera motion assumptions. We demonstrate the effectiveness of each component in isolation, and show high quality, state-of-the-art results on the KITTI benchmark.</p>
+</blockquote>
+<h2 id="1-先验知识"><a href="#1-先验知识" class="headerlink" title="1. 先验知识"></a>1. 先验知识</h2><p>对于自监督或者说无监督学习的单目图像深度估计任务而言，存在两种现有的训练方案。</p>
+<blockquote>
+<ol>
+<li><strong>stereo pairs</strong> 即立体图像对，包含一张左边照相机的图片和一张右边照相机的图片。</li>
+<li><strong>monocular video</strong> 即单目的视频流数据。</li>
+</ol>
+</blockquote>
+<p>对于<strong>monocular video</strong>来说，为了估计图像的深度，由于缺乏相机运动的先验知识，所以模型同样需要估计相机的姿态变化。这通常会额外训练一个叫作 <strong>pose estimation network</strong>_ 的网络，即姿态估计网络。网络的输入是一系列的图像帧，网络的输出是对应的相机变换方式。</p>
+<p><strong>什么是 ill-posed 问题？</strong>不适定问题（ill-posed problem）和适定问题（well-posed problem）是数学领域对问题进行定义的术语。不满足以下三点的任意一点，都是ill-posed问题：</p>
+<blockquote>
+<ol>
+<li>A solution exists. 有解</li>
+<li>The solution is unique. 解唯一</li>
+<li>The solution’s behavior changes continuously with the initial conditions. 解稳定</li>
+</ol>
+</blockquote>
+<p><strong>为什么深度估计是ill-posed问题？</strong> 因为深度估计对于每一张图片会有多个解，且不稳定。</p>
+<p><strong>Occluded pixels</strong>：遮盖的像素点。在某些序列图下，会出现在一张图没有被遮挡，而在另一张图被遮挡的像素点。</p>
+<p><strong>Out of view pixels</strong>：出界的像素点。由于相机的运动，导致某些像素点不在另一张图像上。</p>
+<h2 id="2-本文的主要贡献"><a href="#2-本文的主要贡献" class="headerlink" title="2. 本文的主要贡献"></a>2. 本文的主要贡献</h2><blockquote>
+<ol>
+<li>当使用单目监督时，会产生像素遮盖的现象。为解决这一问题，提出了<strong>外观匹配损失函数</strong>。</li>
+<li>提出了<strong>自动掩码</strong>的方法，可以忽略那些和相机运动无关的像素点。</li>
+<li>提出了<strong>多尺度的外观匹配损失函数</strong>，可以降低深度的暇疵。</li>
+</ol>
+</blockquote>
+<h2 id="3-方法"><a href="#3-方法" class="headerlink" title="3. 方法"></a>3. 方法</h2><h3 id="3-1-自监督学习"><a href="#3-1-自监督学习" class="headerlink" title="3.1 自监督学习"></a>3.1 自监督学习</h3><p>自监督深度估计将学习问题作为一种视图合成问题，即通过一个其他视角的图片来预测目标图片的样子。使用一个中间变量——视差或深度，来限制网络在图像合成任务的学习过程，最后我们就可以提取出这个中间变量，转化成图像的深度图片。这是一个ill-posed的问题，因为如果确定了相机的相对姿态，会有很多图片（图片中的每个像素的深度都不一致）都可以合成出对应视角下的目标图片。经典的双目甚至多目方法通过强化深度图片的平滑度以及计算图片的一致性解决了这个问题。</p>
+<p>该工作仍继续沿用之前的思想，将任务作为视图合成问题，通过目标图像和重建得到的目标图像之间的误差作为学习的指导。</p>
+<p>首先，可以将源图像$I<em>{t’}$与目标图像$I_t$之间相机的相对姿态表示为$T</em>{t \rightarrow {t^{‘}}}$。通过预测目标图像的深度图$D_t$，最小化目标图像以及不同的源图像重建出的目标图像之间的误差，实现深度的预测。数学描述为</p>
+<script type="math/tex; mode=display">
+L_p = \sum_{t'}reconError(I_t, I_{ {t^{'} } \rightarrow t}) \tag 1</script><script type="math/tex; mode=display">
+I_{ {t^{'} } \rightarrow t} = I_{t^{'} } ( proj(D_t, T_{t \rightarrow {t^{'} } }, K) )
+\tag 2</script><p>这里的$proj(D<em>t, T</em>{t \rightarrow {t^{‘}}}, K)$可以进一步拆解为如下公式</p>
+<script type="math/tex; mode=display">
+D_t = DispToDepth(disparity)</script><script type="math/tex; mode=display">
+CamPoints = BackprojectDepth(D_t, K^{-1})</script><script type="math/tex; mode=display">
+2Dcoord = Project3D(CamPoints, K, T_{t \rightarrow {t^{'} } })</script><script type="math/tex; mode=display">
+I_{ {t^{'} } \rightarrow t} = I_{t^{'} } ( 2Dcoord ) \tag 3</script><p>那么如何理解公示(3)呢？</p>
+<p>第一行的disparity就是Network预测的结果。首先，我们需要对disparity做一个转化。由先验知识可知</p>
+<script type="math/tex; mode=display">
+depth = \frac{bf}{disparity} \tag 4</script><p>可见depth和disparity呈现反比关系。这里使用<code>DispToDepth</code>函数实现转换。</p>
+<p>第二行做了一个前提假设，假设我们拍摄target图像的相机在世界坐标系的原点处。根据《视觉SLAM十四讲》第五讲中所述，三维世界的坐标系可以通过相机的内参矩阵转化为二维坐标。数学描述为</p>
+<script type="math/tex; mode=display">
+ZP_{uv}
+= Z
+\left[
+\begin{matrix}
+u\\
+v\\
+1
+\end{matrix}
+\right]
+=
+\left[
+\begin{matrix}
+f_x & 0   & c_x \\
+0   & f_y & c_y \\
+0   & 0   & 1   \\
+\end{matrix}
+\right]
+
+\left[
+\begin{matrix}
+X \\
+Y \\
+Z\\
+\end{matrix}
+\right]
+=
+KP_w \tag 5</script><p>其中P为世界坐标，u、v为相机坐标。而我们现在有了像素的二维坐标，可以通过<code>np.meshgrid</code>构建。为了得到对应的世界坐标，我们不仅仅需要像素的二维坐标，还需要一个深度。其实，公式(5)可以写成</p>
+<script type="math/tex; mode=display">
+P_{uv}
+=
+\left[
+\begin{matrix}
+u\\
+v\\
+1
+\end{matrix}
+\right]
+=
+\left[
+\begin{matrix}
+f_x & 0   & c_x \\
+0   & f_y & c_y \\
+0   & 0   & 1   \\
+\end{matrix}
+\right]
+
+\left[
+\begin{matrix}
+X/Z \\
+Y/Z \\
+1\\
+\end{matrix}
+\right]
+=
+KP^{'}_w \tag 5</script><p>$P^{‘}<em>w$称为归一化坐标。归一化坐标可以看成相机前方$z=1$处平面上的坐标。可以看到，如果对归一化坐标同时乘以任何一个数，相机的归一化坐标是完全一样的，说明<em>_深度信息</em></em>在单目图像上丢失了。</p>
+<p>深度就是需要通过公式(3)第一行得到的depth了。首先用<code>np.meshgrid</code>得到像素坐标，和内参的逆矩阵相乘得到归一化坐标，归一化坐标乘以深度，就可以得到三维世界坐标系下的坐标（注意这里<strong>假设我们拍摄target图像的相机就是世界坐标系</strong>），即CamPoints。数学描述为</p>
+<script type="math/tex; mode=display">
+P_w = ZK^{-1}P_{uv} \tag 6</script><p>我们现在有了世界坐标了，接下来让我们移动相机，假设我们简单的把相机平移到原相机位置的右侧，这时候就可以用先验知识求得相机位姿的矩阵$T<em>{t \rightarrow {t^{‘} } }$。当然，更细节的得到位姿矩阵的方法在<code>transformation_from_parameters</code>函数中实现，需要结合<strong>轴角</strong>和<em>_平移向量</em></em>构建。接下来是理解模型是如何监督的重点。我们通过左侧相机的像素坐标得到了每一个像素位置的世界坐标。现在我们需要知道，左侧图像中的每一个像素点所对应在空间中的实际的点，映射到了右侧相机的图片的哪个像素位置。可以继续通过公式(5)变换到像素坐标系下，但这里的右侧相机所在的坐标系已经与标准的世界坐标系有所偏移，所以我们需要做一些小小的修改</p>
+<script type="math/tex; mode=display">
+P_{u^{'}v^{'} }=\frac{1}{Z}K(RP_w+\vec t)=\frac{1}{Z}KT_{t \rightarrow {t^{'} } }P_w \tag 7</script><p>具体在<code>Project3D</code>中实现。这里得到的新的$P<em>{u^{‘}v^{‘} }$就是左侧图像像素$P</em>{uv}$所表示的空间点，在右侧图像像素的位置，即右侧图像的$(u’,v’)$处。之后通过sampler采样，得到根据右侧图像重建后的图像$I_{ {t^{‘} } \rightarrow t}$。</p>
+<p>结合图1更好理解</p>
+<p><img src="project3d.jpeg" alt=""></p>
+<center>
+  Fig. 1 监督过程
+</center>
+
+<p>对于重建误差，可以表述为</p>
+<script type="math/tex; mode=display">
+reconError(I_a,I_b)=\frac{\alpha}{2}(1-SSIM(I_a, I_b)) + (1-\alpha)||I_a - I_b|| \tag 8</script><p>边缘平滑损失定义为</p>
+<script type="math/tex; mode=display">
+L_s = |\partial_xd^*_t|e^{-|\partial_xI_t|}+|\partial_yd^*_t|e^{-|\partial_yI_t|} \tag 9</script><p>最后总的目标函数为</p>
+<script type="math/tex; mode=display">
+L = \mu L_p +\lambda L_s \tag{10}</script><h3 id="3-2-自监督学习优化"><a href="#3-2-自监督学习优化" class="headerlink" title="3.2 自监督学习优化"></a>3.2 自监督学习优化</h3><p><img src="monodepth2model.png" alt=""></p>
+<center>
+  Fig. 2 (a)深度预测网络。(b)相机位姿网络。(c)最小重建投影误差。(d)多尺度估计。
+</center>
+
+<h4 id="3-2-1-逐像素最小重建投影误差"><a href="#3-2-1-逐像素最小重建投影误差" class="headerlink" title="3.2.1 逐像素最小重建投影误差"></a>3.2.1 逐像素最小重建投影误差</h4><p><strong>Problematic pixels</strong>可以分为两类，一种是超出图像边界的像素(<strong>Out of view pixels</strong>)，另一种是遮挡像素(<strong>Occluded pixels</strong>)。超出图像边界的像素可以通过掩盖这些像素的误差，即不计入误差累计。但并没有解决遮挡像素的问题。</p>
+<p>计算重建投影误差的时候，之前的一些方法都是把不同源图像与目标图像的误差平均。这种情况下，如果网络预测出目标图像的某一个像素点A正确的深度，经过源图像的采样后，重建出的像素点可能会像图2的(c)的$I_{t-1}$所示，导致采样到了遮挡像素的部位，从而造成对应位置像素值差别很大，对结果造成一定的影响。所以相较于公式(1)，该工作做了如下改进</p>
+<script type="math/tex; mode=display">
+L_p = min(reconError(I_t, I_{ {t^{'} } \rightarrow t}) \tag{11})</script><p><img src="Monodepth2Loss.png" alt="Screenshot 2022-11-16 at 13.00.20"></p>
+<center>
+  Fig. 3 最小重建投影误差。每个像素都会根据其最匹配的源图像进行计算。图中L画圈部位在R中属于遮挡像素，但可以在-1中找到相匹配的像素点。本质而言是充分的利用了不同源图像的信息。
+</center>
+
+<p>这种改进可以将超出边界的像素和遮挡像素问题一举解决，且可以见效图片边界的瑕疵、提升遮挡边界的清晰度并且可以提高精度。</p>
+<h4 id="3-2-2-静态像素自动掩码"><a href="#3-2-2-静态像素自动掩码" class="headerlink" title="3.2.2 静态像素自动掩码"></a>3.2.2 静态像素自动掩码</h4><p>自监督学习的一个前提假设是，场景是静止的，相机是运动的。当相机是静止的或场景中有运动的物体时，性能就会受到很大的影响（测试时会产生黑洞）。一个很简单的想法就是，把这一帧到下一帧中不变的像素点掩盖。同于先前的工作，也是将每个像素点加入掩码算子$\mu$。但不同的是，先前工作需要通过学习得到$\mu$，而该工作是通过前向传播过程自动计算得到，且只有0和1两个值。观察得到，如果在相邻两帧中像素点保持相同会有三种情况：第一种是相机静止；第二种是物体和相机保持同样的速度和方向，相对静止；第三种是低纹理区域。</p>
+<h4 id="3-2-3-多尺度估计"><a href="#3-2-3-多尺度估计" class="headerlink" title="3.2.3 多尺度估计"></a>3.2.3 多尺度估计</h4><p>之前工作的多尺度估计都是在不同size之下计算好误差，最后平均。而这样会倾向于在大面积的low-texture区域产生黑洞，也会造成瑕疵。因此该工作将不同size的预测的图片resize到原始图片的大小，在相同的尺度下进行计算。</p>
+<h3 id="3-3-其他考虑"><a href="#3-3-其他考虑" class="headerlink" title="3.3 其他考虑"></a>3.3 其他考虑</h3><p>网络的baseline采用U-net的encoder，decoder架构，加入了跳层连接，以便更好的结合深度特征信息和局部特征。使用ResNet18作为encoder，包含11M参数量，并且采用了ImageNet上预训练好的权重，实验表明预训练的结果要比从一开始训练的结果要好。网络的decoder采用和Unsupervised monocular depth estimation with left- right consistency中的类似，但最后一层加入sigmoid输出，其他采用ELU作为激活函数。Decoder中用反射padding代替zero-padding，实验表明效果不错。</p>
+<p>对于姿态网络，网络输出轴角和平移向量，并缩放0.01。</p>
+<p>数据增强的概率为50%，策略为水平翻转、随机亮度、对比度、饱和度以及hue jitter。所有输入网络的图片都会用相同的参数进行增强。</p>
+<p>网络用pytorch实现，优化器为Adam，epoch为20，batchsize为12，输入输出默认为640x192。前15epoch用0.0001学习率，最后五个为0.00001。平滑$\lambda$为0.001。 </p>
+<h3 id="3-4-数据集"><a href="#3-4-数据集" class="headerlink" title="3.4 数据集"></a>3.4 数据集</h3><h2 id="4-源码解析"><a href="#4-源码解析" class="headerlink" title="4. 源码解析"></a>4. 源码解析</h2><h3 id="4-1-layers-py"><a href="#4-1-layers-py" class="headerlink" title="4.1 layers.py"></a>4.1 layers.py</h3><p><code>layers.py</code>文件是Monodepth2中最为核心的一个文件，其中包含了以下几种函数：</p>
+<blockquote>
+<p><code>disp_to_dpeth(disp, min_depth, max_depth)</code>：它会将网络的simoid输出转化为预测的深度，这里是运用了深度和视察的先验关系。</p>
+<p><code>transformation_from_parameters(axisangle, translation, invert)</code>：根据poseNet预测出的角度和平移量，计算4x4的转换矩阵。</p>
+<p><code>rot_from_axisangle(vec)</code>：根据坐标轴的欧拉角，得到4x4的旋转矩阵。</p>
+<p><code>get_translation_matrix(translation_vector)</code>：把预测出的平移量转化为4x4的平移矩阵。</p>
+<p><code>upsample(x)</code>：将输入的张量用最邻近差值实现上采样。</p>
+<p><code>get_smooth_loss(disp, img)</code>：计算视差图的平滑度。</p>
+<p><code>compute_depth_errors(gt, pred)</code>：计算预测出的深度图片和GT的各项衡量指标的值。</p>
+</blockquote>
+<p>包含以下层：</p>
+<blockquote>
+<p>Conv3x3：3x3卷积计算单元。</p>
+<p>BackprojectDepth：根据预测的深度、相机坐标系下的坐标和相机内参矩阵的逆矩阵，计算空间坐标系的矩阵（4维度，最后一维度为1，表示三维空间的点）。</p>
+<p>Project3D：根据转换矩阵T和相机内参矩阵K，以及三维空间坐标，计算得到对应相机坐标系下的坐标。</p>
+<p>SSIM：结构相似性计算层。</p>
+</blockquote>
+<h4 id="disp-to-depth"><a href="#disp-to-depth" class="headerlink" title="disp_to_depth"></a>disp_to_depth</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">disp_to_depth</span>(<span class="params">disp, min_depth, max_depth</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Convert network&#x27;s sigmoid output into depth prediction</span></span><br><span class="line"><span class="string">    The formula for this conversion is given in the &#x27;additional considerations&#x27;</span></span><br><span class="line"><span class="string">    section of the paper.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 将预测得到的视差通过min_depth和max_depth的限制，得到对应范围内的深度图</span></span><br><span class="line">    <span class="comment"># <span class="doctag">TODO:</span> we know that disp = f*b / depth, but in this function, where are f and b?</span></span><br><span class="line">    min_disp = <span class="number">1</span> / max_depth</span><br><span class="line">    max_disp = <span class="number">1</span> / min_depth</span><br><span class="line">    scaled_disp = min_disp + (max_disp - min_disp) * disp</span><br><span class="line">    depth = <span class="number">1</span> / scaled_disp</span><br><span class="line">    <span class="keyword">return</span> scaled_disp, depth</span><br></pre></td></tr></table></figure>
+<h4 id="transformation-from-parameters"><a href="#transformation-from-parameters" class="headerlink" title="transformation_from_parameters"></a>transformation_from_parameters</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">transformation_from_parameters</span>(<span class="params">axisangle, translation, invert=<span class="literal">False</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Convert the network&#x27;s (axisangle, translation) output into a 4x4 matrix</span></span><br><span class="line"><span class="string">    	 一般而言，对于一个坐标，可以通过旋转矩阵R和平移向量t来变换到另一个坐标</span></span><br><span class="line"><span class="string">    	 但是也可以将R和t写作齐次式，M</span></span><br><span class="line"><span class="string">    	 函数的输入是欧拉角，需要调用 rot_from_axisangle将欧拉角转化为旋转矩阵</span></span><br><span class="line"><span class="string">    	 另一个输入是平移向量，需要调用get_translation_matrix将向量转化为平移矩阵</span></span><br><span class="line"><span class="string">    	 最后将两个矩阵结合即可</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    R = rot_from_axisangle(axisangle)</span><br><span class="line">    t = translation.clone()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> invert:</span><br><span class="line">        R = R.transpose(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">        t *= -<span class="number">1</span></span><br><span class="line"></span><br><span class="line">    T = get_translation_matrix(t)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> invert:</span><br><span class="line">        M = torch.matmul(R, T)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        M = torch.matmul(T, R)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> M</span><br></pre></td></tr></table></figure>
+<h4 id="rot-from-axisangle"><a href="#rot-from-axisangle" class="headerlink" title="rot_from_axisangle"></a>rot_from_axisangle</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">rot_from_axisangle</span>(<span class="params">vec</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Convert an axisangle rotation into a 4x4 transformation matrix</span></span><br><span class="line"><span class="string">    (adapted from https://github.com/Wallacoloo/printipi)</span></span><br><span class="line"><span class="string">    Input &#x27;vec&#x27; has to be Bx1x3</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    angle = torch.norm(vec, <span class="number">2</span>, <span class="number">2</span>, <span class="literal">True</span>)</span><br><span class="line">    axis = vec / (angle + <span class="number">1e-7</span>)</span><br><span class="line"></span><br><span class="line">    ca = torch.cos(angle)</span><br><span class="line">    sa = torch.sin(angle)</span><br><span class="line">    C = <span class="number">1</span> - ca</span><br><span class="line"></span><br><span class="line">    x = axis[..., <span class="number">0</span>].unsqueeze(<span class="number">1</span>)</span><br><span class="line">    y = axis[..., <span class="number">1</span>].unsqueeze(<span class="number">1</span>)</span><br><span class="line">    z = axis[..., <span class="number">2</span>].unsqueeze(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    xs = x * sa</span><br><span class="line">    ys = y * sa</span><br><span class="line">    zs = z * sa</span><br><span class="line">    xC = x * C</span><br><span class="line">    yC = y * C</span><br><span class="line">    zC = z * C</span><br><span class="line">    xyC = x * yC</span><br><span class="line">    yzC = y * zC</span><br><span class="line">    zxC = z * xC</span><br><span class="line"></span><br><span class="line">    rot = torch.zeros((vec.shape[<span class="number">0</span>], <span class="number">4</span>, <span class="number">4</span>)).to(device=vec.device)</span><br><span class="line"></span><br><span class="line">    rot[:, <span class="number">0</span>, <span class="number">0</span>] = torch.squeeze(x * xC + ca)</span><br><span class="line">    rot[:, <span class="number">0</span>, <span class="number">1</span>] = torch.squeeze(xyC - zs)</span><br><span class="line">    rot[:, <span class="number">0</span>, <span class="number">2</span>] = torch.squeeze(zxC + ys)</span><br><span class="line">    rot[:, <span class="number">1</span>, <span class="number">0</span>] = torch.squeeze(xyC + zs)</span><br><span class="line">    rot[:, <span class="number">1</span>, <span class="number">1</span>] = torch.squeeze(y * yC + ca)</span><br><span class="line">    rot[:, <span class="number">1</span>, <span class="number">2</span>] = torch.squeeze(yzC - xs)</span><br><span class="line">    rot[:, <span class="number">2</span>, <span class="number">0</span>] = torch.squeeze(zxC - ys)</span><br><span class="line">    rot[:, <span class="number">2</span>, <span class="number">1</span>] = torch.squeeze(yzC + xs)</span><br><span class="line">    rot[:, <span class="number">2</span>, <span class="number">2</span>] = torch.squeeze(z * zC + ca)</span><br><span class="line">    rot[:, <span class="number">3</span>, <span class="number">3</span>] = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> rot</span><br></pre></td></tr></table></figure>
+<h4 id="get-translation-matrix"><a href="#get-translation-matrix" class="headerlink" title="get_translation_matrix"></a>get_translation_matrix</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_translation_matrix</span>(<span class="params">translation_vector</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Convert a translation vector into a 4x4 transformation matrix</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    T = torch.zeros(translation_vector.shape[<span class="number">0</span>], <span class="number">4</span>, <span class="number">4</span>).to(device=translation_vector.device)</span><br><span class="line">		</span><br><span class="line">    <span class="comment"># 转为列向量</span></span><br><span class="line">    t = translation_vector.contiguous().view(-<span class="number">1</span>, <span class="number">3</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    T[:, <span class="number">0</span>, <span class="number">0</span>] = <span class="number">1</span></span><br><span class="line">    T[:, <span class="number">1</span>, <span class="number">1</span>] = <span class="number">1</span></span><br><span class="line">    T[:, <span class="number">2</span>, <span class="number">2</span>] = <span class="number">1</span></span><br><span class="line">    T[:, <span class="number">3</span>, <span class="number">3</span>] = <span class="number">1</span></span><br><span class="line">    <span class="comment"># 给T矩阵最后一列的前三个赋值为列向量t</span></span><br><span class="line">    T[:, :<span class="number">3</span>, <span class="number">3</span>, <span class="literal">None</span>] = t</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> T</span><br></pre></td></tr></table></figure>
+<h4 id="get-smooth-loss"><a href="#get-smooth-loss" class="headerlink" title="get_smooth_loss"></a>get_smooth_loss</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_smooth_loss</span>(<span class="params">disp, img</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Computes the smoothness loss for a disparity image</span></span><br><span class="line"><span class="string">    The color image is used for edge-aware smoothness</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 计算x方向的视差的梯度</span></span><br><span class="line">    grad_disp_x = torch.<span class="built_in">abs</span>(disp[:, :, :, :-<span class="number">1</span>] - disp[:, :, :, <span class="number">1</span>:])</span><br><span class="line">    <span class="comment"># 计算y方向的视差的梯度</span></span><br><span class="line">    grad_disp_y = torch.<span class="built_in">abs</span>(disp[:, :, :-<span class="number">1</span>, :] - disp[:, :, <span class="number">1</span>:, :])</span><br><span class="line">		</span><br><span class="line">    grad_img_x = torch.mean(torch.<span class="built_in">abs</span>(img[:, :, :, :-<span class="number">1</span>] - img[:, :, :, <span class="number">1</span>:]), <span class="number">1</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">    grad_img_y = torch.mean(torch.<span class="built_in">abs</span>(img[:, :, :-<span class="number">1</span>, :] - img[:, :, <span class="number">1</span>:, :]), <span class="number">1</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    grad_disp_x *= torch.exp(-grad_img_x)</span><br><span class="line">    grad_disp_y *= torch.exp(-grad_img_y)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> grad_disp_x.mean() + grad_disp_y.mean()</span><br></pre></td></tr></table></figure>
+<h4 id="BackprojectDepth"><a href="#BackprojectDepth" class="headerlink" title="BackprojectDepth"></a>BackprojectDepth</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">BackprojectDepth</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;将预测得到的depth图转化为3维的点云图片</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, batch_size, height, width</span>):</span><br><span class="line">        <span class="built_in">super</span>(BackprojectDepth, self).__init__()</span><br><span class="line"></span><br><span class="line">        self.batch_size = batch_size</span><br><span class="line">        self.height = height</span><br><span class="line">        self.width = width</span><br><span class="line">				</span><br><span class="line">        <span class="comment"># 根据宽度和高度，生成对应的行列坐标，会得到[列坐标2维矩阵，行坐标2维矩阵]这样一个list</span></span><br><span class="line">        meshgrid = np.meshgrid(<span class="built_in">range</span>(self.width), <span class="built_in">range</span>(self.height), indexing=<span class="string">&#x27;xy&#x27;</span>)</span><br><span class="line">        <span class="comment"># 把list按照第一维度堆叠起来，生成shape为[2, width, height]的id_coords</span></span><br><span class="line">        self.id_coords = np.stack(meshgrid, axis=<span class="number">0</span>).astype(np.float32)</span><br><span class="line">        self.id_coords = nn.Parameter(torch.from_numpy(self.id_coords),</span><br><span class="line">                                      requires_grad=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">        self.ones = nn.Parameter(torch.ones(self.batch_size, <span class="number">1</span>, self.height * self.width),</span><br><span class="line">                                 requires_grad=<span class="literal">False</span>)</span><br><span class="line">				</span><br><span class="line">        <span class="comment"># 将id_coords的列坐标和行坐标先打平为[1, width*height]，堆叠为[2, width*height]，扩充为[1,          				 # 2, width*height]</span></span><br><span class="line">        self.pix_coords = torch.unsqueeze(torch.stack(</span><br><span class="line">            [self.id_coords[<span class="number">0</span>].view(-<span class="number">1</span>), self.id_coords[<span class="number">1</span>].view(-<span class="number">1</span>)], <span class="number">0</span>), <span class="number">0</span>)</span><br><span class="line">        <span class="comment"># 按照batch_size堆叠</span></span><br><span class="line">        self.pix_coords = self.pix_coords.repeat(batch_size, <span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">        <span class="comment"># 将1张量与坐标结合，这样形成[1, 3, width*height]的张量，每一列就代表一个[x, y, 1]二维坐标</span></span><br><span class="line">        self.pix_coords = nn.Parameter(torch.cat([self.pix_coords, self.ones], <span class="number">1</span>),</span><br><span class="line">                                       requires_grad=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, depth, inv_K</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">            u   fx  0   cx     X/Z</span></span><br><span class="line"><span class="string">            v = 0   fy  cy  .  Y/Z</span></span><br><span class="line"><span class="string">            1   0   0   1      1</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">            pix_coords = K . cam_points</span></span><br><span class="line"><span class="string">            cam_points = K-1 . pix_coords</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        cam_points = torch.matmul(inv_K[:, :<span class="number">3</span>, :<span class="number">3</span>], self.pix_coords)</span><br><span class="line">        <span class="comment"># 上一行得到的cam_points，本质上是在归一化平面上的，此时Z即深度信息是丢失的，这也是</span></span><br><span class="line">        <span class="comment"># 单目图像无法得到3维图像的原因。但这里的depth是经过神经网络预测得到的，因此对于归一化</span></span><br><span class="line">        <span class="comment"># 平面上的坐标[X/Z, Y/Z, 1]同时乘各个点的深度，就能得到[X, Y, Z]</span></span><br><span class="line">        cam_points = depth.view(self.batch_size, <span class="number">1</span>, -<span class="number">1</span>) * cam_points</span><br><span class="line">        <span class="comment"># [X, Y, Z] -&gt; [X, Y, Z, 1]</span></span><br><span class="line">        cam_points = torch.cat([cam_points, self.ones], <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cam_points</span><br></pre></td></tr></table></figure>
+<h4 id="Project3D"><a href="#Project3D" class="headerlink" title="Project3D"></a>Project3D</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Project3D</span>(nn.Module):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Layer which projects 3D points into a camera with intrinsics K and at position T</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, batch_size, height, width, eps=<span class="number">1e-7</span></span>):</span><br><span class="line">        <span class="built_in">super</span>(Project3D, self).__init__()</span><br><span class="line"></span><br><span class="line">        self.batch_size = batch_size</span><br><span class="line">        self.height = height</span><br><span class="line">        self.width = width</span><br><span class="line">        self.eps = eps</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">forward</span>(<span class="params">self, points, K, T</span>):</span><br><span class="line">        <span class="comment"># 传入的points为世界坐标系下的坐标[X, Y, Z, 1]</span></span><br><span class="line">        <span class="comment"># K为相机内参，T为转换矩阵</span></span><br><span class="line">        M = torch.matmul(K, T)[:, :<span class="number">3</span>, :]</span><br><span class="line">				</span><br><span class="line">        <span class="comment"># 相机坐标系下的坐标 = K (RP+t) = KTP</span></span><br><span class="line">        cam_points = torch.matmul(M, points)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 除去Z，eps是为了防止除0导致的错误</span></span><br><span class="line">        pix_coords = cam_points[:, :<span class="number">2</span>, :] / (cam_points[:, <span class="number">2</span>, :].unsqueeze(<span class="number">1</span>) + self.eps)</span><br><span class="line">        <span class="comment"># 从[batch, 2, width*height]转换为[batch, 2, height, width]</span></span><br><span class="line">        pix_coords = pix_coords.view(self.batch_size, <span class="number">2</span>, self.height, self.width)</span><br><span class="line">        <span class="comment"># [batch, 2, height, width] -&gt; [batch, height, width, 2]</span></span><br><span class="line">        pix_coords = pix_coords.permute(<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>)</span><br><span class="line">        <span class="comment"># 归一化到0-1之间</span></span><br><span class="line">        pix_coords[..., <span class="number">0</span>] /= self.width - <span class="number">1</span></span><br><span class="line">        pix_coords[..., <span class="number">1</span>] /= self.height - <span class="number">1</span></span><br><span class="line">        <span class="comment"># 移动到[-1, 1]之间</span></span><br><span class="line">        pix_coords = (pix_coords - <span class="number">0.5</span>) * <span class="number">2</span></span><br><span class="line">        <span class="keyword">return</span> pix_coords</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%85%88%E9%AA%8C%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">1. 先验知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%9C%AC%E6%96%87%E7%9A%84%E4%B8%BB%E8%A6%81%E8%B4%A1%E7%8C%AE"><span class="toc-number">2.</span> <span class="toc-text">2. 本文的主要贡献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%96%B9%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">3. 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 自监督学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E4%BC%98%E5%8C%96"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 自监督学习优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E9%80%90%E5%83%8F%E7%B4%A0%E6%9C%80%E5%B0%8F%E9%87%8D%E5%BB%BA%E6%8A%95%E5%BD%B1%E8%AF%AF%E5%B7%AE"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 逐像素最小重建投影误差</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E9%9D%99%E6%80%81%E5%83%8F%E7%B4%A0%E8%87%AA%E5%8A%A8%E6%8E%A9%E7%A0%81"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 静态像素自动掩码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%A4%9A%E5%B0%BA%E5%BA%A6%E4%BC%B0%E8%AE%A1"><span class="toc-number">3.2.3.</span> <span class="toc-text">3.2.3 多尺度估计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%85%B6%E4%BB%96%E8%80%83%E8%99%91"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 其他考虑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 数据集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">4. 源码解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-layers-py"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 layers.py</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#disp-to-depth"><span class="toc-number">4.1.1.</span> <span class="toc-text">disp_to_depth</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#transformation-from-parameters"><span class="toc-number">4.1.2.</span> <span class="toc-text">transformation_from_parameters</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rot-from-axisangle"><span class="toc-number">4.1.3.</span> <span class="toc-text">rot_from_axisangle</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-translation-matrix"><span class="toc-number">4.1.4.</span> <span class="toc-text">get_translation_matrix</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#get-smooth-loss"><span class="toc-number">4.1.5.</span> <span class="toc-text">get_smooth_loss</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BackprojectDepth"><span class="toc-number">4.1.6.</span> <span class="toc-text">BackprojectDepth</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Project3D"><span class="toc-number">4.1.7.</span> <span class="toc-text">Project3D</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2022/12/23/Monodepth2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2022/12/23/Monodepth2/&text=Monodepth2 Paper Note"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2022/12/23/Monodepth2/&is_video=false&description=Monodepth2 Paper Note"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Monodepth2 Paper Note&body=Check out this article: https://auzdora.github.io/2022/12/23/Monodepth2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2022/12/23/Monodepth2/&title=Monodepth2 Paper Note"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2022/12/23/Monodepth2/&name=Monodepth2 Paper Note&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2022/12/23/Monodepth2/&t=Monodepth2 Paper Note"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2022-2023
+    Auzdora
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
