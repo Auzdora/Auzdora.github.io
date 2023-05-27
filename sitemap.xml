@@ -2,7 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://auzdora.github.io/2023/05/27/LLM/</loc>
+    
+    <lastmod>2023-05-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/</loc>
+    
+    <lastmod>2023-05-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/04/01/Buffer_Pool_Manager/</loc>
     
     <lastmod>2023-05-27</lastmod>
     
@@ -13,16 +31,7 @@
   <url>
     <loc>https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/</loc>
     
-    <lastmod>2023-05-26</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/04/01/Buffer_Pool_Manager/</loc>
-    
-    <lastmod>2023-05-26</lastmod>
+    <lastmod>2023-05-27</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -54,6 +63,20 @@
     <priority>1.0</priority>
   </url>
 
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Study/</loc>
+    <lastmod>2023-05-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
+    <lastmod>2023-05-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
   
 
   
