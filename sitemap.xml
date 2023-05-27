@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://example.com/2023/03/26/LRU-K_Replacement_Policy/</loc>
+    <loc>https://auzdora.github.io/project/2023/03/26/LRU-K_Replacement_Policy/</loc>
     
     <lastmod>2023-05-27</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/03/22/Extendible_Hash_Table/</loc>
+    <loc>https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/</loc>
     
     <lastmod>2023-05-26</lastmod>
     
@@ -20,7 +20,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/2023/04/01/Buffer_Pool_Manager/</loc>
+    <loc>https://auzdora.github.io/project/2023/04/01/Buffer_Pool_Manager/</loc>
     
     <lastmod>2023-05-26</lastmod>
     
@@ -29,7 +29,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/about/index.html</loc>
+    <loc>https://auzdora.github.io/project/about/index.html</loc>
     
     <lastmod>2023-05-26</lastmod>
     
@@ -38,7 +38,7 @@
   </url>
   
   <url>
-    <loc>http://example.com/search/index.html</loc>
+    <loc>https://auzdora.github.io/project/search/index.html</loc>
     
     <lastmod>2023-05-26</lastmod>
     
@@ -48,7 +48,7 @@
   
 
   <url>
-    <loc>http://example.com/</loc>
+    <loc>https://auzdora.github.io/project</loc>
     <lastmod>2023-05-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>

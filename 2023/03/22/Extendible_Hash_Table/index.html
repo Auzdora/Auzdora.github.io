@@ -9,41 +9,41 @@
     <meta name="description" content="最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible hash table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，Concurrent">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CMU 15-445 Extendible Hash Table">
-<meta property="og:url" content="http://example.com/2023/03/22/Extendible_Hash_Table/index.html">
+<meta property="og:url" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/index.html">
 <meta property="og:site_name" content="Auzdora&#39;s Blog">
 <meta property="og:description" content="最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible hash table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，Concurrent">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht1.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht2.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht3.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht4.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht5.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht6.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht7.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht8.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht9.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht10.png">
-<meta property="og:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht11.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht1.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht2.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht3.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht4.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht5.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht6.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht7.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht8.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht9.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht10.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht11.png">
 <meta property="article:published_time" content="2023-03-22T04:39:51.000Z">
 <meta property="article:modified_time" content="2023-05-26T15:49:19.137Z">
 <meta property="article:author" content="Auzdora">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/03/22/Extendible_Hash_Table/eht1.png">
+<meta name="twitter:image" content="https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/eht1.png">
     
     
       
         
-          <link rel="shortcut icon" href="/images/favicon.ico">
+          <link rel="shortcut icon" href="/project/images/favicon.ico">
         
       
       
         
-          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          <link rel="icon" type="image/png" href="/project/images/favicon-192x192.png" sizes="192x192">
         
       
       
         
-          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          <link rel="apple-touch-icon" sizes="180x180" href="/project/images/apple-touch-icon.png">
         
       
     
@@ -58,7 +58,7 @@
 
     <!-- styles -->
     
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/project/css/style.css">
 
     <!-- persian styles -->
     
@@ -79,13 +79,13 @@
     <span id="nav">
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/search/">Search</a></li><!--
+       --><li><a href="/project/search/">Search</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
      -->
@@ -95,7 +95,7 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2023/03/26/LRU-K_Replacement_Policy/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/project/2023/03/26/LRU-K_Replacement_Policy/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
@@ -109,17 +109,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: http://example.com/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -249,13 +249,13 @@
     <div id="nav-footer" style="display: none">
       <ul>
         
-          <li><a href="/">Home</a></li>
+          <li><a href="/project/">Home</a></li>
         
-          <li><a href="/about/">About</a></li>
+          <li><a href="/project/about/">About</a></li>
         
-          <li><a href="/archives/">Writing</a></li>
+          <li><a href="/project/archives/">Writing</a></li>
         
-          <li><a href="/search/">Search</a></li>
+          <li><a href="/project/search/">Search</a></li>
         
           <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
         
@@ -268,17 +268,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: http://example.com/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -306,13 +306,13 @@
     <nav>
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/search/">Search</a></li><!--
+       --><li><a href="/project/search/">Search</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
      -->
@@ -362,7 +362,7 @@
   </script>
 
 
-<script src="/js/main.js"></script>
+<script src="/project/js/main.js"></script>
 
 <!-- search -->
 
