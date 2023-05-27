@@ -9,41 +9,41 @@
     <meta name="description" content="最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible hash table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，Concurrent">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CMU 15-445 Extendible Hash Table">
-<meta property="og:url" content="http://example.com/2023/05/26/Extendible_Hash_Table/index.html">
+<meta property="og:url" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/index.html">
 <meta property="og:site_name" content="Auzdora&#39;s Blog">
 <meta property="og:description" content="最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible hash table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，Concurrent">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht1.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht2.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht3.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht4.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht5.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht6.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht7.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht8.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht9.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht10.png">
-<meta property="og:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht11.png">
-<meta property="article:published_time" content="2023-05-26T07:39:51.000Z">
-<meta property="article:modified_time" content="2023-05-26T15:36:56.226Z">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht1.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht2.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht3.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht4.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht5.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht6.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht7.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht8.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht9.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht10.png">
+<meta property="og:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht11.png">
+<meta property="article:published_time" content="2023-03-22T04:39:51.000Z">
+<meta property="article:modified_time" content="2023-05-26T15:49:19.137Z">
 <meta property="article:author" content="Auzdora">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/05/26/Extendible_Hash_Table/eht1.png">
+<meta name="twitter:image" content="https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/eht1.png">
     
     
       
         
-          <link rel="shortcut icon" href="/images/favicon.ico">
+          <link rel="shortcut icon" href="/project/images/favicon.ico">
         
       
       
         
-          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          <link rel="icon" type="image/png" href="/project/images/favicon-192x192.png" sizes="192x192">
         
       
       
         
-          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          <link rel="apple-touch-icon" sizes="180x180" href="/project/images/apple-touch-icon.png">
         
       
     
@@ -58,7 +58,7 @@
 
     <!-- styles -->
     
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/project/css/style.css">
 
     <!-- persian styles -->
     
@@ -79,13 +79,13 @@
     <span id="nav">
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/search/">Search</a></li><!--
+       --><li><a href="/project/search/">Search</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
      -->
@@ -94,6 +94,8 @@
     <br/>
     <span id="actions">
       <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/project/2023/03/26/LRU-K_Replacement_Policy/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
@@ -107,22 +109,22 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/05/26/Extendible_Hash_Table/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/05/26/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/05/26/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: http://example.com/2023/05/26/Extendible_Hash_Table/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/05/26/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/05/26/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
     <div id="toc">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">1.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Overview-of-Extendible-Hash-Table"><span class="toc-number">2.</span> <span class="toc-text">Overview of Extendible Hash Table</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Implementation-Scheme"><span class="toc-number">3.</span> <span class="toc-text">Implementation Scheme</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Example"><span class="toc-number">3.1.</span> <span class="toc-text">Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">3.2.</span> <span class="toc-text">踩坑记录</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Task"><span class="toc-number">1.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overview-of-Extendible-Hash-Table"><span class="toc-number">2.</span> <span class="toc-text">Overview of Extendible Hash Table</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Implementation-Scheme"><span class="toc-number">3.</span> <span class="toc-text">Implementation Scheme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Example"><span class="toc-number">4.</span> <span class="toc-text">Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">5.</span> <span class="toc-text">踩坑记录</span></a></li></ol>
     </div>
   </span>
 </div>
@@ -146,7 +148,7 @@
       
     <div class="postdate">
       
-        <time datetime="2023-05-26T07:39:51.000Z" class="dt-published" itemprop="datePublished">2023-05-26</time>
+        <time datetime="2023-03-22T04:39:51.000Z" class="dt-published" itemprop="datePublished">2023-03-22</time>
         
       
     </div>
@@ -164,14 +166,14 @@
     <blockquote>
 <p>最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible hash table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，ConcurrentInsertFindTest和GetNumBucketsTest总是fail。又去参考了很多对可扩展哈希的文章，才发现自己一些细节是错误的。本篇文章尝试以我的理解说清楚extendible hash table，并作为我的菜坑记录。</p>
 </blockquote>
-<h1 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h1><p>这一部分的任务就是搭建一个通用的存储unique KV对的哈希表。我们需要实现哈希表的插入、删除以及查找操作。实验手册中并没有要求我们实现shrink部分，所以只需要关注如何扩展哈希表即可。代码在<code>scr/include/container/hash/extendible_hash_table.h</code>以及 <code>src/container/hash/extendible_hash_table.cpp</code>下，实现之前建议先阅读这两个文件的代码和注释，明确我们的目标。</p>
-<h1 id="Overview-of-Extendible-Hash-Table"><a href="#Overview-of-Extendible-Hash-Table" class="headerlink" title="Overview of Extendible Hash Table"></a>Overview of Extendible Hash Table</h1><p>在理解可扩展哈希表之前，我们需要了解几个概念。</p>
+<h2 id="Task"><a href="#Task" class="headerlink" title="Task"></a>Task</h2><p>这一部分的任务就是搭建一个通用的存储unique KV对的哈希表。我们需要实现哈希表的插入、删除以及查找操作。实验手册中并没有要求我们实现shrink部分，所以只需要关注如何扩展哈希表即可。代码在<code>scr/include/container/hash/extendible_hash_table.h</code>以及 <code>extendible_hash_table.cpp</code>下，实现之前建议先阅读这两个文件的代码和注释，明确我们的目标。</p>
+<h2 id="Overview-of-Extendible-Hash-Table"><a href="#Overview-of-Extendible-Hash-Table" class="headerlink" title="Overview of Extendible Hash Table"></a>Overview of Extendible Hash Table</h2><p>在理解可扩展哈希表之前，我们需要了解几个概念。</p>
 <ul>
 <li><strong>Directory</strong>：是存放bucket指针的容器，可动态生长（以原大小的倍数作为增长率），容器的每个元素可用哈希值来索引。</li>
 <li><strong>Bucket</strong>：桶。存放Key&#x2F;value pair的桶，数据结构层面是一个线性表。</li>
 </ul>
 <p>下面是一个简单的可扩展哈希表的示意图，具体不用关心它是怎么来的，先对它建立一个直观的印象即可。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht1.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht1.png"></p>
 <p>上图又出现两个概念：</p>
 <ul>
 <li><strong>Global Depth</strong>：假设global depth为n，那么当前的directory必定有$2^n$个entry。例如，当前$n&#x3D;2$，那么就有4个entry，$n&#x3D;3$就有8个entry。同时，给定一个key，需要用global depth取出这个key的低n位的二进制值。例如，一个key的二进制是10111，如果global depth是3，通过<code>IndexOf(key)</code>函数，得到返回值的二进制值是111，即为7。这个值用来索引directory[111]位置的bucket。</li>
@@ -184,7 +186,7 @@
 <li>计算当前bucket有几个指针指向它的公示是$2^{globalDepth-localDepth}$。</li>
 </ul>
 <p>Global depth和local depth的概念就是这些，然而在实现算法的过程中还有对这些概念的应用，我们暂且先忽略，之后的部分会一一阐述。</p>
-<h1 id="Implementation-Scheme"><a href="#Implementation-Scheme" class="headerlink" title="Implementation Scheme"></a>Implementation Scheme</h1><p>对于Bucket的Insert，Remove以及Find操作，熟悉一下C++的list容器相关操作就可以实现。不过有一个地方需要注意的是，实现bucket的Insert方法时，注释里说的是先检查key是否存在，如果存在就要更新value。这里如果先判断bucket是否满了，就会出现bug。因为如果一个bucket满了，但刚你要插入的key在这个bucket的中，先判断是否满的话就会直接返回，不会更新对应key的value，就会造成之后find的错误。</p>
+<h2 id="Implementation-Scheme"><a href="#Implementation-Scheme" class="headerlink" title="Implementation Scheme"></a>Implementation Scheme</h2><p>对于Bucket的Insert，Remove以及Find操作，熟悉一下C++的list容器相关操作就可以实现。不过有一个地方需要注意的是，实现bucket的Insert方法时，注释里说的是先检查key是否存在，如果存在就要更新value。这里如果先判断bucket是否满了，就会出现bug。因为如果一个bucket满了，但刚你要插入的key在这个bucket的中，先判断是否满的话就会直接返回，不会更新对应key的value，就会造成之后find的错误。</p>
 <p>实现了Bucket的三个操作之后，就可以实现ExtendibleHashTable的三大操作了。为了确保线程安全，每一个操作应当加锁来保证。</p>
 <p>这里阐述一下Insert的算法流程，然后结合一个具体的例子，分析算法可能遇到的情况。</p>
 <ol>
@@ -199,32 +201,32 @@
 <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>这个例子来自于官方的Homework #2 - Question 3。假定每一个bucket的容量大小为2，且哈希函数用最低的g个二进制位，g指global depth。</p>
 <p>按顺序插入15，14，23，11，9。这几个数对应的二进制分别是，1111，1110，10111，1011，1001。</p>
 <p><strong>STEP 1</strong>：首先插入15和14，第一步没什么问题。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht2.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht2.png"></p>
 <p><strong>STEP 2</strong>：接着插入23，23的二进制是10111，当前的global depth是0，计算得到的<code>IndexOf(key)</code>是0，说明23要插入到directory的第0个entry中，但是这个entry所指向的bucket满了。我们执行步骤3（<em><strong>重复一下步骤3：如果当前global depth等于local depth，说明bucket已满，需要增长direcotry的大小。增加directory的global depth，并将新增加的entry链接到对应的bucket。否则，继续执行步骤4</strong></em>）。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht3.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht3.png"></p>
 <p>这一步有一个很重要的点，新增长的entry怎么分配到对应的bucket？如果和上图的情况一样，从1增长到2，只需要把多出来的一个拉到唯一的bucket上就可以了，但如果从2到4，从4到8呢？多出来的若干个如何处理？其实只需要将多出来的一部分指针完全复制之前的一份就可以了。这样做法我觉得是可扩展哈希的比较重要的细节，由于可扩展哈希扩展direcotry时是按照当前大小的两倍进行扩展，新增长出来的部分作为之前directory的对等实体，每一个新的entry都对应了之前对应的entry，指向相同的bucket。唯一的不同就是之前的direcotry的索引最高位是0，扩展出来的最高位是1。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht4.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht4.png"></p>
 <p><strong>STEP 3</strong>：执行步骤4（<em><strong>记录当前的local mask，创建bucket1和bucket2，增加两个bucket的local depth，增加num bucket的数量。取出之前满了的bucket中的元素，按照local mask的标准将每个元素重新分配到bucket1和bucket2中。执行步骤5</strong></em>）。</p>
 <p>当前local mask的计算方法是<code>1 &lt;&lt; local_depth</code>，其中的local depth是指<strong>STEP 2</strong>图片中，扩展之前的local depth，即为0。</p>
 <p>为什么呢？因为在扩展之前，产生overflow的bucket中的数据，低local depth个的二进制位完全相同，在<strong>STEP 2</strong>的图片例子中，1111和1110没有相同的低位二进制位，因此local depth是0。现在要插入23（0b10111），由于bucket已经满了，所以我们需要分裂bucket、重分配KV pair、重分配entry的指向。分裂了bucket，就产生两个bucket。</p>
 <p>怎么放KV pair呢？我们总不能乱放吧？我们肯定要有规律的去分配。1111和1110，由于之前local depth为0，表明不需要参考任何二进制位，因此可以放到一个bucket里。当插入10111时，一个bucket放不下了，就需要两个bucket，为了可以高效的查询，当然是<strong>归类分配</strong>才行。按什么归类？当我们给事物归类的时候，我们会按属性归类，玩具为一类，家具为一类。二进制怎么归类呢？我们可以从最低位二进制位开始对比，之前不需要对比，现在我们至少需要对比一个二进制位，才能将3个二进制数分为两类（2个+1个，如果对比一个二进制位还不行，就继续增加local depth）。local mask的意思就是，之前local depth为0，不需要对比，但我现在要对比第一位，那么我就可以使用<code>1 &lt;&lt; local_depth</code>，1左移0位还是1，就是对比第一位二进制位。通过对比，1111和1110就不再是一类了，可以分别放入不同的bucket。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht5.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht5.png"></p>
 <p><strong>STEP 4</strong>：执行步骤5（<em><strong>对每个链接到产生overflow的bucket的direcotry entry，按照local mask的标准，重新分配指针指向。执行步骤6</strong></em>）。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht6.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht6.png"></p>
 <p><strong>STEP 5</strong>：执行步骤6，重新计算<code>IndexOf(key)</code>，由于改变了global depth，新计算的IndexOf(key)是1，最后执行步骤2，判断1指向的bucket没满，执行步骤7，插入23。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht7.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht7.png"></p>
 <p><strong>STEP 6</strong>：接下来我们插入11（0b1011）。<strong>NOTE：这个例子在实现的过程中容易忽略掉</strong>。首先计算<code>IndexOf(key)</code>，得到结果为1，我们就要插入红色的bucket。但红色bucket满了，同时，global depth等于local depth，因此需要扩展directory，执行步骤3。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht8.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht8.png"></p>
 <p>之前的local depth我们比较最低位的二进制位，将1111和10111放入了一个bucket，由于该bucket产生了overflow，又分裂为两个bucket，我们就需要对这个产生overflow的bucket中的元素重新归类。正常情况下，产生overflow的bucket的中的元素可以被平均的分布到两个bucket中，但这个例子中，我们对比两个数的第二位，发现1111和10111最低的第二位仍然是1，那么还是将两者化为一类。并更新与overflow的bucket相关的directory entry的指向。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht9.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht9.png"></p>
 <p>复杂的问题又来了，之前01和11的entry都指向一个bucket，在分裂的时候，我们怎么去redirect呢？答案是利用local depth和local mask。<strong>分裂之前的local depth为1（0b01），意味着指向这个bucket的最低一位二进制位都相同</strong>。01和11两个数的最低一位二进制位都是1。我们要分裂bucket，一定是bucket已经满了，也说明当前比较二进制位最低一位在将来不适用了，因为连上要插入的数，三个数的最低一位二进制位都是1，因此我们才需要local mask，将1（0b01）左移local depth位，变为2（0b10），意味着我们需要考量第二位二进制位才能区分三个数（这里的entry、global depth还有local depth之间的关系比较难理解）。<strong>想要redirect指向同一个bucket的所有entry，我们必须遍历一次directory</strong>。但并不是暴力遍历，通过观察可以发现，01和11刚好相差一个local mask，而且01作为遍历的开始，可以通过<code>hash(key) &amp; (local_mask - 1)</code>计算得到。</p>
 <p>为什么是<code>hash(key) &amp; (local_mask - 1)</code>呢？首先<code>hash(key)</code>可以理解为得到了key的二进制数，local mask是由local depth得到的，local depth表明的是存放在当前bucket中所有key的低位二进制位相等的个数。local mask是下一个需要检查的二进制位的位置。同时我们也知道，既然key能插入这个bucket，<strong>那么说明key和存放于这个bucket中的keys是有共同性的</strong>，这个共同性就是：<strong>低local depth位二进制数完全相同</strong>。local_mask - 1和key的二进制&amp;的结果就是在directory中，最开始的那个entry，因为这个entry的值完全等于<code>hash(key) &amp; (local_mask - 1)</code>。其余所有指向这个bucket的entry，唯一与这个最开始的不同就是：local depth + 1位是0和1的区别。就是相差local mask。</p>
 <p>啊，好复杂，感觉没有说清楚，后续可能更新一下，如果没懂可以私信我或者评论区讨论一下。</p>
 <p>更新<code>IndexOf(key)</code>，由于global index变为2，这时的index就是0b11，即第四个directory。进入步骤2。</p>
 <p><strong>STEP 7</strong>：判断是否能插入蓝色bucket，很明显，bucket又满了，且global depth等于local depth。进行扩展哈希表和分裂bucket。然后分配每一个KV pair。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht10.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht10.png"></p>
 <p>最后更新<code>IndexOf(key)</code>，结果是0b011，插入绿色的bucket。</p>
-<p><img src="/2023/05/26/Extendible_Hash_Table/eht11.png"></p>
+<p><img src="/project/2023/03/22/Extendible_Hash_Table/eht11.png"></p>
 <p>之后的继续添加和扩展大同小异，重点还是理解entry index、global depth和local depth的深层含义，还有相关位运算的思想。</p>
 <h2 id="踩坑记录"><a href="#踩坑记录" class="headerlink" title="踩坑记录"></a>踩坑记录</h2><ul>
 <li>第一次实现的时候并没有考虑扩展后的指针指向问题，导致程序运行时访问到了nullptr的地址，报错。实际上directory的扩展本质上就是将原来的direcotry完完整整拷贝一份，不同的只是index不同。</li>
@@ -247,13 +249,13 @@
     <div id="nav-footer" style="display: none">
       <ul>
         
-          <li><a href="/">Home</a></li>
+          <li><a href="/project/">Home</a></li>
         
-          <li><a href="/about/">About</a></li>
+          <li><a href="/project/about/">About</a></li>
         
-          <li><a href="/archives/">Writing</a></li>
+          <li><a href="/project/archives/">Writing</a></li>
         
-          <li><a href="/search/">Search</a></li>
+          <li><a href="/project/search/">Search</a></li>
         
           <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
         
@@ -261,22 +263,22 @@
     </div>
 
     <div id="toc-footer" style="display: none">
-      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Task"><span class="toc-number">1.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Overview-of-Extendible-Hash-Table"><span class="toc-number">2.</span> <span class="toc-text">Overview of Extendible Hash Table</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Implementation-Scheme"><span class="toc-number">3.</span> <span class="toc-text">Implementation Scheme</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Example"><span class="toc-number">3.1.</span> <span class="toc-text">Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">3.2.</span> <span class="toc-text">踩坑记录</span></a></li></ol></li></ol>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Task"><span class="toc-number">1.</span> <span class="toc-text">Task</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Overview-of-Extendible-Hash-Table"><span class="toc-number">2.</span> <span class="toc-text">Overview of Extendible Hash Table</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Implementation-Scheme"><span class="toc-number">3.</span> <span class="toc-text">Implementation Scheme</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Example"><span class="toc-number">4.</span> <span class="toc-text">Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">5.</span> <span class="toc-text">踩坑记录</span></a></li></ol>
     </div>
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2023/05/26/Extendible_Hash_Table/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2023/05/26/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2023/05/26/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: http://example.com/2023/05/26/Extendible_Hash_Table/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2023/05/26/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2023/05/26/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2023/05/26/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&text=CMU 15-445 Extendible Hash Table"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&is_video=false&description=CMU 15-445 Extendible Hash Table"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 Extendible Hash Table&body=Check out this article: https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&title=CMU 15-445 Extendible Hash Table"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&name=CMU 15-445 Extendible Hash Table&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/project/2023/03/22/Extendible_Hash_Table/&t=CMU 15-445 Extendible Hash Table"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -304,13 +306,13 @@
     <nav>
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/search/">Search</a></li><!--
+       --><li><a href="/project/search/">Search</a></li><!--
      --><!--
        --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
      -->
@@ -360,7 +362,7 @@
   </script>
 
 
-<script src="/js/main.js"></script>
+<script src="/project/js/main.js"></script>
 
 <!-- search -->
 
