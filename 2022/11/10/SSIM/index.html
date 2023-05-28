@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="1. Over all PurposeThe luminance information computation method is:  Lumination &#x3D; illumination\times reflectance \tag 1However, based on our prior knowledge  The structures of the objects in the scene">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Structural SIMilarity Index">
+<meta property="og:url" content="https://auzdora.github.io/2022/11/10/SSIM/index.html">
+<meta property="og:site_name" content="Auzdora&#39;s Blog">
+<meta property="og:description" content="1. Over all PurposeThe luminance information computation method is:  Lumination &#x3D; illumination\times reflectance \tag 1However, based on our prior knowledge  The structures of the objects in the scene">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://auzdora.github.io/2022/11/10/SSIM/SSIMDiagram.png">
+<meta property="article:published_time" content="2022-11-10T01:20:10.000Z">
+<meta property="article:modified_time" content="2023-05-28T03:30:20.830Z">
+<meta property="article:author" content="Auzdora">
+<meta property="article:tag" content="Paper Reading Note">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://auzdora.github.io/2022/11/10/SSIM/SSIMDiagram.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/hummingbird.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/hummingbird.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/hummingbird.png">
+        
+      
+    
+    <!-- title -->
+    <title>The Structural SIMilarity Index</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2022/12/23/Monodepth2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2022/11/10/SSIM/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2022/11/10/SSIM/&text=The Structural SIMilarity Index"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2022/11/10/SSIM/&is_video=false&description=The Structural SIMilarity Index"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=The Structural SIMilarity Index&body=Check out this article: https://auzdora.github.io/2022/11/10/SSIM/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2022/11/10/SSIM/&name=The Structural SIMilarity Index&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2022/11/10/SSIM/&t=The Structural SIMilarity Index"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Over-all-Purpose"><span class="toc-number">1.</span> <span class="toc-text">1. Over all Purpose</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-System-Diagram"><span class="toc-number">2.</span> <span class="toc-text">2. System Diagram</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Details"><span class="toc-number">3.</span> <span class="toc-text">3. Details</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Three-Important-conditions"><span class="toc-number">3.1.</span> <span class="toc-text">Three Important conditions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Luminance-Measurement"><span class="toc-number">3.2.</span> <span class="toc-text">Luminance Measurement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Luminace-Comparison"><span class="toc-number">3.3.</span> <span class="toc-text">Luminace Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Contrast-Measurement"><span class="toc-number">3.4.</span> <span class="toc-text">Contrast Measurement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Contrast-Comparison"><span class="toc-number">3.5.</span> <span class="toc-text">Contrast Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Structure-Comparison"><span class="toc-number">3.6.</span> <span class="toc-text">Structure Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSIM"><span class="toc-number">3.7.</span> <span class="toc-text">SSIM</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        The Structural SIMilarity Index
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Auzdora</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-11-10T01:20:10.000Z" class="dt-published" itemprop="datePublished">2022-11-10</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Paper-Reading-Note/" rel="tag">Paper Reading Note</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="1-Over-all-Purpose"><a href="#1-Over-all-Purpose" class="headerlink" title="1. Over all Purpose"></a>1. Over all Purpose</h2><p>The luminance information computation method is:</p>
+<script type="math/tex; mode=display">
+Lumination = illumination\times reflectance \tag 1</script><p>However, based on our prior knowledge</p>
+<blockquote>
+<p><strong>The structures of the objects in the scene are independent of the illumination.</strong></p>
+</blockquote>
+<p>Then we can define the structural information in an image as those attributes that represent the structure of objects in the scene. (Since luminance and contrast can vary across a scene, we can use the local luminance and contrast.)</p>
+<h2 id="2-System-Diagram"><a href="#2-System-Diagram" class="headerlink" title="2. System Diagram"></a>2. System Diagram</h2><p><img src="SSIMDiagram.png" alt="SSIM"></p>
+<center>
+  Fig. 1 Diagram of the structural similarity (SSIM) measurement system.
+</center>
+
+<p>The system separates the task of similarity measurement into three comparisons: <strong>luminance</strong>, <strong>contrast</strong> and <strong>structure</strong>.</p>
+<h2 id="3-Details"><a href="#3-Details" class="headerlink" title="3. Details"></a>3. Details</h2><h3 id="Three-Important-conditions"><a href="#Three-Important-conditions" class="headerlink" title="Three Important conditions"></a>Three Important conditions</h3><ol>
+<li>Symmetry: $S(x,y)=S(y,x)$;</li>
+<li>Boundedness: $S(x, y)\leq1$;</li>
+<li>Unique maximum: $S(x, y)=1$ if and only if $x=y$;</li>
+</ol>
+<h3 id="Luminance-Measurement"><a href="#Luminance-Measurement" class="headerlink" title="Luminance Measurement"></a>Luminance Measurement</h3><script type="math/tex; mode=display">
+\mu_x = \frac{1}{N}\sum_{i=1}^Nx_i \tag 2</script><h3 id="Luminace-Comparison"><a href="#Luminace-Comparison" class="headerlink" title="Luminace Comparison"></a>Luminace Comparison</h3><script type="math/tex; mode=display">
+l(x, y)=\frac{2\mu_x\mu_y+C_1}{\mu_x^2+\mu_y^2+C_1} \tag 3</script><p>where the constance $C_1$ is included to avoid instability when $\mu_x^2+\mu_y^2$ is very close to zero.</p>
+<script type="math/tex; mode=display">
+C_1 = (K_1L)^2 \tag 4</script><p>where $L$ is the dynamic range of the pixel values, and $K_1&lt;&lt;1$ is a small constant.</p>
+<h3 id="Contrast-Measurement"><a href="#Contrast-Measurement" class="headerlink" title="Contrast Measurement"></a>Contrast Measurement</h3><p>Remove the intensity from the signal. So in discrete form, the resulting signal $x-\mu_x$ corresponds to the projection of vector $x$ onto the hyperplane defined by</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^Nx_i = 0 \tag 5</script><p>Use the standard deviation as an estimate of the contrast (unbiased estimate)</p>
+<script type="math/tex; mode=display">
+\sigma_x = (\frac{1}{N-1}\sum_{i=1}^N(x_i - \mu_x)^2)^{1/2} \tag 6</script><h3 id="Contrast-Comparison"><a href="#Contrast-Comparison" class="headerlink" title="Contrast Comparison"></a>Contrast Comparison</h3><script type="math/tex; mode=display">
+c(x,y)=\frac{2\sigma_x\sigma_y+C_2}{\sigma_x^2+\sigma_y^2+C_2} \tag 7</script><script type="math/tex; mode=display">
+C_2 = (K_2L)^2 \tag 8</script><h3 id="Structure-Comparison"><a href="#Structure-Comparison" class="headerlink" title="Structure Comparison"></a>Structure Comparison</h3><script type="math/tex; mode=display">
+s(x,y) = \frac{\sigma_{xy}+C_3}{\sigma_x\sigma_y+C_3} \tag 9</script><script type="math/tex; mode=display">
+\sigma_{xy} = \frac{1}{N - 1}\sum_{i=1}^N(x_i - \mu_x)(y_i-\mu_y) \tag {10}</script><h3 id="SSIM"><a href="#SSIM" class="headerlink" title="SSIM"></a>SSIM</h3><script type="math/tex; mode=display">
+SSIM(x,y) = [l(x,y)]^{\alpha}\cdot[c(x,y)]^{\beta}\cdot[s(x,y)]^{\gamma}</script><p>Where $\alpha &gt; 0, \beta &gt; 0$, and $\gamma &gt; 0$ are parameters used to adjust the relative importance of the three components.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Over-all-Purpose"><span class="toc-number">1.</span> <span class="toc-text">1. Over all Purpose</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-System-Diagram"><span class="toc-number">2.</span> <span class="toc-text">2. System Diagram</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Details"><span class="toc-number">3.</span> <span class="toc-text">3. Details</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Three-Important-conditions"><span class="toc-number">3.1.</span> <span class="toc-text">Three Important conditions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Luminance-Measurement"><span class="toc-number">3.2.</span> <span class="toc-text">Luminance Measurement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Luminace-Comparison"><span class="toc-number">3.3.</span> <span class="toc-text">Luminace Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Contrast-Measurement"><span class="toc-number">3.4.</span> <span class="toc-text">Contrast Measurement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Contrast-Comparison"><span class="toc-number">3.5.</span> <span class="toc-text">Contrast Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Structure-Comparison"><span class="toc-number">3.6.</span> <span class="toc-text">Structure Comparison</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSIM"><span class="toc-number">3.7.</span> <span class="toc-text">SSIM</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2022/11/10/SSIM/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2022/11/10/SSIM/&text=The Structural SIMilarity Index"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2022/11/10/SSIM/&is_video=false&description=The Structural SIMilarity Index"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=The Structural SIMilarity Index&body=Check out this article: https://auzdora.github.io/2022/11/10/SSIM/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2022/11/10/SSIM/&title=The Structural SIMilarity Index"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2022/11/10/SSIM/&name=The Structural SIMilarity Index&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2022/11/10/SSIM/&t=The Structural SIMilarity Index"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2022-2023
+    Auzdora
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

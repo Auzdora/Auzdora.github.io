@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="实现LRU-K的时候，先去完成了LeetCode的146题LRU，实现的时候运用了哈希链表结构，题目中要求get和put操作都是O(1)的时间复杂度。一种实现方式就是用STL的list和unordered map，list本质是双向链表，但实现出来最后的结果总是不尽人意。因此将list结构换成自己实现的双向链表，运行起来的速度和内存都优于list的实现。因此在15-445的LRU的实现中，我也采">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU 15-445 LRU-K Replacement Policy">
+<meta property="og:url" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/index.html">
+<meta property="og:site_name" content="Auzdora&#39;s Blog">
+<meta property="og:description" content="实现LRU-K的时候，先去完成了LeetCode的146题LRU，实现的时候运用了哈希链表结构，题目中要求get和put操作都是O(1)的时间复杂度。一种实现方式就是用STL的list和unordered map，list本质是双向链表，但实现出来最后的结果总是不尽人意。因此将list结构换成自己实现的双向链表，运行起来的速度和内存都优于list的实现。因此在15-445的LRU的实现中，我也采">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk1.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk2.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk3.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk4.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk5.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk6.png">
+<meta property="og:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk7.png">
+<meta property="article:published_time" content="2023-03-26T12:11:11.000Z">
+<meta property="article:modified_time" content="2023-05-27T10:35:38.897Z">
+<meta property="article:author" content="Auzdora">
+<meta property="article:tag" content="Database Management System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/lruk1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/hummingbird.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/hummingbird.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/hummingbird.png">
+        
+      
+    
+    <!-- title -->
+    <title>CMU 15-445 LRU-K Replacement Policy</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2023/04/01/Buffer_Pool_Manager/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&text=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&is_video=false&description=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 LRU-K Replacement Policy&body=Check out this article: https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&name=CMU 15-445 LRU-K Replacement Policy&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&t=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Replacement-Policy"><span class="toc-number">1.</span> <span class="toc-text">Replacement Policy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LRU-and-LRU-K"><span class="toc-number">2.</span> <span class="toc-text">LRU and LRU-K</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LRU-K-Implementation"><span class="toc-number">3.</span> <span class="toc-text">LRU-K Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">3.1.</span> <span class="toc-text">踩坑记录</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        CMU 15-445 LRU-K Replacement Policy
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Auzdora</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-03-26T12:11:11.000Z" class="dt-published" itemprop="datePublished">2023-03-26</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Database-Management-System/" rel="tag">Database Management System</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p>实现LRU-K的时候，先去完成了LeetCode的146题LRU，实现的时候运用了哈希链表结构，题目中要求get和put操作都是O(1)的时间复杂度。一种实现方式就是用STL的list和unordered map，list本质是双向链表，但实现出来最后的结果总是不尽人意。因此将list结构换成自己实现的双向链表，运行起来的速度和内存都优于list的实现。因此在15-445的LRU的实现中，我也采用了自己实现的一个内嵌结构体作为双向链表的基础。总体而言，参考了网上对于LRU-K的讲解之后，对LRU-K的算法操作还是比较清晰的，不像Extendible Hash Table那样一知半解。所以实现起来也很清晰。但由于用的是自己写的双向链表，debug花时间最久的就是内存泄漏问题，因为之前写过的一些项目都没有考虑，因此花了很长时间去定位错误。总体来说是一个教训。</p>
+</blockquote>
+<h2 id="Replacement-Policy"><a href="#Replacement-Policy" class="headerlink" title="Replacement Policy"></a>Replacement Policy</h2><p>缓存驱逐算法的应用场景是，由于内存和硬盘之间读写速度的巨大差异，并且有程序局部性原理的存在，我们想通过<strong>保存从硬盘中读取出的东西在内存中</strong>，这样一种方法来尽可能减少两者之间速度的差异，提高CPU的利用率和处理速度，减少不必要的等待时间。从硬盘中读取出的数据一定是换存在内存中的，而由于内存的大小局限性，我们不可能无限的存储硬盘的page，甚至只能分配内存的一小部分作为缓存空间来使用。</p>
+<p>这样的缓存空间一定是有大小的，有大小就会涉及到缓存存满的问题。如果想要再存放新读入的数据到缓存空间中，必须选择一个内存块将其驱逐出去。把空间给腾出来。选择哪一块驱逐，就是替换算法（replacement policy）所做的事情。一般常见的替换策略有FIFO，LRU以及LFU等等。</p>
+<p>下图展现了硬盘数据和内存之间提取（Fetch）和驱逐（Evict）的关系。</p>
+<p><img src="lruk1.png" alt=""></p>
+<p>上面图片中，Buffer Pool就是缓存数据的池子，最大容量为3个page。Disk上面的Data数不胜数，当需要数据时系统会从Buffer Pool检索，如果检索到了，则直接从内存中提出数据，并且通知<strong>LRU-K Replacement Policy</strong>组件调用了这个page。如果没检索到，就从硬盘中读取一块。如果此时Buffer Pool满了，那就询问<strong>LRU-K Replacement Policy</strong>组件，索要一个可以驱逐的frame id号，系统再根据这个frame id从内存中把对应的page重新写回硬盘（<strong>NOTE：LRU-K不做任何实际的数据操作，仅仅是记录frame的状态，并根据一定的策略将可以驱逐的frame id号提供给系统</strong>）。</p>
+<h2 id="LRU-and-LRU-K"><a href="#LRU-and-LRU-K" class="headerlink" title="LRU and LRU-K"></a>LRU and LRU-K</h2><p>建议还是去做一下力扣146题，通过这道题可以了解LRU的算法流程。LRU其实很简单，用语言表述一句话就是：选择最长时间不访问的page驱逐。话是这么说，实现上还是需要一些技巧的。题目中需要实现两个方法，一个是get一个是put。put是给定一个key，value，将其存入链表中。get操作是给定key，返回一个key对应的value，并删除对应的key/value pair。题目要求两个操作的时间复杂度为O(1)。</p>
+<p>链表的插入和删除操作的复杂度为O(1)，但是查找的时间复杂度为O(N)。这就没办法满足get操作的要求。我第一次实现的时候直接用了C++的list容器，结果最后超时了。如果查找满足时间复杂度为O(1)，就需要用哈希数据结构。但哈希表是无序结构，LRU需要有序结构。结合两者的优点，就是哈希链表。查找时索引哈希表，得到对应链表的地址，插入和删除时直接用双向链表的删除即可。</p>
+<p>用例子来理解一下LRU的算法。假设LRU最大存储量为3，接下来对算法进行put(1, 1), put(2, 2), put(3, 3), get(2, 2), put(1, 2)的操作。看下图的操作顺序（<strong>我实现的方式是，链表头是要驱逐的元素，链表尾部是最新使用过的元素</strong>）。</p>
+<p><img src="lruk2.png" alt=""></p>
+<p>当然这只是双向链表的视角，别忘了，为了实现O(1)的get操作，我们还有一个哈希结构。下面是一个哈希链表结构的示意图。</p>
+<p><img src="lruk3.png" alt=""></p>
+<p>新增的头节点L和尾节点R可以用来直接对头部和尾部进行操作，头部要移除，尾部要插入，就不必去寻找头尾节点了。这两个头尾节点在之后的LRU-K算法实现中会扩展成头部、中间和尾部节点，关于这部分之后在叙述我的想法。</p>
+<p>Leetcode的代码实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unordered_map&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LRUCache</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="type">int</span> key_;</span><br><span class="line">        <span class="type">int</span> val_;</span><br><span class="line">        Node* left = <span class="literal">nullptr</span>;</span><br><span class="line">        Node* right = <span class="literal">nullptr</span>;</span><br><span class="line">        <span class="built_in">Node</span>(<span class="type">int</span> k, <span class="type">int</span> v) : <span class="built_in">key_</span>(k), <span class="built_in">val_</span>(v), <span class="built_in">left</span>(<span class="literal">nullptr</span>), <span class="built_in">right</span>(<span class="literal">nullptr</span>) &#123;&#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="type">int</span> size;</span><br><span class="line">    <span class="type">int</span> capacity_;</span><br><span class="line">    std::unordered_map&lt;<span class="type">int</span>, Node*&gt; cache_map_;</span><br><span class="line">    Node *R;</span><br><span class="line">    Node *L;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">LRUCache</span>(<span class="type">int</span> capacity) : <span class="built_in">capacity_</span>(capacity) &#123;</span><br><span class="line">        R = <span class="keyword">new</span> <span class="built_in">Node</span>(<span class="number">-1</span>, <span class="number">-1</span>);</span><br><span class="line">        L = <span class="keyword">new</span> <span class="built_in">Node</span>(<span class="number">-1</span>, <span class="number">-1</span>);</span><br><span class="line">        R-&gt;right = L;</span><br><span class="line">        R-&gt;left = L;</span><br><span class="line">        L-&gt;right = R;</span><br><span class="line">        L-&gt;left = R;</span><br><span class="line">        size = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertNode</span><span class="params">(Node *node)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// insert to back of list</span></span><br><span class="line">        node-&gt;left = R-&gt;left;</span><br><span class="line">        node-&gt;right = R;</span><br><span class="line">        R-&gt;left-&gt;right = node;</span><br><span class="line">        R-&gt;left = node;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">moveNodeToBack</span><span class="params">(Node *node)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">eraseNode</span>(node);</span><br><span class="line">        <span class="built_in">insertNode</span>(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">eraseNode</span><span class="params">(Node *node)</span> </span>&#123;</span><br><span class="line">        node-&gt;left-&gt;right = node-&gt;right;</span><br><span class="line">        node-&gt;right-&gt;left = node-&gt;left;</span><br><span class="line">        size--;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">get</span><span class="params">(<span class="type">int</span> key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> it = cache_map_.<span class="built_in">find</span>(key);</span><br><span class="line">        <span class="keyword">if</span> (it != cache_map_.<span class="built_in">end</span>()) &#123;</span><br><span class="line">            <span class="built_in">moveNodeToBack</span>(it-&gt;second);</span><br><span class="line">            <span class="keyword">return</span> it-&gt;second-&gt;val_;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">put</span><span class="params">(<span class="type">int</span> key, <span class="type">int</span> value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> it = cache_map_.<span class="built_in">find</span>(key);</span><br><span class="line">        <span class="keyword">if</span> (it != cache_map_.<span class="built_in">end</span>()) &#123;</span><br><span class="line">            it-&gt;second-&gt;val_ = value;</span><br><span class="line">            <span class="built_in">moveNodeToBack</span>(it-&gt;second);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (size == capacity_) &#123;</span><br><span class="line">            cache_map_.<span class="built_in">erase</span>(L-&gt;right-&gt;key_);</span><br><span class="line">            <span class="built_in">eraseNode</span>(L-&gt;right);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">auto</span> node = <span class="keyword">new</span> <span class="built_in">Node</span>(key, value);</span><br><span class="line">        <span class="built_in">insertNode</span>(node);</span><br><span class="line">        cache_map_[key] = node;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>LRU-K算法是LRU算法的改进版。LRU算法存在的问题是，当存在大量的一次性操作时，会把历史的缓存冲刷掉，而新进入buffer pool的page有可能之后不会再访问了，被冲刷掉的page是之前保留下来的比较“有用”的page，这就是<strong>缓存污染</strong>问题。</p>
+<p>LRU-K的思路是，永远最先驱逐访问次数小于K次的page。网上的很多讲解是直接维护两个链表，一个叫做history list，另一个叫buffer list。新加入的page总会先进入history list，当访问次数等于指定的次数K次时，就会从history list删除，并移动到buffer list的尾部（<strong>这里还是假设尾部的page是最新使用的，头部page是最近最久未使用的</strong>）。</p>
+<p>通过例子来理解一下这个LRU-K算法，首先插入key=1，2，3，它们的value分别是1，1，1。原因是这里的value我用它来记录K的次数，也就是访问的次数。现在假设整个history list和buffer list最多存储三个page，就是buffer pool的大小，且K=2。首先我们访问key=1的page，那么对应的node的value就会变为2，一旦等于了K的值，说明这个page是可能被经常访问的，就把它移入buffer list。</p>
+<p><img src="lruk4.png" alt=""></p>
+<p>接着我们再访问key=2的page。</p>
+<p><img src="lruk5.png" alt=""></p>
+<p>Buffer list服从LRU算法，History List可以服从任意替换算法，在实验手册中，要求驱逐最早进入history list的page，采用的是FIFO策略（<strong>刚开始我实现的history list是LRU策略，结果会导致Evict Test无法通过，一定要注意history和buffer的策略不一样</strong>）。</p>
+<p>接着我们尝试插入key=4的page，结果发现buffer pool满了（总共的空间为3，history占1，buffer占2），那么就需要对某一个page进行缓存驱逐，根据原则：<strong>永远最先驱逐访问次数小于K的page</strong>。所以先驱逐掉3，再加4到history list中。</p>
+<p><img src="lruk6.png" alt=""></p>
+<p>History list采用FIFO，由于History list只剩下3了，那么只能驱逐3。如果继续访问4，那么4会被移入Buffer list中，此时buffer pool也已经满了。如果想再插入一个新的page，需要缓存驱逐，这时就要从buffer list里面根据LRU算法进行驱逐了，具体的例子可以自行画一下。</p>
+<p>以上就是LRU和LRU-K算法的解释。</p>
+<h2 id="LRU-K-Implementation"><a href="#LRU-K-Implementation" class="headerlink" title="LRU-K Implementation"></a>LRU-K Implementation</h2><p>实现15-445 LRU-K任务的时候，我采用的还是使用自己定义的结构体Node和STL的unordered_map结构，实现哈希链表。链表不使用STL的list的一个原因是Leetcode跑下来的结果优于使用STL的list，性能方面会更好；另一个原因就是结构体定义数据和操作的自由度高，可以根据自己的想法来实现。缺点就是，<strong>要注意内存泄漏问题（由于之前经验很少，此处debug时间花的很多）</strong>。</p>
+<p>实现思路总体继承Leetcode的解法，定义一个有key，value，左右指针的节点，同时为了区分每一个节点是否evictable，加如了一个bool变量。其中，key存储对应的frame_id，value代表被访问的次数，evictable表示这个节点是否可以被驱逐。</p>
+<p>设计双链表的时候，除去左节点L和右节点R，我还加入了一个中间节点M，作为history list和buffer list的分割节点。两种list连接在一条双向链表上，再用unordered map索引。</p>
+<p>具体的效果如下图：</p>
+<p><img src="lruk7.png" alt=""></p>
+<p>然后对history list和buffer list分别维护一个计数器，计算当前包含的节点数量，可用来判断是否需要驱逐缓存（注意需要迭代判断，并不能直接取L节点或M节点的下一个，因为下一个节点很有可能是non-evictable的）。</p>
+<p>线程安全方面是直接一把大锁锁住所有操作。并没有细致的对每一个结构进行优化。</p>
+<h3 id="踩坑记录"><a href="#踩坑记录" class="headerlink" title="踩坑记录"></a>踩坑记录</h3><ul>
+<li><p>最主要的问题就是内存泄漏问题，真的是种种内存泄漏。最大的原因就是，程序结束之后，有一些内存中的节点，没有被人为的Remove或者Evict，导致结束程序后将这些节点遗留下来，造成的内存泄漏。解决方案就是在Replacer的析构函数里实现一个强制去除当前链表所有节点的程序（包括non-evictable，因为之前实现的是直接循环Evict，再删除L，M和R，但总还是有内存泄漏问题，原因在于Evict仅仅驱逐evictable数据，析构函数调用它会删不干净）。还有的内存泄漏问题就是use after free问题。这个问题值得是在释放内存空间后还尝试使用这个内存空间。经典出现的地方在于，删除节点的时候要伴随哈希表对应数据的删除。需要注意的是哈希表的<code>erase</code>方法：如果用key删除，且value存储的是指针，那么仅仅会删掉哈希表中的数据，指针所指向的内存是不会被删除的；如果用迭代器删除，我们首先应当删除迭代器的second所指向的内存空间，然后再删除迭代器的first对应的key。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hash_map_&lt;int, Node*&gt;</span></span><br><span class="line"><span class="keyword">auto</span> it = hash_map_.<span class="built_in">find</span>(frame_id)；</span><br><span class="line">hash_map_.<span class="built_in">erase</span>(it-&gt;first);</span><br><span class="line"><span class="built_in">EraseNode</span>(it-&gt;second); <span class="comment">// 报错use after free，因为已经删除了对应的数据，迭代器不可用，it无法索引到</span></span><br><span class="line"></span><br><span class="line">Node *p = L-&gt;right; <span class="comment">// 取出头节点</span></span><br><span class="line">hash_map_.<span class="built_in">erase</span>(p-&gt;key)；</span><br><span class="line"><span class="built_in">EraseNode</span>(p)； <span class="comment">// 成功，因为hash map只删除了表中存储的数据，原Node内存还存在</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>History list用的是FIFO，Buffer list采用LRU。我开始都用的LRU，导致EvictTest报错。</p>
+</li>
+<li>注意要实现自己的双向链表的删除，插入和移动的相关函数。</li>
+</ul>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Replacement-Policy"><span class="toc-number">1.</span> <span class="toc-text">Replacement Policy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LRU-and-LRU-K"><span class="toc-number">2.</span> <span class="toc-text">LRU and LRU-K</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LRU-K-Implementation"><span class="toc-number">3.</span> <span class="toc-text">LRU-K Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B8%A9%E5%9D%91%E8%AE%B0%E5%BD%95"><span class="toc-number">3.1.</span> <span class="toc-text">踩坑记录</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&text=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&is_video=false&description=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=CMU 15-445 LRU-K Replacement Policy&body=Check out this article: https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&title=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&name=CMU 15-445 LRU-K Replacement Policy&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/&t=CMU 15-445 LRU-K Replacement Policy"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2022-2023
+    Auzdora
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

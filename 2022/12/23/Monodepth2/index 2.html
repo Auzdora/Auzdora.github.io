@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/monodepth2model.png">
 <meta property="og:image" content="https://auzdora.github.io/2022/12/23/Monodepth2/Monodepth2Loss.png">
 <meta property="article:published_time" content="2022-12-23T13:20:14.000Z">
-<meta property="article:modified_time" content="2023-05-27T14:34:49.710Z">
+<meta property="article:modified_time" content="2023-05-27T14:34:03.818Z">
 <meta property="article:author" content="Auzdora">
 <meta property="article:tag" content="Paper Reading Note">
 <meta name="twitter:card" content="summary">
@@ -104,8 +104,6 @@
         
         <li><a class="icon" aria-label="Previous post" href="/2023/03/22/Extendible_Hash_Table/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
-        
-        <li><a class="icon" aria-label="Next post" href="/2022/11/10/SSIM/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -283,7 +281,7 @@ KP^{'}_w \tag 5</script><p>$P^{‘}_w$称为归一化坐标。归一化坐标可
 <script type="math/tex; mode=display">
 P_w = ZK^{-1}P_{uv} \tag 6</script><p>我们现在有了世界坐标了，接下来让我们移动相机，假设我们简单的把相机平移到原相机位置的右侧，这时候就可以用先验知识求得相机位姿的矩阵$T_{t \rightarrow {t^{‘} } }$。当然，更细节的得到位姿矩阵的方法在<code>transformation_from_parameters</code>函数中实现，需要结合<strong>轴角</strong>和<strong>平移向量</strong>构建。接下来是理解模型是如何监督的重点。我们通过左侧相机的像素坐标得到了每一个像素位置的世界坐标。现在我们需要知道，左侧图像中的每一个像素点所对应在空间中的实际的点，映射到了右侧相机的图片的哪个像素位置。可以继续通过公式(5)变换到像素坐标系下，但这里的右侧相机所在的坐标系已经与标准的世界坐标系有所偏移，所以我们需要做一些小小的修改</p>
 <script type="math/tex; mode=display">
-P_{u^{'}v^{'} }=\frac{1}{Z}K(RP_w+\vec t)=\frac{1}{Z}KT_{t \rightarrow {t^{'} } }P_w \tag 7</script><p>具体在<code>Project3D</code>中实现。这里得到的新的$P_{u^{‘} v^{‘}}$，就是左侧图像像素$P_{uv}$所表示的空间点，在右侧图像像素的位置，即右侧图像的$(u’,v’)$处。之后通过sampler采样，得到根据右侧图像重建后的图像$I_{ {t^{ ‘ } } \rightarrow t}$。</p>
+P_{u^{'}v^{'} }=\frac{1}{Z}K(RP_w+\vec t)=\frac{1}{Z}KT_{t \rightarrow {t^{'} } }P_w \tag 7</script><p>具体在<code>Project3D</code>中实现。这里得到的新的$P_{u^{‘} v^{‘}}$，就是左侧图像像素$P_{uv}$所表示的空间点，在右侧图像像素的位置，即右侧图像的$(u’,v’)$处。之后通过sampler采样，得到根据右侧图像重建后的图像 $I_{ {t^{ ‘ } } \rightarrow t}$。</p>
 <p>结合图1更好理解</p>
 <p><img src="project3d.jpeg" alt=""></p>
 <center>
