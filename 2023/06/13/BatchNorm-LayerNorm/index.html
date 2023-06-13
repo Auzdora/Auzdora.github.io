@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BatchNorm vs LayerNorm">
+<meta property="og:url" content="https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/index.html">
+<meta property="og:site_name" content="Auzdora&#39;s Blog">
+<meta property="og:description" content="最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-06-13T09:06:57.000Z">
+<meta property="article:modified_time" content="2023-06-13T11:58:50.643Z">
+<meta property="article:author" content="Auzdora">
+<meta property="article:tag" content="Deep Learning Optimization">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/hummingbird.png">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/hummingbird.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/hummingbird.png">
+        
+      
+    
+    <!-- title -->
+    <title>BatchNorm vs LayerNorm</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023/06/11/Life-001/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&text=BatchNorm vs LayerNorm"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&is_video=false&description=BatchNorm vs LayerNorm"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=BatchNorm vs LayerNorm&body=Check out this article: https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&name=BatchNorm vs LayerNorm&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&t=BatchNorm vs LayerNorm"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Batch-Normalization"><span class="toc-number">1.</span> <span class="toc-text">Batch Normalization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Introduction"><span class="toc-number">1.1.</span> <span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Why-Batch-Normalization"><span class="toc-number">1.2.</span> <span class="toc-text">Why Batch Normalization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mathematical-Description"><span class="toc-number">1.3.</span> <span class="toc-text">Mathematical Description</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">2.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        BatchNorm vs LayerNorm
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">Auzdora</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-06-13T09:06:57.000Z" class="dt-published" itemprop="datePublished">2023-06-13</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Deep-Learning-Optimization/" rel="tag">Deep Learning Optimization</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p>最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的模块。</p>
+</blockquote>
+<h2 id="Batch-Normalization"><a href="#Batch-Normalization" class="headerlink" title="Batch Normalization"></a>Batch Normalization</h2><h3 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h3><p>训练一个神经网络其实是比较困难的，因为神经网络的学习过程是<strong>反向传播（Back-propagation）</strong>：通过<strong>梯度下降（Gradient Descent）</strong>的方式一步步反向更新每一个神经元的权重。而且神经网络一般由多个层构成。这样就造成了一个问题，假设我们有A，B两层神经网络。A的输入是x，输出是y，B的输入是y，输出是z。计算与标签的损失，求梯度进行反向传播之后，A变成了A‘，B变成了B’。再向A输入x，得到的就再也不是y了，而可能是k。这时对于B而言，它之前所学到的关于y的信息就不适用了，必须重新进行adaptation。这样的现象叫做<strong>Internal covariate shift</strong>。这也是提出Batch Normalization的作者的动机。</p>
+<p>但Santurkar等人的工作How Does Batch Normalization Help Optimization中指出，使得Batch Normalization成功的原因并非因为Internal covariate shift，甚至在某种情形下BatchNorm没有减少internal covariate shift。这篇blog不讨论谁的观点绝对正确，仅仅对BatchNorm的思想做总结。</p>
+<h3 id="Why-Batch-Normalization"><a href="#Why-Batch-Normalization" class="headerlink" title="Why Batch Normalization"></a>Why Batch Normalization</h3><p><strong>一定程度消除Internal covariate shift</strong>：在introduction部分讲述了什么是internal covariate shift（ICS）。ICS导致每一层在更新参数后重新适应新的输入的变化，降低了学习的效率。采用BatchNorm，将输入归一化为均值为0和方差为1的数据，不仅仅可以一定程度解决梯度消失问题（不归一化数值会进入saturated zone，就是非线性激活函数的两端），还能使不同层之间近乎于独立学习，降低了层与层之间的耦合性。</p>
+<p><strong>BatchNorm的平滑效应</strong>：BatchNorm将优化问题的landscape从“很瘦长的椭圆”转换为更平滑和对称的正圆（提升了损失函数的Lipschitzness和其梯度的Lipschitzness，关于Lipschitzness还在补充）。确保了问题的平滑性，就减少了初始值和学习率对神经网络的影响。我们可以采用更大的学习率加速网络学习，不必太过担心网络进入局部极小值。</p>
+<h3 id="Mathematical-Description"><a href="#Mathematical-Description" class="headerlink" title="Mathematical Description"></a>Mathematical Description</h3><p>假设对一个layer的输入是$\vec x = (x^{ (1) } … x^{ (d) })$，那么对这个输入的归一化如下：</p>
+<script type="math/tex; mode=display">
+\hat{x}_i ^{ (k) } = \frac{x_i^{ (k) } - E[x^{ (k) } ]} {\sqrt{Var[x ^{ (k) } ]}}</script><p>其中</p>
+<script type="math/tex; mode=display">
+E[x^{ (k) } ] = \frac{1} {m} \sum_{i=1} ^{m} x_i ^{ (k) }</script><script type="math/tex; mode=display">
+Var[x^{ (k) } ] = \frac{1} {m} \sum_{i=1} ^{m} ( x_i ^{ (k) } - E[x^{ (k) } ] )</script><p>$m$表示mini-batch的batch size，$k$表示输入的第几个特征。</p>
+<p>但如果就这样硬生生将每一层的activation后的输出归一化的话，会让模型丧失原有的表达能力。以下是ChatGPT的回答：</p>
+<blockquote>
+<p>The linear transformation process in Batch Normalization, which involves the learnable parameters (scale factor $\gamma$ and shift $\beta$), is crucial for the following reasons:</p>
+<ol>
+<li><p><strong>Restoring the Representational Power of the Network</strong>: After applying Batch Normalization, the activations of the layer are normalized to have zero mean and unit variance. While this normalization process helps to stabilize learning and reduce internal covariate shift, it can also limit what the layer can represent. For instance, in some cases, the network might learn that the best representation of the data for the subsequent layers is not zero-mean/unit-variance. The scale and shift transformation allows the network to learn the most suitable scale and location of the activations, thereby restoring the representational power of the network.</p>
+</li>
+<li><p><strong>Preserving the Expressive Power of Activation Functions</strong>: Certain activation functions like ReLU and its variants have different behaviors in different regions of the input space. For instance, the ReLU function is sensitive to positive inputs and insensitive to negative inputs. If Batch Normalization is used without the scale and shift, the activations would be mostly confined to the region where ReLU is active, thereby limiting the expressive power of the activation function. The scale and shift transformation allows the network to learn to use the full expressive power of the activation function.</p>
+</li>
+<li><p><strong>Flexibility</strong>: The learnable parameters $\gamma$ and $\beta$ provide the network with the flexibility to learn the optimal scale and mean of the activations. If the optimal scale and mean are indeed 1 and 0 respectively, the network can learn γ close to 1 and β close to 0. But if they are not, the network has the flexibility to learn other values.</p>
+</li>
+</ol>
+<p>In summary, the linear transformation process in Batch Normalization, governed by the learnable parameters $\gamma$ and $\beta$, is crucial for preserving the expressive power of the network and providing it with the flexibility to learn the most suitable representations.</p>
+</blockquote>
+<p>因此在归一化之后，需要加入两个可学习的参数，给予模型自由学习的能力。让其在学习的过程中自己寻找最适合的分布状态。其数学描述为：</p>
+<script type="math/tex; mode=display">
+y_i = \gamma^{ (k) } \hat{x}_i ^{ (k) } + \beta ^ { (k) }</script><p>在训练阶段，BatchNorm按照上述的数学描述进行学习。</p>
+<p>但在验证和测试阶段，BatchNorm则有所不同。因为在训练阶段，我们是以mini-batch的形式将数据喂入模型的。训练过程中，会实时计算mini-batch的均值和方差。而如果在测试阶段也这样做，尤其是每次输入一个测试数据的时候，mini-batch的size是1，最后会得0。这显然是不合理的。因此在工程上，采用running mean和running variance的方法，会在训练阶段实时更新。</p>
+<p>更新过程为：</p>
+<script type="math/tex; mode=display">
+E[x^{ (k) } ]' = momentum \times E[x^{ (k) } ]' + (1 - momentum) \times E[x^{ (k) } ]</script><script type="math/tex; mode=display">
+Var[x^{ (k) } ]' = momentum \times Var[x^{ (k) } ]' + (1 - momentum) \times Var[x^{ (k) } ]</script><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li>Batch Normalizaiton: Accelerating Deep Network Training by Reducing Internal Covariate Shift</li>
+<li>How Does Batch Normalization Help Optimization</li>
+</ul>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a href="/search/">Search</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Batch-Normalization"><span class="toc-number">1.</span> <span class="toc-text">Batch Normalization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Introduction"><span class="toc-number">1.1.</span> <span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Why-Batch-Normalization"><span class="toc-number">1.2.</span> <span class="toc-text">Why Batch Normalization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mathematical-Description"><span class="toc-number">1.3.</span> <span class="toc-text">Mathematical Description</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">2.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&text=BatchNorm vs LayerNorm"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&is_video=false&description=BatchNorm vs LayerNorm"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=BatchNorm vs LayerNorm&body=Check out this article: https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&title=BatchNorm vs LayerNorm"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&name=BatchNorm vs LayerNorm&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/&t=BatchNorm vs LayerNorm"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2022-2023
+    Auzdora
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/search/">Search</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/Auzdora">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'Auzdora/Auzdora.github.io';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+</body>
+</html>
