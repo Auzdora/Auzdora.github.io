@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>Query Processing</title>
+      <link href="/2023/07/01/QueryProcessing/"/>
+      <url>/2023/07/01/QueryProcessing/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>Query Processing指的是从数据库抽取数据的一系列活动。是用户和物理存储底层交互的中间层，其中包含三个阶段：</p><ul><li><strong>解析和翻译（Parsing &amp; translation）</strong>：解析用户的意图（通过构造Abstract Syntax Tree），并与DBMS内部的数据结构相对应（通过binder）然后进行翻译</li><li><strong>优化（Optimization）</strong>：对Query流程进行优化，找到开销最小的执行</li><li><strong>评估（Evaluation）</strong>：对一个Query会有不同的优化结果，定量评估其开销</li></ul></blockquote><p>我们可以先对这三个阶段在high-level的角度理解，之后在深入到具体的算法细节。</p><h2 id="High-level-Overview"><a href="#High-level-Overview" class="headerlink" title="High-level Overview"></a>High-level Overview</h2><p>一个Query在执行之前，需要先转化为系统理解的方式。SQL语句是声明式语言，意思就是仅仅告诉DBMS我需要什么数据。而DBMS把如何获取数据、那种方式最优等等这一系列问题隐藏起来。SQL是为了方便User使用的一个接口，为了让DBMS理解它，就需要和编译器一样对句法进行解析。</p><p>在这其中。解析器会做一些检查，比如用户的句法是否被DBMS定义、是否正确、是否能在DBMS中找到对应的数据结构等等。构建AST之后，它便会将其翻译成关系代数表达式，方便后续的优化。</p><p>用户的一个Query可以被翻译为不同的关系代数表达式。而每一个表达式中的操作算子又可以采用很多种不同的算法实现。如果想评估一个query，我们不仅仅需要关系代数表达式，还需要标注一些评估算子开销的必要信息。一个标有相关信息的关系代数算子成为evaluation primitive；一些列被标注的算子构成的query关系代数表达式被称为一个query plan。</p><p>优化的目的就是从很多种query plan中找到开销最小的plan，并把plan送给execution engine执行。</p><p>下图是书“Database System Concepts”中的图，可以更好的理解Query Processing在数据库中的流程：</p><p><img src="query1.png" alt=""></p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Database Management System </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>cast_in_cpp</title>
       <link href="/2023/06/23/cast-in-cpp/"/>
       <url>/2023/06/23/cast-in-cpp/</url>
