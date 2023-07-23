@@ -2,6 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/</loc>
+    
+    <lastmod>2023-07-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2022/12/23/Monodepth2/</loc>
+    
+    <lastmod>2023-07-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/06/23/cast-in-cpp/</loc>
+    
+    <lastmod>2023-07-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/</loc>
+    
+    <lastmod>2023-07-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/about2/index.html</loc>
     
     <lastmod>2023-07-23</lastmod>
@@ -47,15 +83,6 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/2023/06/23/cast-in-cpp/</loc>
-    
-    <lastmod>2023-06-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/</loc>
     
     <lastmod>2023-06-14</lastmod>
@@ -83,34 +110,7 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/2022/12/23/Monodepth2/</loc>
-    
-    <lastmod>2023-05-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/</loc>
-    
-    <lastmod>2023-05-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/2023/04/01/Buffer_Pool_Manager/</loc>
-    
-    <lastmod>2023-05-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/</loc>
     
     <lastmod>2023-05-27</lastmod>
     
@@ -146,14 +146,14 @@
 
   
   <url>
-    <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
+    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
     <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
+    <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
     <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
