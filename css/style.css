@@ -435,11 +435,9 @@ body td {
   border-bottom: none;
 }
 @font-face {
-  font-family: Vazir;
-  src: url("Vazir-Black.eot");
-  src: url("Vazir-Black.eot?#iefix") format('embedded-opentype'), url("Vazir-Black.woff2") format('woff2'), url("Vazir-Black.woff") format('woff'), url("Vazir-Black.ttf") format('truetype');
-  font-weight: 900;
-  font-display: swap;
+  font-style: normal;
+  font-family: "Meslo LG";
+  src: local("Meslo LG S"), url("../lib/meslo-LG/MesloLGS-Regular.ttf") format("truetype");
 }
 *,
 *:before,
@@ -574,7 +572,7 @@ body {
   }
 }
 .max-width {
-  max-width: 48rem;
+  max-width: 58rem;
 }
 @media (max-width: 480px) {
   .px3 {
