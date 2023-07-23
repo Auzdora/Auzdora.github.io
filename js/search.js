@@ -1,158 +1,84 @@
-// A local search script with the help of
-// [hexo-generator-search](https://github.com/PaicHyperionDev/hexo-generator-search)
-// Copyright (C) 2015
-// Joseph Pan <http://github.com/wzpan>
-// Shuhao Mao <http://github.com/maoshuhao>
-// This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as
-// published by the Free Software Foundation; either version 2.1 of the
-// License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-// 02110-1301 USA
-//
-// Modified by:
-// Pieter Robberechts <http://github.com/probberechts>
+listenSearchInput('/search.xml', '#search', '#result');
 
-/*exported searchFunc*/
-var searchFunc = function(path, searchId, contentId) {
+function listenSearchInput(url, searchId, resultId) {
+  const searchEl = $(searchId);
+  const resultEl = $(resultId);
 
-  function stripHtml(html) {
-    html = html.replace(/<style([\s\S]*?)<\/style>/gi, "");
-    html = html.replace(/<script([\s\S]*?)<\/script>/gi, "");
-    html = html.replace(/<figure([\s\S]*?)<\/figure>/gi, "");
-    html = html.replace(/<\/div>/ig, "\n");
-    html = html.replace(/<\/li>/ig, "\n");
-    html = html.replace(/<li>/ig, "  *  ");
-    html = html.replace(/<\/ul>/ig, "\n");
-    html = html.replace(/<\/p>/ig, "\n");
-    html = html.replace(/<br\s*[\/]?>/gi, "\n");
-    html = html.replace(/<[^>]+>/ig, "");
-    return html;
-  }
+  $('#searchModal').on('shown.bs.modal', function () {
+    searchEl.focus();
+  })
 
-  function getAllCombinations(keywords) {
-    var i, j, result = [];
-
-    for (i = 0; i < keywords.length; i++) {
-        for (j = i + 1; j < keywords.length + 1; j++) {
-            result.push(keywords.slice(i, j).join(" "));
-        }
-    }
-    return result;
-  }
+  $('#searchModal').on('hidden.bs.modal', function () {
+    searchEl.val('');
+    resultEl.html('');
+  })
 
   $.ajax({
-    url: path,
+    url,
     dataType: "xml",
-    success: function(xmlResponse) {
-      // get the contents from search data
-      var datas = $("entry", xmlResponse).map(function() {
+    success: function (response) {
+      let data = $('entry', response).map(function() {
         return {
-          title: $("title", this).text(),
-          content: $("content", this).text(),
-          url: $("link", this).attr("href")
+          title: $('title', this).text(),
+          categories: $('category', this).map(function() {
+            return this.innerHTML.trim();
+          }).get(),
+          tags: $('tag', this).map(function() {
+            return this.innerHTML.trim();
+          }).get(),
+          content: $('content', this).text().replace(/<[^>]+>/g, ''),
+          url: $('url', this).text().trim()
         };
-      }).get();
+      }).get()
 
-      var $input = document.getElementById(searchId);
-      if (!$input) { return; }
-      var $resultContent = document.getElementById(contentId);
+      searchEl.on('input', function() {
+        resultEl.html('');
 
-      $input.addEventListener("input", function(){
-        var resultList = [];
-        var keywords = getAllCombinations(this.value.trim().toLowerCase().split(" "))
-          .sort(function(a,b) { return b.split(" ").length - a.split(" ").length; });
-        $resultContent.innerHTML = "";
-        if (this.value.trim().length <= 0) {
-          return;
-        }
-        // perform local searching
-        datas.forEach(function(data) {
-          var matches = 0;
-          if (!data.title || data.title.trim() === "") {
-            data.title = "Untitled";
-          }
-          var dataTitle = data.title.trim().toLowerCase();
-          var dataTitleLowerCase = dataTitle.toLowerCase();
-          var dataContent = stripHtml(data.content.trim());
-          var dataContentLowerCase = dataContent.toLowerCase();
-          var dataUrl = data.url;
-          var indexTitle = -1;
-          var indexContent = -1;
-          var firstOccur = -1;
-          // only match artiles with not empty contents
-          if (dataContent !== "") {
-            keywords.forEach(function(keyword) {
-              indexTitle = dataTitleLowerCase.indexOf(keyword);
-              indexContent = dataContentLowerCase.indexOf(keyword);
+        let keyword = searchEl.val().trim().toLowerCase();
+        let resultHTML = '';
 
-              if( indexTitle >= 0 || indexContent >= 0 ){
-                matches += 1;
-                if (indexContent < 0) {
-                  indexContent = 0;
-                }
-                if (firstOccur < 0) {
-                  firstOccur = indexContent;
-                }
-              }
-            });
-          }
-          // show search results
-          if (matches > 0) {
-            var searchResult = {};
-            searchResult.rank = matches;
-            searchResult.str = "<li><a href='"+ dataUrl +"' class='search-result-title'>"+ dataTitle +"</a>";
-            if (firstOccur >= 0) {
-              // cut out 100 characters
-              var start = firstOccur - 20;
-              var end = firstOccur + 80;
+        if (keyword.length > 1) {
+          data.forEach(function(post) {
+            const _title = post.title.toLowerCase(),
+                  _categories = post.categories.map(c => c.toLowerCase()),
+                  _tags = post.tags.map(t => t.toLowerCase()),
+                  _content = post.content.toLowerCase();
+            let isMatch = false;
+            let start = 0, end = post.content.length;
+            let idx = _content.indexOf(keyword);
 
-              if(start < 0){
-                start = 0;
-              }
-
-              if(start == 0){
-                end = 100;
-              }
-
-              if(end > dataContent.length){
-                end = dataContent.length;
-              }
-
-              var matchContent = dataContent.substring(start, end);
-
-              // highlight all keywords
-              var regS = new RegExp(keywords.join("|"), "gi");
-              matchContent = matchContent.replace(regS, function(keyword) {
-                return "<em class=\"search-keyword\">"+keyword+"</em>";
-              });
-
-              searchResult.str += "<p class=\"search-result\">" + matchContent +"...</p>";
+            if (_title.indexOf(keyword) >= 0
+              || _content.indexOf(keyword) >= 0
+              || _categories.filter(c => c.indexOf(keyword) >= 0).length
+              || _tags.filter(t => t.indexOf(keyword) >= 0).length) {
+              isMatch = true;
             }
-            searchResult.str += "</li>";
-            resultList.push(searchResult);
-          }
-        });
-        if (resultList.length) {
-          resultList.sort(function(a, b) {
-              return b.rank - a.rank;
-          });
-          var result ="<ul class=\"search-result-list\">";
-          for (var i = 0; i < resultList.length; i++) {
-            result += resultList[i].str;
-          }
-          result += "</ul>";
-          $resultContent.innerHTML = result;
+
+            start = idx >= 20 ? idx - 20 : 0;
+            end = idx + 80 <= _content.length ? idx + 80 : _content.length;
+            matchContent = post.content.slice(start, end) + (end < _content.length ? '...' : '');
+            const reg = new RegExp(keyword, 'gi');
+            const m_content = matchContent.replace(reg, `<span class="keyword">${ keyword }</span>`)
+
+            if (isMatch) {
+              tagHTML = post.tags.reduce((html, tag) => html + `<div class="search-tag">${ tag }</div>`, '');
+              categoryHTML = post.categories.reduce((html, category) => html + `<div class="search-tag">${ category }</div>`, '');
+
+              resultHTML += `
+                <li class="list-group-item py-2">
+                  <a href="${ post.url }">
+                    <span class="title">${ post.title }</span>
+                  </a>
+                  <div class="content">${ m_content }</div>
+                  <div class="d-flex py-2">${ categoryHTML }${ tagHTML }</div>
+                </li>
+              `
+            }
+          })
         }
-      });
+
+        resultEl.html(resultHTML);
+      })
     }
   });
-};
+}
