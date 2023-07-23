@@ -2,9 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://auzdora.github.io/2023/07/17/QueryExecution/</loc>
+    
+    <lastmod>2023-07-17</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/2023/07/01/QueryProcessing/</loc>
     
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-10</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -112,7 +121,7 @@
 
   <url>
     <loc>https://auzdora.github.io/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -120,35 +129,35 @@
   
   <url>
     <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Study/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
-    <lastmod>2023-07-01</lastmod>
+    <lastmod>2023-07-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
