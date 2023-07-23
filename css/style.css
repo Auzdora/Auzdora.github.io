@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles");
 @import url("https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles&family=Poppins:wght@300;400;500;700");
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   .markdown-body {
-    color-scheme: dark;
+    color-scheme: light;
     --color-prettylights-syntax-comment: #8b949e;
     --color-prettylights-syntax-constant: #79c0ff;
     --color-prettylights-syntax-entity: #d2a8ff;
