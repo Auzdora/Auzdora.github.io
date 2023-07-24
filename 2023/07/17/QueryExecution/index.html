@@ -23,7 +23,7 @@
 
 
   
-  <title>Query Execution - Auzdora&#39;s Blog</title>
+  <title>CMU 15-445 Query Execution - Auzdora&#39;s Blog</title>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 
@@ -84,7 +84,7 @@
   <div class="left-content">
     <article class="post-wrapper markdown-body">
   <h2 class="post-title">
-    Query Execution
+    CMU 15-445 Query Execution
   </h2>
   <div class="post-meta">
     <time datetime="Invalid date Invalid date ">2023-07-17</time>
@@ -102,14 +102,34 @@
   
   <div id="content">
     <blockquote>
-<p>在完成bustub的project 3 query execution时，需要阅读大量的源码，并且尝试理清每一个系统组件之间的关系。在这篇博客中，从execution层的视角之下，记录一下bustub的execution engine的执行架构。在execution层之上的parser，binder，planner以及optimizer层，仅在必要时提及，详细对这些层的解析会在之后的博客中记录。</p>
+<p>在完成bustub的project 3 query
+execution时，需要阅读大量的源码，并且尝试理清每一个系统组件之间的关系。在这篇博客中，从execution层的视角之下，记录一下bustub的execution
+engine的执行架构。在execution层之上的parser，binder，planner以及optimizer层，仅在必要时提及，详细对这些层的解析会在之后的博客中记录。</p>
 </blockquote>
-<h2 id="Overview-on-top-of-execution-layer"><a href="#Overview-on-top-of-execution-layer" class="headerlink" title="Overview on top of execution layer"></a>Overview on top of execution layer</h2><p>官方网站的project 3的handout中，在背景部分详细介绍了每一个project在bustub架构中的位置。在进入execution layer之前，简要理解前面几层的作用也是重要的。在execution layer之上，存在parser，binder，planner以及optimizer四层。这四层总体的作用可以描述为一句话：SQL语言通过解析、语法检查，绑定bustub内部object后，根据SQL语义构建execution plan并优化。优化过后的plan递交给execution engine，执行并返回对应的结果。</p>
-<h3 id="Parser-amp-Binder"><a href="#Parser-amp-Binder" class="headerlink" title="Parser &amp; Binder"></a>Parser &amp; Binder</h3><p>Bustub的parser利用了duckdb的源码，将一个query输入到parser中，会对其进行解析和保存，生成一个AST（Abstract Syntax Tree）保存下来。Binder将绑定对应的statement。最后将statement提交到planner中。</p>
-<h3 id="Planner"><a href="#Planner" class="headerlink" title="Planner"></a>Planner</h3><p>Planner负责对statement语句进行规划，将statement链接为一个plan node tree，并在plan node中加入必要的信息。</p>
-<h3 id="Optimizer"><a href="#Optimizer" class="headerlink" title="Optimizer"></a>Optimizer</h3><p>Optimizer对生成好的plan tree进行评估并优化，返回一个优化后的plan tree。最终提交给Execution engine。</p>
-<p><strong>Tips</strong>：在阅读源码时，可以根据<code>bustub_instance.cpp</code>这个文件来看。shell.cpp封装了bustub instance，并在shell中调用ExecuteSql，对string的sql进行解析，规划，优化以及执行等一系列操作。做project 3的过程中也可以根据bustub instance进行debug，会很快发现问题的原因。</p>
-<h2 id="Overview-of-execution-layer"><a href="#Overview-of-execution-layer" class="headerlink" title="Overview of execution layer"></a>Overview of execution layer</h2><p>了解了上面四层的基本作用和功能后，我们就可以将他们所有的细节和实现抛之脑后，并专注于optimizer给我们提供了什么。Optimizer返回的是一个plan node。</p>
+<h2 id="overview-on-top-of-execution-layer">Overview on top of execution
+layer</h2>
+<p>官方网站的project
+3的handout中，在背景部分详细介绍了每一个project在bustub架构中的位置。在进入execution
+layer之前，简要理解前面几层的作用也是重要的。在execution
+layer之上，存在parser，binder，planner以及optimizer四层。这四层总体的作用可以描述为一句话：SQL语言通过解析、语法检查，绑定bustub内部object后，根据SQL语义构建execution
+plan并优化。优化过后的plan递交给execution
+engine，执行并返回对应的结果。</p>
+<h3 id="parser-binder">Parser &amp; Binder</h3>
+<p>Bustub的parser利用了duckdb的源码，将一个query输入到parser中，会对其进行解析和保存，生成一个AST（Abstract
+Syntax
+Tree）保存下来。Binder将绑定对应的statement。最后将statement提交到planner中。</p>
+<h3 id="planner">Planner</h3>
+<p>Planner负责对statement语句进行规划，将statement链接为一个plan node
+tree，并在plan node中加入必要的信息。</p>
+<h3 id="optimizer">Optimizer</h3>
+<p>Optimizer对生成好的plan tree进行评估并优化，返回一个优化后的plan
+tree。最终提交给Execution engine。</p>
+<p><strong>Tips</strong>：在阅读源码时，可以根据<code>bustub_instance.cpp</code>这个文件来看。shell.cpp封装了bustub
+instance，并在shell中调用ExecuteSql，对string的sql进行解析，规划，优化以及执行等一系列操作。做project
+3的过程中也可以根据bustub instance进行debug，会很快发现问题的原因。</p>
+<h2 id="overview-of-execution-layer">Overview of execution layer</h2>
+<p>了解了上面四层的基本作用和功能后，我们就可以将他们所有的细节和实现抛之脑后，并专注于optimizer给我们提供了什么。Optimizer返回的是一个plan
+node。</p>
 
   </div>
 
