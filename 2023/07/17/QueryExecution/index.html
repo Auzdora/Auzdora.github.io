@@ -175,6 +175,7 @@ Join Executors</h3>
 <p>在Aggregation的实现中，Bustub采用In Memory
 Hashing的方法。我们先通过一个例子来理解一下。</p>
 <p>假设我们有以下员工表：</p>
+<div style="width: fit-content; margin: 0 auto;">
 <table>
 <thead>
 <tr class="header">
@@ -216,6 +217,7 @@ Hashing的方法。我们先通过一个例子来理解一下。</p>
 </tr>
 </tbody>
 </table>
+</div>
 <p>我们想执行以下SQL聚合查询：</p>
 <pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">SELECT</span> Department<span class="token punctuation">,</span> <span class="token function">SUM</span><span class="token punctuation">(</span>Salary<span class="token punctuation">)</span> <span class="token keyword">as</span> TotalSalary
 <span class="token keyword">FROM</span> Employees
@@ -231,6 +233,7 @@ Hashing的方法。我们先通过一个例子来理解一下。</p>
 </ul></li>
 <li><strong>输出</strong>：处理完所有行后，哈希表如下：</li>
 </ol>
+<div style="width: fit-content; margin: 0 auto;">
 <table>
 <thead>
 <tr class="header">
@@ -253,6 +256,7 @@ Hashing的方法。我们先通过一个例子来理解一下。</p>
 </tr>
 </tbody>
 </table>
+</div>
 <p>哈希表中的每个条目代表一个组（在这种情况下是一个部门）及其聚合值（总薪水）。这是聚合操作的结果。</p>
 <p>这种方法的优点是只需要对数据进行一次遍历，使用哈希快速找到每一行在哈希表中对应的条目。然而，它需要足够的内存来存储哈希表，因此如果数据集太大，无法适应内存，可能就不适合使用这种方法。</p>
 <p>理解了In Memory

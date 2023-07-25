@@ -173,13 +173,6 @@
 
   
   <url>
-    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
-    <lastmod>2023-07-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
     <lastmod>2023-07-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -195,6 +188,13 @@
   
   <url>
     <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
+    <lastmod>2023-07-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
     <lastmod>2023-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
