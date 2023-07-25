@@ -129,7 +129,42 @@ instance，并在shell中调用ExecuteSql，对string的sql进行解析，规划
 3的过程中也可以根据bustub instance进行debug，会很快发现问题的原因。</p>
 <h2 id="overview-of-execution-layer">Overview of execution layer</h2>
 <p>了解了上面四层的基本作用和功能后，我们就可以将他们所有的细节和实现抛之脑后，并专注于optimizer给我们提供了什么。Optimizer返回的是一个plan
-node。</p>
+node。这个plan
+node和planner返回的是同一个类型，不同的是内在的plan：optimizer返回的plan是经过优化后的。因此我们可以先简要理解一下Abstract
+Plan Node的设计，如下图。</p>
+<p><img src="qe1.png" /></p>
+<p>源码定义在<code>src/include/execution/plans/abstract_plan.h</code>，配合源码阅读更加。</p>
+<p>Bustub中利用enum class定义了若干PlanType，有关enum
+class的引入，对比于enum而言，加强了“类型”这一概念。例如，下面的代码例子中，RED和APPLE本质上都是相同的整数，编译器会编译成功。而限定了enum
+class之后，就有了类型的概念，不同类型的比较肯定无法成功。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">enum</span> <span class="token class-name">Color</span> <span class="token punctuation">&#123;</span> RED<span class="token punctuation">,</span> GREEN<span class="token punctuation">,</span> BLUE <span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token comment">// traditional enum</span>
+<span class="token keyword">enum</span> <span class="token class-name">Fruit</span> <span class="token punctuation">&#123;</span> APPLE<span class="token punctuation">,</span> ORANGE<span class="token punctuation">,</span> BANANA <span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token comment">// another traditional enum</span>
+
+<span class="token keyword">enum</span> <span class="token keyword">class</span> <span class="token class-name">Vehicle</span> <span class="token punctuation">&#123;</span> CAR<span class="token punctuation">,</span> TRUCK<span class="token punctuation">,</span> BIKE <span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token comment">// enum class</span>
+<span class="token keyword">enum</span> <span class="token keyword">class</span> <span class="token class-name">Animal</span> <span class="token punctuation">&#123;</span> CAT<span class="token punctuation">,</span> DOG<span class="token punctuation">,</span> BIRD <span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token comment">// another enum class</span>
+
+<span class="token keyword">void</span> <span class="token function">fun</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>RED <span class="token operator">==</span> APPLE<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">// This compiles, even though it's probably a mistake</span>
+        <span class="token comment">// ...</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>Vehicle<span class="token double-colon punctuation">::</span>CAR <span class="token operator">==</span> Animal<span class="token double-colon punctuation">::</span>CAT<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">// This doesn't compile, because they're different types</span>
+        <span class="token comment">// ...</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">int</span> myColor <span class="token operator">=</span> RED<span class="token punctuation">;</span> <span class="token comment">// This compiles, even though it might be a mistake</span>
+
+    <span class="token keyword">int</span> myVehicle <span class="token operator">=</span> Vehicle<span class="token double-colon punctuation">::</span>CAR<span class="token punctuation">;</span> <span class="token comment">// This doesn't compile, because it needs a static_cast&lt;int></span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// Note: Provided by ChatGPT code interpreter</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><code>AbstractPlanNode</code>拥有两个public成员变量，分别是<code>output_schema_</code>和将多个子节点封装起来的<code>children_</code>。</p>
+<ul>
+<li><strong>output_schema_</strong>：定义了该Node输出的Tuple的Schema。</li>
+<li><strong>children_</strong>：vector，当前Plan
+node的子node存储于此。其中每一个元素通过RAII的shared_ptr指向另一个AbstractPlanNode。</li>
+</ul>
+<p>每一个Node都链接其子Node，构成了一个树形结构。因此Planner和Optimizer的返回值仅需要一个根节点，即可通过根节点遍历整个树形结构。</p>
 
   </div>
 
