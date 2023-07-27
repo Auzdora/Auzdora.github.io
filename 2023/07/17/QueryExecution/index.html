@@ -261,6 +261,28 @@ Hashing的方法。我们先通过一个例子来理解一下。</p>
 <p>这种方法的优点是只需要对数据进行一次遍历，使用哈希快速找到每一行在哈希表中对应的条目。然而，它需要足够的内存来存储哈希表，因此如果数据集太大，无法适应内存，可能就不适合使用这种方法。</p>
 <p>理解了In Memory
 Hashing的运作机制，我们就可以看一下bustub提供的<code>SimpleAggregationHashTable</code>是如何实现的了。源码定义在<code>src/include/execution/executors/aggregation_executor.h</code>，配合源码阅读更佳。</p>
+<p><code>SimpleAggregationHashTable</code>的核心成员变量只有一个，用于存储Key-Value的unordered
+map。不过这里的Key和Value是<code>AggregateKey</code>和<code>AggregateValue</code>，定义在<code>src/include/execution/plans/aggregation_plan.h</code>中。本质而言，两者都是一种vector容器，对于一个Key或Value而言，vector中的每一个元素都是用来存储一个Tuple中的某一个属性的值的。可以看下图进行理解。</p>
+<p><img src="qe2.png" /></p>
+<p>对于上面的哈希表而言，Key只有一个，而Value内部存储了两个。原因在于SQL语句的<code>GROUP BY</code>后面仅对一个column进行聚合，并且使用了<code>SUM</code>和<code>AVG</code>的聚合函数（若对多个column进行group，AggregateKey就会包含多个元素。</p>
+<p>函数实现围绕着<code>InsertCombine</code>展开。首先先判断当前哈希表是否已经存在对应的<code>AggregateKey</code>，如果不存在，就执行哈希插入并初始化Value值，并执行<code>CombineAggregateValues</code>，根据传入的<code>AggregateValue</code>和聚合函数对哈希表中的值进行统计。如果存在，则直接指向<code>CombineAggregateValues</code>（这个函数就是需要自己实现的）。</p>
+<p>剩余的部分就是将<code>SimpleAggregationHashTable</code>加一个迭代器的功能。</p>
+<p>理解了上述数据结构，我们可以结合<code>AggregationExecutor</code>和一个例子进一步想想算法是怎么运作的。这不得不提到private的函数<code>MakeAggregateKey</code>和<code>AggregateValue</code>。这两个函数是帮你生成对应的K-V值的，也就是说，面对一个Tuple的时候，脏活累活不需要你做了，直接调用这两个函数就能得到期望插入哈希表的数据。我们假设有一个这样的table，table的列有ID，Department，Levels和Salary。如果我想执行如下的SQL：</p>
+<pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">SELECT</span> Department<span class="token punctuation">,</span> <span class="token function">SUM</span><span class="token punctuation">(</span>Salary<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">AVG</span><span class="token punctuation">(</span>Salary<span class="token punctuation">)</span>
+<span class="token keyword">FROM</span> Employees
+<span class="token keyword">GROUP</span> <span class="token keyword">BY</span> Department<span class="token punctuation">,</span> Levels<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p><img src="qe3.png" /></p>
+<p>那么AggregateExecutor的子节点会根据条件提供所需的Tuple，每得到一个Tuple，就加入哈希表中统计。</p>
+<p>执行聚合函数的核心就是<code>CombineAggregateValues</code>函数。由于aggregate
+expression和输入输出的value顺序是绑定的，也就是不同的value对应不同的聚合函数。比如，有<code>SUM(c1)</code>，<code>AVG(c2)</code>，那么对应的value就会存储一个长度为2的vector，vector第一个元素对应<code>SUM</code>，第二个元素对应<code>AVG</code>，以此类推。对aggregate
+expression进行for循环，在每个位置上执行对应的计算操作，计算操作可以参考<code>src/include/type/value.h</code>中定义的mathematical
+functions直接调用。实现较为简单，需要注意的是要处理第一次计算初始值是0或interger_null的情况，具体可以通过debug的方式完善代码。</p>
+<p>第二步就是实现Next函数。正如官网的指导手册所说，aggregation是一个pipeline
+breaker。意思就是如果aggregation
+executor想要提供Tuple，必须让子节点提供全部的Tuple。我这里的思路是，在第一次进入Next的时候，循环调用子节点的Next构建哈希表。第二次以及往后都不再执行子节点的Next，而是通过iterator遍历构建好的哈希表，还原出对应的Tuple。Note：需要解决no
+groups，no
+output，以及空表的情况。具体可以参考test的信息进行debug，观察程序的行为预期。</p>
+<h4 id="join">Join</h4>
 
   </div>
 
