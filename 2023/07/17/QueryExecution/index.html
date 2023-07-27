@@ -166,8 +166,35 @@ node的子node存储于此。其中每一个元素通过RAII的shared_ptr指向�
 </ul>
 <p>每一个Node都链接其子Node，构成了一个树形结构。因此Planner和Optimizer的返回值仅需要一个根节点，即可通过根节点遍历整个树形结构。</p>
 <h2 id="task">Task</h2>
+<p>在实现这些Task之前，请阅读上述的overview部分，首先先对执行引擎层有一个全面的了解。同时可以参考官方实现的一些写法，这样可以节省很多debug的时间。</p>
 <h3 id="task-1---access-method-executors">Task #1 - Access Method
 Executors</h3>
+<p>这一个Task主要实现最基础的增删改查的方法，包括插入、删除、查询和索引查询。这是之后Task的基础，必须确保这一部分没有bug。需要注意的是，实现Task1的全部任务后需要通过p3.00-p3.05的所有测试。</p>
+<h4 id="seqscan">SeqScan</h4>
+<p>顺序扫描是整个实验最简单的部分。<code>SeqScanPlanNode</code>通过<code>SELECT FROM</code>语句被构建。而<code>SeqScanExecutor</code>的任务是通过迭代的方式扫描整个table，一次Next调用产生输出一个Tuple。现在的问题是：</p>
+<ul>
+<li>扫描哪个table？</li>
+<li>怎么获取table？</li>
+</ul>
+<p><strong><code>plan node</code>和<code>exec_ctx_</code>包含了executor执行所需要的所有必要信息</strong>。知道这一点适用于之后所有的Task。每当需要一些信息或方法是，可以先观察对应的<code>plan node</code>和<code>exec_ctx_</code>中是否包含自己需要的。<code>SeqScanPlanNode</code>中定义了<code>GetTableOid</code>方法，专门指明当前需要被seqscan的table是哪一个。有了oid还不够，我们需要使用catalog的<code>GetTable</code>获取tableinfo，进一步获取tableinfo所管理的table。之后就是在此之上创建一个迭代器，每次调用Next返回一个Tuple即可。</p>
+<h4 id="insert-delete">Insert &amp; Delete</h4>
+<p>插入和删除操作较为特殊，插入删除成功要就返回对应插入删除的数量，如果不成功需要返回0。因此返回的Tuple是临时构建的，不具有rid这个属性值。由于可以一次性插入和删除多个值，因此需要在insert和delete的Next方法里循环调用子节点的Next。</p>
+<p>需要注意的是，由于一个table上可能会构建一个或者多个索引。在执行插入和删除操作的时候，需要对这个table上的所有索引进行更新操作。索引是根据自己实现的b+树构建的，实现这个Task之前需要确保b+树实现没有问题。b+树的插入和删除需要key和rid作为其value，rid我们已经有了，问题是key从哪里获取？Tuple提供了一个KeyFromTuple的方法，用于根据相关table的信息构建key。</p>
+<p>还有很多的细节bug，可以通过看test和print大法来debug完善代码。</p>
+<p>另外，Insert和Delete的代码基本一致，实现好一个直接复制粘贴，更改对应的函数即可。</p>
+<h4 id="indexscan">IndexScan</h4>
+<p>做这个task之前需要理解b+树的index工作方式。b+树最终存储的是一个key和value，value是某个tuple的record
+id。可以阅读以下RID的源码，rid内部包含了<code>page_id_</code>和<code>slot_num_</code>两个信息。<code>page_id_</code>指的是当前tuple在哪一个page，<code>slot_num_</code>表示在这个page中的具体位置。</p>
+<p>首先我们还是面临两个问题：</p>
+<ul>
+<li>根据table的哪一个index做scan？</li>
+<li>如何获取这个index？</li>
+</ul>
+<p>还是看plan和catalog。在plan中我们可以获取<code>index oid</code>，根据<code>index oid</code>和catalog的<code>GetIndex</code>方法，获取对应的<code>index info</code>。index
+info包含了通过<code>CREATE INDEX</code>语句构建好的b+树。b+树的好处就是，在上面建立一个索引后，可以直接通过访问下一个节点的方式遍历整个树的子节点，进而达到scan的目的。</p>
+<p>根据迭代器，每到一个位置，可以得到对应的rid。根据rid获取<code>page id</code>，使用buffer
+pool manager读取该page，并reinterpret
+cast到TablePage，TablePage对象可以调用<code>GetTuple</code>方法根据rid读取对应的Tuple。最后别忘了<code>UnpinPage</code>。</p>
 <h3 id="task-2---aggregation-join-executors">Task #2 - Aggregation &amp;
 Join Executors</h3>
 <p>实现了基本的读写方法之后，接下来要做的就是要实现SQL中的<code>GROUP BY</code>，<code>SUM()</code>，<code>MIN()</code>等聚合函数以及<code>JOIN</code>。</p>
