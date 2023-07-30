@@ -310,6 +310,163 @@ executor想要提供Tuple，必须让子节点提供全部的Tuple。我这里�
 groups，no
 output，以及空表的情况。具体可以参考test的信息进行debug，观察程序的行为预期。</p>
 <h4 id="join">Join</h4>
+<p>在 SQL 中，<code>JOIN</code>
+操作基于两个或更多表之间的相关列合并行。它允许你查询来自多个表的数据，就像它们是一个单独的表一样。有几种类型的连接操作，包括
+<code>INNER JOIN</code>，<code>LEFT JOIN</code>，<code>RIGHT JOIN</code>
+和 <code>FULL JOIN</code>。</p>
+<ol type="1">
+<li><p><strong>INNER
+JOIN</strong>：这是最常见的连接类型。<code>INNER JOIN</code>
+返回在两个表中都有匹配值的记录。</p>
+<p>让我们以两个表为例：</p>
+<ul>
+<li><code>Orders</code> 表：
+<div style="width: fit-content; margin: 0 auto;">
+<table>
+<thead>
+<tr class="header">
+<th>OrderID</th>
+<th>CustomerID</th>
+<th>OrderDate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>3</td>
+<td>2023-07-01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1</td>
+<td>2023-07-02</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>2</td>
+<td>2023-07-03</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>4</td>
+<td>2023-07-04</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+<li><code>Customers</code> 表：
+<div style="width: fit-content; margin: 0 auto;">
+<table>
+<thead>
+<tr class="header">
+<th>CustomerID</th>
+<th>CustomerName</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>John</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Alice</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Bob</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>Mike</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+</ul>
+<p><code>Orders</code> 和 <code>Customers</code> 在
+<code>CustomerID</code> 上的 <code>INNER JOIN</code> 将如下所示：</p>
+<pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">SELECT</span> Orders<span class="token punctuation">.</span>OrderID<span class="token punctuation">,</span> Customers<span class="token punctuation">.</span>CustomerName<span class="token punctuation">,</span> Orders<span class="token punctuation">.</span>OrderDate
+<span class="token keyword">FROM</span> Orders
+<span class="token keyword">INNER</span> <span class="token keyword">JOIN</span> Customers <span class="token keyword">ON</span> Orders<span class="token punctuation">.</span>CustomerID <span class="token operator">=</span> Customers<span class="token punctuation">.</span>CustomerID<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>结果将是：</p>
+<div style="width: fit-content; margin: 0 auto;">
+<table>
+<thead>
+<tr class="header">
+<th>OrderID</th>
+<th>CustomerName</th>
+<th>OrderDate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Bob</td>
+<td>2023-07-01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>John</td>
+<td>2023-07-02</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Alice</td>
+<td>2023-07-03</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>注意，没有订单的 Mike 不会出现在结果中。同样，订单 4
+也不会出现在结果中，因为它没有匹配的客户。</p></li>
+<li><p><strong>LEFT JOIN</strong>（或
+<code>LEFT OUTER JOIN</code>）：这种类型的连接返回左表（即第一个表）中的所有记录，以及右表（即第二个表）中的匹配记录。如果没有匹配，结果在右侧为
+<code>NULL</code>。</p>
+<p>如果我们将前面的查询更改为 <code>LEFT JOIN</code>：</p>
+<pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">SELECT</span> Orders<span class="token punctuation">.</span>OrderID<span class="token punctuation">,</span> Customers<span class="token punctuation">.</span>CustomerName<span class="token punctuation">,</span> Orders<span class="token punctuation">.</span>OrderDate
+<span class="token keyword">FROM</span> Orders
+<span class="token keyword">LEFT</span> <span class="token keyword">JOIN</span> Customers <span class="token keyword">ON</span> Orders<span class="token punctuation">.</span>CustomerID <span class="token operator">=</span> Customers<span class="token punctuation">.</span>CustomerID<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>结果将是：</p>
+<div style="width: fit-content; margin: 0 auto;">
+<table>
+<thead>
+<tr class="header">
+<th>OrderID</th>
+<th>CustomerName</th>
+<th>OrderDate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Bob</td>
+<td>2023-07-01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>John</td>
+<td>2023-07-02</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Alice</td>
+<td>2023-07-03</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>NULL</td>
+<td>2023-07-04</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>注意，所有订单都出现在结果中。对于没有匹配客户的订单
+4，<code>CustomerName</code> 为 <code>NULL</code>。</p></li>
+</ol>
+<p>总的来说，使用哪种类型的连接取决于你想要做什么。当你只想获取在两个表中都有匹配的记录时，使用
+<code>INNER JOIN</code>。当你想获取左表中的所有记录，无论它们在右表中是否有匹配，都使用
+<code>LEFT JOIN</code>。</p>
 
   </div>
 
