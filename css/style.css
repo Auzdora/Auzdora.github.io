@@ -1408,6 +1408,25 @@ template {
   float: right;
   color: #707070;
 }
+.search-list-group h3 {
+  color: #3f3f3f;
+}
+.search-list-group h3:not(:first-child) {
+  margin-top: 2rem;
+}
+.search-list-group .list-group-item {
+  border: none;
+}
+.search-list-group .list-group-item a {
+  color: #202020;
+}
+.search-list-group .list-group-item a:hover {
+  color: #8a6c51;
+}
+.search-list-group .list-group-item .post-date {
+  float: right;
+  color: #707070;
+}
 .post-wrapper {
   position: relative;
   font-size: 17px;
@@ -1867,7 +1886,7 @@ main {
   --dark-bg-color: #202020;
   --dark-text-color: #fff;
   --dark-nav-color: #000;
-  --dark-footer-color: #444; /* Add your desired footer color */
+  --dark-footer-color: #070707; /* Add your desired footer color */
   --dark-description-color: #9f9f9f;
   --dark-search-color: #000;
   --dark-icon-menu-color: #fff;
@@ -1882,6 +1901,12 @@ main {
   }
   .about-wrapper .about-icon {
     color: var(--dark-icon-color);
+  }
+  .footer-wrapper .left-content {
+    background-color: var(--dark-footer-color);
+  }
+  .footer-wrapper .right-content {
+    background-color: var(--dark-bg-color);
   }
   .list-header {
     color: var(--dark-text-color) !important;
@@ -1899,7 +1924,7 @@ main {
     background-color: var(--dark-nav-color);
   }
   nav.nav-scrolled {
-    background-color: rgba(0,0,0,0.85);
+    background-color: rgba(21,21,21,0.85);
     box-shadow: 0 2px 6px rgba(125,125,125,0.8) !important;
   }
   nav .container .menu-wrapper ul li a {
@@ -1936,7 +1961,7 @@ a {
   color: #8a6c51 !important;
 }
 #nprogress .bar {
-  background: #ffffff !important;
+  background: #888888 !important;
 }
 .row {
   margin-left: 0;
