@@ -1883,12 +1883,6 @@ main {
   .about-wrapper .about-icon {
     color: var(--dark-icon-color);
   }
-  .footer-wrapper .left-content {
-    background-color: var(--dark-nav-color);
-  }
-  .footer-wrapper .right-content {
-    background-color: var(--dark-bg-color);
-  }
   .list-header {
     color: var(--dark-text-color) !important;
   }
