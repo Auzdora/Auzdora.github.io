@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>STL杂谈系列：优先队列（priority_queue) - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    STL杂谈系列：优先队列（priority_queue)
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2023-07-31</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/C/">C++</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <h2 id="intro">Intro</h2>
+<p>优先队列和队列的区别在与“优先”的概念上。对于普通队列而言，遵循的是先进先出（FIFO）的驱逐原则。而优先队列是默认会驱逐队列中最大的元素，因为插入元素和驱逐元素是会始终保持队内有序。优先队列以对数时间复杂度的插入和提取为代价，提供了O(1)时间的提取最大元素的操作。</p>
+<p><code>priority_queue</code>的定义为：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">template</span><span class="token operator">&lt;</span><span class="token keyword">class</span> <span class="token class-name">T</span><span class="token punctuation">,</span>
+				 <span class="token keyword">class</span> <span class="token class-name">Container</span> <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>T<span class="token operator">></span><span class="token punctuation">,</span>
+				 <span class="token keyword">class</span> <span class="token class-name">Compare</span> <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span>less<span class="token operator">&lt;</span><span class="token keyword">typename</span> <span class="token class-name">Container</span><span class="token double-colon punctuation">::</span>value_type<span class="token operator">></span>
+<span class="token keyword">class</span> <span class="token class-name">priority_queue</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p><strong>T</strong>：存储元素的类型（存储整数就是int，也可存储自定义的class类型）。如果T和<strong>Container</strong>中的存储值类型不符合，会导致undefined
+behavior。</p>
+<p><strong>Container</strong>：底层存储元素的container。必须是Sequence
+Container（std::vector or std::deque）。内部必须提供以下常用的函数：</p>
+<ul>
+<li><code>front()</code></li>
+<li><code>push_back()</code></li>
+<li><code>pop_back()</code></li>
+</ul>
+<p><strong>Compare</strong>：用于比较每个元素。在<code>push()</code>和<code>pop()</code>阶段都会自动调用，维护顺序，并且必须遵循<a
+target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/concepts/strict_weak_order">strict
+weak ordering</a>。否则会导致undefined behaviour。</p>
+<p>可以看到，默认情况下，在使用内建的类型时，会使用<code>std::less</code>方法作为比较器，在这个情况下，调用<code>top()</code>方法，获取的就是比较后最大的元素。</p>
+<h2 id="functions">Functions</h2>
+<p>常用的函数方法如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>名称</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>top</td>
+<td>获取顶部的元素</td>
+</tr>
+<tr class="even">
+<td>empty</td>
+<td>判断优先队列是否为空</td>
+</tr>
+<tr class="odd">
+<td>size</td>
+<td>判断当前优先队列的大小</td>
+</tr>
+<tr class="even">
+<td>push</td>
+<td>在队列中插入元素</td>
+</tr>
+<tr class="odd">
+<td>emplace</td>
+<td>原地在队列中插入元素</td>
+</tr>
+<tr class="even">
+<td>pop</td>
+<td>移除顶部元素</td>
+</tr>
+</tbody>
+</table>
+<p>值得注意的是，优先队列并不支持访问除去顶部元素之外的其他元素。</p>
+<h2 id="use-case">Use Case</h2>
+<p>使用时需要<code>#include &lt;queue&gt;</code>。</p>
+<p>使用内建类型时，可以不定义Container和Compare，自动使用std::less的方法进行排序。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> data<span class="token punctuation">&#123;</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token comment">// 初始化方式 1</span>
+std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> queue<span class="token punctuation">;</span>
+<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">auto</span> val <span class="token operator">:</span> data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  queue<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>val<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 初始化方式 2</span>
+std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> queue<span class="token punctuation">&#123;</span>data<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> data<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span>
+
+<span class="token comment">// 默认top是最大的，若想让top是最小的</span>
+std<span class="token double-colon punctuation">::</span>priority_queue min_queue<span class="token punctuation">&#123;</span>data<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> data<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">greater</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>由于priority_queue仅能访问队顶的元素，若想打印和访问所有元素，需要循环通过top获取后再pop的方式。<strong>注意</strong>，如果在原队列上进行遍历（如果仅仅想观察所有的元素），pop会将原队列的元素删除，因此需要对原队列做一个拷贝，然后在拷贝的对象上遍历。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">auto</span> queue_cpy <span class="token operator">=</span> queue<span class="token punctuation">;</span>
+<span class="token keyword">while</span><span class="token punctuation">(</span><span class="token operator">!</span>queue<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> queue_cpy<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+  queue_cpy<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>很多博客中也讨论了如何为自定义的类型使用自定义的比较函数。就目前而言，可以构建的方法有两种。第一种是使用functor，即将函数定义在结构体当中；第二种是使用c++20中新提供的lambda（unnamed
+function objects）。很多博客并没有提到如何在class内，作为private
+member时如何去定义这样的优先队列。</p>
+<p>下面代码中，我们定义了一个Tuple类，包含vector数据。接着定义了一个Foo类，用于实现自定义类型的自定义比较函数。</p>
+<p><code>queue_test.h</code></p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;iostream></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;queue></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;vector></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;concepts></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;functional></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;ranges></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string_view></span></span>
+
+<span class="token keyword">class</span> <span class="token class-name">Tuple</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">explicit</span> <span class="token function">Tuple</span><span class="token punctuation">(</span>std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> val<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">val_</span><span class="token punctuation">(</span>val<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token keyword">void</span> <span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">auto</span> val <span class="token operator">:</span> val_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> val <span class="token operator">&lt;&lt;</span> <span class="token string">" "</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">auto</span> <span class="token function">GetValAt</span><span class="token punctuation">(</span><span class="token keyword">int</span> idx<span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token operator">-></span> <span class="token keyword">const</span> <span class="token keyword">int</span> <span class="token operator">&amp;</span>  <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> val_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">private</span><span class="token operator">:</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> val_<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Foo</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">struct</span> <span class="token class-name">compare</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">public</span><span class="token operator">:</span>
+        <span class="token keyword">explicit</span> <span class="token function">compare</span><span class="token punctuation">(</span><span class="token keyword">int</span> idx<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">idx_</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> <span class="token keyword">operator</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">const</span> Tuple <span class="token operator">&amp;</span>t1<span class="token punctuation">,</span> <span class="token keyword">const</span> Tuple <span class="token operator">&amp;</span>t2<span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token keyword">bool</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span> t1<span class="token punctuation">.</span><span class="token function">GetValAt</span><span class="token punctuation">(</span>idx_<span class="token punctuation">)</span> <span class="token operator">></span> t2<span class="token punctuation">.</span><span class="token function">GetValAt</span><span class="token punctuation">(</span>idx_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">private</span><span class="token operator">:</span>
+        <span class="token keyword">int</span> idx_<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">explicit</span> <span class="token function">Foo</span><span class="token punctuation">(</span>std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>Tuple<span class="token operator">></span> tuple<span class="token punctuation">,</span> <span class="token keyword">int</span> idx<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">comp_</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">heap_</span><span class="token punctuation">(</span>tuple<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> tuple<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> comp_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token keyword">auto</span> <span class="token function">GetHeap</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token operator">-></span> <span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span>Tuple<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>Tuple<span class="token operator">></span><span class="token punctuation">,</span> compare<span class="token operator">></span> <span class="token operator">&amp;</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> heap_<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">void</span> <span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">auto</span> heap_cpy <span class="token operator">=</span> heap_<span class="token punctuation">;</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token operator">!</span>heap_cpy<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            heap_cpy<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            heap_cpy<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">private</span><span class="token operator">:</span>
+    compare comp_<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span>Tuple<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>Tuple<span class="token operator">></span><span class="token punctuation">,</span> compare<span class="token operator">></span> heap_<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>观察到，struct是定义在class
+Foo的public中的。为什要定义在public中而不是private中呢？因为我的Foo类中定义了一个叫做GetHeap()的函数，这个函数需要向外界返回带有struct
+compare类型的私有变量。如果这个compare类型的定义也在private中，那么编译器就会报错（实际上，在vscode使用clangd插件的话，会直接标红。原因就是compare定义到私有，外界对这个返回结果的compare类型不可见。如果没有GetHeap()这个函数，那么struct
+compare就可以成功定义在private中了。</p>
+<p>还有值得注意的几个地方：</p>
+<ul>
+<li>由于优先队列只接受二元函数，也就是仅有两个参数的函数（两个参数必须是Tuple类型）。因此如果比较的过程中需要用到其他参数时，就需要在结构体里声明一些私有变量，并且定义构造函数。</li>
+<li>struct compare必须对()操作符进行重载。</li>
+<li>heap_的初始化需要传递比较函数。</li>
+<li>class Foo的构造函数也需要构造comp_。</li>
+</ul>
+<p>定义好头文件之后，在调用端就可以这样：</p>
+<p><code>queue_test.cpp</code></p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">"./priority_queue_exp.h"</span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>Tuple<span class="token operator">></span> tuple_vec<span class="token punctuation">&#123;</span>
+        Tuple<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">9</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        Tuple<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span><span class="token number">11</span><span class="token punctuation">,</span> <span class="token number">14</span><span class="token punctuation">,</span> <span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">17</span><span class="token punctuation">,</span> <span class="token number">13</span><span class="token punctuation">,</span> <span class="token number">19</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        Tuple<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span><span class="token number">9</span><span class="token punctuation">,</span> <span class="token number">42</span><span class="token punctuation">,</span> <span class="token number">22</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">92</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        Tuple<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">42</span><span class="token punctuation">,</span> <span class="token number">22</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">92</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        Tuple<span class="token punctuation">&#123;</span><span class="token punctuation">&#123;</span><span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">42</span><span class="token punctuation">,</span> <span class="token number">22</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">92</span><span class="token punctuation">&#125;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"print"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+    Foo foo<span class="token punctuation">&#123;</span>tuple_vec<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    foo<span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">// results</span>
+<span class="token number">1</span> <span class="token number">4</span> <span class="token number">2</span> <span class="token number">7</span> <span class="token number">3</span> <span class="token number">9</span> 
+<span class="token number">11</span> <span class="token number">14</span> <span class="token number">12</span> <span class="token number">17</span> <span class="token number">13</span> <span class="token number">19</span> 
+<span class="token number">8</span> <span class="token number">42</span> <span class="token number">22</span> <span class="token number">7</span> <span class="token number">32</span> <span class="token number">92</span> 
+<span class="token number">12</span> <span class="token number">42</span> <span class="token number">22</span> <span class="token number">7</span> <span class="token number">32</span> <span class="token number">92</span> 
+<span class="token number">9</span> <span class="token number">42</span> <span class="token number">22</span> <span class="token number">7</span> <span class="token number">32</span> <span class="token number">92</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>要正确使用lambda的方式进行调用，需要在C++20的条件下才能成功。具体的答案在<a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/71488084/proper-declaration-of-c-private-standard-library-type-member">stackoverflow</a>上。</p>
+<h2 id="relative-pitfalls-and-notes">Relative pitfalls and notes</h2>
+<ul>
+<li><p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68300641/capturing-only-a-specific-member-of-a-class-inside-lambda">Capturing
+only a specific member of a class inside lambda</a></p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://stackoverflow.com/questions/76801626/what-is-a-proper-way-to-declare-priority-queue-as-a-private-member-in-class-with">What
+is a proper way to declare priority queue as a private member in class
+with custom compare function?</a></p></li>
+<li><p><strong>Why use decltype when using lambda? (ChatGPT
+answer)</strong></p>
+<p>In C++, <code>decltype</code> is a keyword used to query the type of
+an expression. It's often used in generic programming where the type of
+an expression depends on template parameters and cannot be explicitly
+stated.</p>
+<p>When defining a custom comparator for a
+<code>std::priority_queue</code> or other standard library containers,
+<code>decltype</code> can be used to create a type alias for the
+comparator type. This can simplify the code and make it easier to
+maintain, especially if the comparator is a complex type or depends on
+template parameters.</p>
+<p>Here's an example:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// A comparator that sorts integers in reverse order</span>
+<span class="token keyword">auto</span> reverse_comparator <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> a <span class="token operator">></span> b<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Use decltype to create a type alias for the comparator type</span>
+<span class="token keyword">using</span> ComparatorType <span class="token operator">=</span> <span class="token keyword">decltype</span><span class="token punctuation">(</span>reverse_comparator<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Declare a priority_queue with the custom comparator</span>
+std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span><span class="token punctuation">,</span> ComparatorType<span class="token operator">></span> <span class="token function">pq</span><span class="token punctuation">(</span>reverse_comparator<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>In this example, <code>decltype(reverse_comparator)</code> is the
+type of the <code>reverse_comparator</code> lambda function.
+<code>ComparatorType</code> is a type alias for this type, and is used
+to declare <code>pq</code>.</p>
+<p>This is particularly useful if the comparator is defined inline where
+the priority queue is declared, because in that case there's no variable
+whose type can be used to instantiate the priority queue:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// Declare a priority_queue with an inline comparator</span>
+std<span class="token double-colon punctuation">::</span>priority_queue<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span><span class="token punctuation">,</span> <span class="token keyword">decltype</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> a <span class="token operator">></span> b<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token operator">></span> <span class="token function">pq</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> a<span class="token punctuation">,</span> <span class="token keyword">int</span> b<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> a <span class="token operator">></span> b<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>In this case, <code>decltype</code> is necessary to refer to the type
+of the inline comparator.</p></li>
+<li><p>Lambda的本质其实也是functors。当定义一个lambda函数时：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+<span class="token keyword">auto</span> lambda <span class="token operator">=</span> <span class="token punctuation">[</span>a<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> a <span class="token operator">+</span> x<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>C++会在编译的时候将它翻译为：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">struct</span> <span class="token class-name">unnamed_lambda_type</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">int</span> <span class="token keyword">operator</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> a <span class="token operator">+</span> x<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token keyword">private</span><span class="token operator">:</span>
+  	<span class="token keyword">int</span> a<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+unnamed_lambda_type lambda<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>使用lambda函数的目的是更简洁和高效。</p></li>
+</ul>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2023</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

@@ -467,6 +467,33 @@ JOIN</strong>：这是最常见的连接类型。<code>INNER JOIN</code>
 <p>总的来说，使用哪种类型的连接取决于你想要做什么。当你只想获取在两个表中都有匹配的记录时，使用
 <code>INNER JOIN</code>。当你想获取左表中的所有记录，无论它们在右表中是否有匹配，都使用
 <code>LEFT JOIN</code>。</p>
+<p>对于nested loop join和index join而言，难点在于：</p>
+<ul>
+<li>如何判断outer tuple和inner tuple是否符合条件</li>
+<li>搞清楚如何构造join之后的Tuple</li>
+</ul>
+<p>对于第一个问题，解决方法就是用plan的<code>EvaluateJoin</code>。而第二个问题，需要根据左右两个子executor的output
+schema对outer tuple和inner
+tuple的值按顺序提取。提取之后构造tuple输入。</p>
+<p>需要注意的一点，由于nested loop join要多次遍历inner
+table。每次遍历完后需要对right
+executor进行init，可以看看它具体调用了哪个init（有可能init的实现有bug）。</p>
+<h3 id="task-3---sort-limit-executors-and-top-n-optimization">Task #3 -
+Sort + Limit Executors and Top-N Optimization</h3>
+<h4 id="sort-limit">Sort &amp; Limit</h4>
+<p>Sort主要运用了std::sort算法来实现排序，当然，排序的函数需要自己去定义，这里我定义了一个lambda函数。ORDER
+BY语句之后可能会出现一个table的很多个column。这时后的排序逻辑是，首先按照第一个column进行排序，其次在第一个基础上排序第二个，在第二个基础上排序第三个...</p>
+<p>在实现过程中，重点是处理DESC、ASC、DEFAULT和INVALID的情况，并要运用Value类型的数值操作实现比较。</p>
+<p>Limit是整个任务中最为简单的一个算子。算法相当简单，仅仅做一个条件判断即可。</p>
+<h4 id="top-n-optimization">Top-N Optimization</h4>
+<p>默认情况下，当SQL执行如下语句：</p>
+<pre class="line-numbers language-sql" data-language="sql"><code class="language-sql"><span class="token keyword">EXPLAIN</span> <span class="token keyword">SELECT</span> <span class="token operator">*</span> <span class="token keyword">FROM</span> __mock_table_1 <span class="token keyword">ORDER</span> <span class="token keyword">BY</span> colA <span class="token keyword">LIMIT</span> <span class="token number">10</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>内部会做两件事：</p>
+<ol type="1">
+<li>对mock table整体进行升序排序</li>
+<li>寻找最开始的10个进行输出</li>
+</ol>
+<p>这种方法无疑是不高效的。换种思路，我们可以用Top-N排序的方法以更高的效率满足排序和Limit的需求。</p>
 
   </div>
 
