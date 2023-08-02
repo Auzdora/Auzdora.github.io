@@ -124,6 +124,17 @@ tree，并在plan node中加入必要的信息。</p>
 <h3 id="optimizer">Optimizer</h3>
 <p>Optimizer对生成好的plan tree进行评估并优化，返回一个优化后的plan
 tree。最终提交给Execution engine。</p>
+<p>Optimizer只提供了两个公开的接口，<code>Optimize</code>和<code>OptimizeCustom</code>。bustub是一个rule-based优化的数据库，而不是基于cost-based。当系统设置force
+starter
+rule是true时，就使用默认的Optimize方法，否则使用用户自定义的OptimizeCustom方法（给予学生充分的自由实现自己想实现的优化规则）。</p>
+<p>Optimizer目前共提供了物种优化规则，分别是：</p>
+<ul>
+<li><code>OptimizeMergeProjection</code></li>
+<li><code>OptimizeMergeFilterNLJ</code></li>
+<li><code>OptimizeNLJAsIndexJoin</code></li>
+<li><code>OptimizeOrderByAsIndexScan</code></li>
+<li><code>OptimizeSortLimitAsTopN</code></li>
+</ul>
 <p><strong>Tips</strong>：在阅读源码时，可以根据<code>bustub_instance.cpp</code>这个文件来看。shell.cpp封装了bustub
 instance，并在shell中调用ExecuteSql，对string的sql进行解析，规划，优化以及执行等一系列操作。做project
 3的过程中也可以根据bustub instance进行debug，会很快发现问题的原因。</p>
