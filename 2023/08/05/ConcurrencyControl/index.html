@@ -23,7 +23,7 @@
 
 
   
-  <title>CMU 15-445 Query Execution - Auzdora&#39;s Blog</title>
+  <title>CMU 15-445 Concurrency Control - Auzdora&#39;s Blog</title>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 
@@ -84,7 +84,7 @@
   <div class="left-content">
     <article class="post-wrapper markdown-body">
   <h2 class="post-title">
-    CMU 15-445 Query Execution
+    CMU 15-445 Concurrency Control
   </h2>
   <div class="post-meta">
     <time datetime="Invalid date Invalid date ">2023-08-05</time>
@@ -201,6 +201,10 @@ graph的方法判断是否一个schedule可序列化。具体可以见15-445
 Manager发出请求。Lock Manager负责授予或者拒绝</li>
 <li><strong>Shrinking：</strong>在事务释放第一个锁时，立刻进入shrinking状态。此状态下不能获取其他锁。而是逐渐释放之前持有的锁</li>
 </ul>
+<h2 id="isolation-level">Isolation Level</h2>
+<p>关于隔离级别的相关定义可以参考<a
+target="_blank" rel="noopener" href="https://developer.aliyun.com/article/603802">这篇文章</a>，还有<a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/117476959">这里</a>。</p>
 <h2 id="overview-of-transaction-lock-manager">Overview of Transaction
 &amp; Lock Manager</h2>
 <p>Project
