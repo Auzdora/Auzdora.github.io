@@ -504,7 +504,18 @@ BY语句之后可能会出现一个table的很多个column。这时后的排序�
 <li>对mock table整体进行升序排序</li>
 <li>寻找最开始的10个进行输出</li>
 </ol>
-<p>这种方法无疑是不高效的。换种思路，我们可以用Top-N排序的方法以更高的效率满足排序和Limit的需求。</p>
+<p>这种方法无疑是不高效的。换种思路，我们可以用Top-N排序的方法以更高的效率满足排序和Limit的需求。Top-N的思路也很简单，重点是维护一个可以记录当前最大值的table。这里采用了c++STL中的priority
+queue。使用这样的STL，当存储的数据是自定义的类型时，需要自定义比较函数，可以看我写的这篇文章<a
+href="https://auzdora.github.io/2023/07/31/STL-priority-queue/">《STL杂谈：priority_queue》</a>。这里面记录了关于使用这个工具的基本方法以及有关定义比较函数的问题。</p>
+<p>我们所做的就是需要线性遍历一次底层的算子，对于每一个提供的Tuple，加入优先队列中，优先队列会自动维护顺序。每次插入操作之后进行pop操作，去除最小或最大的元素即可。</p>
+<p>这个实验还有一个需要实现的目标就是实现sort
+limit算子的优化。如果遇到类似的算子排列，需要将两个算子优化为一个topn算子，以减少sort整个table的时间开销。在实现之前建议了解优化器的架构，以及它是如何优化算子的。建议阅读optimizer文件夹中的各种优化实现（注意：bustub采用的是rule-based优化，即满足特定条件或规则就会做优化，不会采用估计开销的优化方式）。对比不同优化方案的写法，找出共性。实现起来相对简单，需要搞清楚sort
+plan和limit plan的父子关系。</p>
+<h2 id="summary">Summary</h2>
+<p>至此，就完成了全部的基本实验。更有趣和挑战的部分应该在Leaderboard
+Task。对于进一步的优化，今后会抽时间完善并做一些总结。这个实验阅读的代码量还是很大的，基本了解了optimizer，executor的工作原理，理清了executor，predicate以及对应evaluation的关系。整个部分相当于在b+tree和buffer
+pool
+manager层之上的应用层，可以看到SQL执行层和这两者之间的调用关系。也连带阅读了tuple、table和bustub内部的type实现。收获还是很大的。</p>
 
   </div>
 
