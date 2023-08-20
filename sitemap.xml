@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://auzdora.github.io/2023/08/20/wle-2023-0820/</loc>
+    <loc>https://auzdora.github.io/2023/08/13/wle-2023-0813/</loc>
     
     <lastmod>2023-08-20</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/2023/08/13/wle-2023-0813/</loc>
+    <loc>https://auzdora.github.io/2023/08/20/wle-2023-0820/</loc>
     
     <lastmod>2023-08-20</lastmod>
     
@@ -232,14 +232,14 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
+    <loc>https://auzdora.github.io/tags/Study/</loc>
     <lastmod>2023-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Study/</loc>
+    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
     <lastmod>2023-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -253,7 +253,7 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
+    <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
     <lastmod>2023-08-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
