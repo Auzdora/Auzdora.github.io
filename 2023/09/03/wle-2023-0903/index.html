@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>Week Log Entry No.3 - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    Week Log Entry No.3
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2023-09-03</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/Life-Blog/">Life Blog</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <h3 id="mindset">Mindset</h3>
+<p>最近一直在忙开学相关的事情。所以已经有一到两周没有写周报了，来了学校这边的精神状态从刚开始的郁闷到现在已经完全适应了。我个人在来到一个新环境之前和来到这里的一小段时间总会非常焦虑和抑郁，不适应感让我感到不安。不知道这是大多数人这样还是少部分人。我通常需要花一些时间来熟悉周围的环境，好在我适应速度比较快，一天多一点就和在上海没什么区别了。</p>
+<p>来到学校之后大部分时间放在了oceanbase大赛的准备上。最近在拿miniob练手，不得不说配置环境和debug真的很折磨。今天几乎花了一天的时间去找一个bug，关于bug的问题和学到的东西在后面做记录。</p>
+<p>来到学校也被迫养成了早睡早起的习惯，因为早上有课，而且特别饿，也逐渐开始吃早饭了。</p>
+<h3 id="fitness">Fitness</h3>
+<p>关于运动，我每天上课要从宿舍到教室走将近20分钟。回宿舍、扔垃圾什么的需要爬上爬下五楼。肉眼可见我脸上养出来的水肿消失了，脸部形状恢复到了之前比较瘦的状态。</p>
+<p>我还打算办一张健身卡继续我的健身，以及游泳卡。但迟迟没有行动，争取下个星期搞定。</p>
+<h3 id="entertainment">Entertainment</h3>
+<p>来学校后的娱乐也仅限于打打游戏了。</p>
+<p>这周六去电影院看了IMAX的奥本海默。这部片子给我最大的共鸣就是，当科学家们在考虑自己的研究是否会毁灭世界时，那些势利的政客们仍然抛不开猜疑嫉妒别人的心理，渴望用自己的权利来教科学家“做人”。还有一幕相当讽刺，在讨论轰炸日本哪里时，美国的政客轻描淡写的指点炸哪，却不考虑老百姓的生命。奥本海默要求与苏联共享成果，为了确保人类和平而不陷入军备战争，却遭到杜鲁门的强烈拒绝...</p>
+<h3 id="learn">Learn</h3>
+<p>最近书没怎么读，时间在上课和完成miniob的练习上。</p>
+<p>周日花了接近一整个下午的时间（8h左右）去找一个bug。</p>
+<p>这个bug的问题是：当miniob在vscode中，如果采用gdb或者lldb进行debug，首先创建一个table，然后在这个table上创建一个index。这一切暂时没有问题。如果我退出debugger，再次启动时，server端会报错。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Successfully load /Users/drcooper/cslab/miniob/etc/observer.ini
+Invalid arguments, item_size:0, pool_num:1, item_num_per_pool:128, this-<span class="token operator">></span>name:./miniob/db/sys/t-t_idx.index.
+Failed to <span class="token function">open</span> index. <span class="token assign-left variable">table</span><span class="token operator">=</span>t, <span class="token assign-left variable">index</span><span class="token operator">=</span>t_idx, <span class="token assign-left variable">file</span><span class="token operator">=</span>./miniob/db/sys/t-t_idx.index, <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">12</span>:NOMEM
+Failed to <span class="token function">open</span> table. <span class="token assign-left variable">filename</span><span class="token operator">=</span>t.table
+Failed to <span class="token function">open</span> db: sys. <span class="token assign-left variable">error</span><span class="token operator">=</span><span class="token number">12</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>通过一步步的debug，定位到问题在于index的文件创建是成功了，但有关index的必要信息没有写到index文件里。也就是说index文件没有任何有效信息，因此在server重启，做index文件合法性校验时，会产生报错。</p>
+<p>但令人奇怪的是，table
+meta文件的校验没有出错，而且我如果insert数据到table里，重启sever也还是可以查询到table里插入的数据的。</p>
+<p>又一轮debug发现，原来是执行阶段（execute
+stage）在执行插入操作的时候，会把相关的操作append到日志文件，并且进行刷盘操作。保证数据的持久性。当重启server时，数据库会读取log，并且执行recover函数，恢复内存中table的数据，具体细节打算之后写一篇记录。</p>
+<p>而在创建index的时候，miniob的test分支的代码没有实现写入log的操作。更不提恢复index一说。</p>
+<p>所以就会出现，第二次启动server，index检查失败的情况。因为第一次的index数据是存在于内存中的，既没有写入log也没有写入硬盘。</p>
+<p>解决方案有两个：</p>
+<ol type="1">
+<li>加入index写入log的支持操作，但限于时间原因，我打算后续实现（可能会涉及很多修改，比较繁杂）。</li>
+<li>不支持index写入log，进一步探寻问题的本质。我选择方案二。</li>
+</ol>
+<p>进一步问题的本质是什么呢？</p>
+<p>通过阅读日志文件，我发现在结束debugger时，和在终端启动server结束终端时，日志信息有区别。</p>
+<p>在正常终端中结束server时，miniob在背后启动着一个捕获信号的线程，这个线程会捕获用户输入的ctrl+c指令（UNIX信号为SIGINT）。在macos下，我需要输入两次ctrl+c才可以终止终端的server。进程捕获这些后，会执行server
+quit函数。最后执行cleanup函数，cleanup会释放内存中所有的object并且对重要信息进行flush
+to disk。</p>
+<p>而我终止debugger时，所有一切就戛然而止了，没有任何的flush to
+disk日志信息。</p>
+<p>这就把问题引到了，为什么debugger终止时不会让server正常退出。观察条是控制台发现是因为它执行的是强制杀死进程的命令，不会执行任何后续操作。解决办法是手动输入process
+signal SIGINT。</p>
+<p>但在macos环境下，使用lldb还会出现一个问题。无论我输入process signal
+SIGINT，还是process signal SIGSTOP，还是process signal
+SIGTERM，都会暂停debugger，而不是退出。</p>
+<p>进一步排查发现，有一个叫做信号拦截的概念。可以输入process signal
+handle SIGINT查看。</p>
+<p>我们需要输入process handle --pass true --stop false --notify true
+SIGINT，把PASS
+STOP以及NOTIFY标识为正确设置（默认是false，true，true）。然后我们需要手动输入两次process
+signal
+SIGINT（在调试控制台），模拟两次ctrl+c。会发现，进程正确退出了，而且也执行了cleanup的所有操作。再启动进程，发现没有任何报错，成功启动。</p>
+<p>NOTE：每次启动debugger都要执行一次process handle --pass true --stop
+false --notify true SIGINT，因此可以在launch.json中设置：</p>
+<pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token property">"configurations"</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"(lldb) 启动"</span><span class="token punctuation">,</span>
+        <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"lldb"</span><span class="token punctuation">,</span>
+        <span class="token property">"request"</span><span class="token operator">:</span> <span class="token string">"launch"</span><span class="token punctuation">,</span>
+        <span class="token property">"program"</span><span class="token operator">:</span> <span class="token string">"$&#123;workspaceFolder&#125;/build/bin/observer"</span><span class="token punctuation">,</span>
+        <span class="token property">"args"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"-f"</span><span class="token punctuation">,</span> <span class="token string">"$&#123;workspaceFolder&#125;/etc/observer.ini"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token property">"cwd"</span><span class="token operator">:</span> <span class="token string">"$&#123;workspaceFolder&#125;/.vscode"</span><span class="token punctuation">,</span>
+        <span class="token property">"preLaunchTask"</span><span class="token operator">:</span> <span class="token string">"CMake Build"</span><span class="token punctuation">,</span>
+        <span class="token property">"preRunCommands"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"process handle --pass true --stop false --notify true SIGINT"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token property">"sourceMap"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/yacc_sql.y"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/yacc_sql.y"</span><span class="token punctuation">,</span>
+            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/yacc_sql.tab.c"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/yacc_sql.tab.c"</span><span class="token punctuation">,</span>
+            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/lex_sql.l"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/lex_sql.;"</span><span class="token punctuation">,</span>
+            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/lex.yy.c"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/lex.yy.c"</span><span class="token punctuation">,</span>
+          <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这时自然而然会想，那我可以设置一个exitCommands，内部包含两次process
+signal
+SIGINT，然后直接点关闭debugger。但这样不会成功，正确的方法仍然是需要手动输入两次process
+signal SIGINT，具体原因还没排查。</p>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2023</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

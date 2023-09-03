@@ -368,7 +368,9 @@ id、WType以及Table的指针（用于记录写在哪个table）。</p>
 <p>所有的成员函数都是有关上述变量的Get和Set操作。</p>
 <h3 id="lock-manager">Lock Manager</h3>
 <p>总体而言，lock manager维护了一个锁表（lock
-table），所有操作通过与锁表互动来完成。</p>
+table），所有操作通过与锁表互动来完成。Lock
+Manager是一种中心化管理数据库系统锁的方式。正如Buffer Pool
+Manager一样，对系统有全局视角，可以帮助我们更好的管理系统资源（内存，锁）。</p>
 <p><img src="https://media.geeksforgeeks.org/wp-content/uploads/33-4.png"></p>
 <h2 id="implementation">Implementation</h2>
 
