@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>OceanBase-2023 大赛记录 - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    OceanBase-2023 大赛记录
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2023-11-09</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/OceanBase/">OceanBase</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <h2 id="oceanbase-2023">OceanBase 2023</h2>
+<h2 id="pre-concepts">Pre Concepts</h2>
+<h3 id="what-is-multi-tenant-architecture">What is multi-tenant
+architecture?</h3>
+<p>阅读oceanbase的源码过程中第一次碰到租户（tenant）这个概念，而且在题目的相关代码中频繁出现。Multi-tenant设计允许多个用户组（也就是租户）访问一个软件实例所管理的系统或资源。就像是有一个单元楼，里面有很多个房间，每个房间可以看做一个租户，他们共同驻扎在这个单元楼上。每个租户之间会保证安全性和隔离性，也就是一个租户不允许访问其他租户的资源。由于租户之间的隔离，那么不同的租户可以在自己的领域实现定制化，而不会影响到其他租户，就好像你租了一间房子，按照你的个人需求和意愿对房子进行装修，不可能装修到别人家里一样。有了多租户的概念，自然而然会想，这个和单租户有什么区别呢？优势在哪里？我们为什么要这样设计？下面的表格说明了主要区别：</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 41%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Single-tenant Architecture</th>
+<th>Multi-tenant Architecture</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tenant Instances</td>
+<td>Each tenant has a dedicated instance of the application and its
+resources</td>
+<td>Multiple tenants share a single instance of the application and its
+resources</td>
+</tr>
+<tr class="even">
+<td>Scaling</td>
+<td>Scaling requires provisioning and managing individual instances for
+each tenant</td>
+<td>Easier scalability as multiple tenants can be accommodated within a
+single instance</td>
+</tr>
+<tr class="odd">
+<td>Security</td>
+<td>More secure due to isolated environments</td>
+<td>Security measures involve ensuring data isolation and preventing
+unauthorized access</td>
+</tr>
+<tr class="even">
+<td>Cost Efficiency</td>
+<td>Less cost-efficient: hardware and software for each user is paid
+separately</td>
+<td>More cost-efficient thanks to shared infrastructure and
+platform</td>
+</tr>
+<tr class="odd">
+<td>Maintenance and Upgrades</td>
+<td>Independent maintenance and upgrades for each tenant's instance</td>
+<td>Centralized maintenance, updates, and upgrades that apply to all
+tenants</td>
+</tr>
+<tr class="even">
+<td>Deployment</td>
+<td>Slower deployment: each tenant requires individual setup and
+configuration</td>
+<td>Faster deployment: new tenants can be added within the existing
+setup</td>
+</tr>
+</tbody>
+</table>
+<h2 id="final">Final</h2>
+<h3 id="oceanbase部署流程">OceanBase部署流程</h3>
+<p>OceanBase的部署流程摸索了差不多一下午一晚上的时间，在群里各种bug提问，最后还是严格采取官方文档中的步骤来的最稳。连接好官方发的服务器之后。打开终端，默认进入root界面。这个界面下有source文件夹，里面包含了oceanbase的源代码。接下来需要按照如下流程，来确保每次部署和运行TPC-C、TPC-H等测试顺利执行。</p>
+<ul>
+<li><p>终端输入</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token function">ps</span> <span class="token parameter variable">-aux</span> <span class="token operator">|</span> <span class="token function">grep</span> observer<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>确保当前无任何observer的进程运行，若有，直接<code>kill -9 xxxxx</code>，其中xxxxx是observer的pid号。</p></li>
+<li><p>终端输入obd命令</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">obd cluster list <span class="token comment">//如果里面存在任何集群，调用obd cluster stop xxx 以及obd cluster destroy xxx（xxx为对应集群的名字），确保摧毁集群</span>
+cd <span class="token operator">/</span>root<span class="token operator">/</span><span class="token punctuation">.</span>obd<span class="token operator">/</span>cluster<span class="token operator">/</span>
+<span class="token comment">//如果cluster里存在任何文件夹，删除掉</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+<li><p>去data文件夹下面，清空obcluster的内容，同时把最新编译好的release模式的二进制文件，复制到该文件夹的bin目录下</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> /data
+<span class="token function">rm</span> <span class="token parameter variable">-rf</span> obcluster
+<span class="token function">mkdir</span> obcluster
+<span class="token builtin class-name">cd</span> obcluster
+<span class="token function">mkdir</span> bin
+<span class="token builtin class-name">cd</span> bin
+<span class="token function">cp</span> /root/source/oceanbase/build_release/src/observer/observer ./observer<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>```shell cd /root/source/oceanbase/ python3 deploy.py
+--cluster-home-path /data/obcluster <pre class="line-numbers language-none"><code class="language-none">
+- &#96;deploy.py&#96;文件会进行oceanbase的boostrap过程，等待其运行完毕后，运行如下终端命令
+
+  &#96;&#96;&#96;shell
+  cd &#x2F;root&#x2F;.obd&#x2F;cluster&#x2F;
+  mkdir obcluster
+  cd obcluster<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p></li>
+<li><p>分别创建三个文件，<code>config.yaml</code>、<code>.data</code>以及<code>inner_config.yaml</code>。并分别填入下面的内容：</p>
+<p>config.yaml 文件内容</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">oceanbase-ce</span><span class="token punctuation">:</span>
+  <span class="token key atrule">servers</span><span class="token punctuation">:</span>
+  <span class="token punctuation">-</span> 127.0.0.1
+  <span class="token key atrule">global</span><span class="token punctuation">:</span>
+    <span class="token key atrule">home_path</span><span class="token punctuation">:</span> /data/obcluster  <span class="token comment"># 注意 这里是你部署的obcluster集群根目录，需要按照实际情况调整</span>
+    <span class="token key atrule">cluster_id</span><span class="token punctuation">:</span> <span class="token number">1</span>
+    <span class="token key atrule">enable_syslog_recycle</span><span class="token punctuation">:</span> <span class="token boolean important">true</span>
+    <span class="token key atrule">enable_syslog_wf</span><span class="token punctuation">:</span> <span class="token boolean important">false</span>
+    <span class="token key atrule">max_syslog_file_count</span><span class="token punctuation">:</span> <span class="token number">4</span>
+    <span class="token key atrule">devname</span><span class="token punctuation">:</span> lo
+    <span class="token key atrule">memory_limit</span><span class="token punctuation">:</span> 10G
+    <span class="token key atrule">production_mode</span><span class="token punctuation">:</span> <span class="token boolean important">false</span>
+    <span class="token key atrule">__min_full_resource_pool_memory</span><span class="token punctuation">:</span> <span class="token number">1073741824</span>
+    <span class="token key atrule">system_memory</span><span class="token punctuation">:</span> 1G
+    <span class="token key atrule">cpu_count</span><span class="token punctuation">:</span> <span class="token number">24</span>
+    <span class="token key atrule">datafile_size</span><span class="token punctuation">:</span> 60G
+    <span class="token key atrule">datafile_maxsize</span><span class="token punctuation">:</span> 100G
+    <span class="token key atrule">datafile_next</span><span class="token punctuation">:</span> 20G
+    <span class="token key atrule">log_disk_size</span><span class="token punctuation">:</span> 40G<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>.data 文件内容</p>
+<pre class="line-numbers language-none"><code class="language-none">name: obcluster
+components:
+  oceanbase-ce:
+    hash: ee47f7d89ad323bd634a5976f6e89f04911f81a4
+    version: 4.2.1.1
+status: STATUS_STOPPED
+config_status: UNCHNAGE<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>inner_config.yaml 文件内容</p>
+<pre class="line-numbers language-yaml" data-language="yaml"><code class="language-yaml"><span class="token key atrule">name</span><span class="token punctuation">:</span> obcluster
+<span class="token key atrule">components</span><span class="token punctuation">:</span>
+  <span class="token key atrule">oceanbase-ce</span><span class="token punctuation">:</span>
+    <span class="token key atrule">hash</span><span class="token punctuation">:</span> ee47f7d89ad323bd634a5976f6e89f04911f81a4
+    <span class="token key atrule">version</span><span class="token punctuation">:</span> 4.2.1.1
+<span class="token key atrule">status</span><span class="token punctuation">:</span> STATUS_RUNNING
+<span class="token key atrule">config_status</span><span class="token punctuation">:</span> UNCHNAGE<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>设置好TPC-H测试所需要的参数</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">mysql <span class="token parameter variable">-S</span> /data/obcluster/run/sql.sock -uroot@test <span class="token parameter variable">-e</span> <span class="token string">"SET GLOBAL secure_file_priv = '/'"</span>
+mysql <span class="token parameter variable">-S</span> /data/obcluster/run/sql.sock -uroot@test <span class="token parameter variable">-e</span> <span class="token string">"SET GLOBAL ob_query_timeout = 60000000"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
+<li><p>执行测试命令</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># sysbench 测试</span>
+obd <span class="token builtin class-name">test</span> sysbench obcluster <span class="token parameter variable">--time</span><span class="token operator">=</span><span class="token number">14</span> <span class="token parameter variable">--threads</span><span class="token operator">=</span><span class="token number">5</span> <span class="token parameter variable">--tables</span><span class="token operator">=</span><span class="token number">4</span> --table-size<span class="token operator">=</span><span class="token number">10863</span> <span class="token parameter variable">--database</span><span class="token operator">=</span>test <span class="token parameter variable">--tenant</span><span class="token operator">=</span>test --script-name<span class="token operator">=</span>oltp_point_select
+
+<span class="token comment"># TPC-C测试</span>
+obd <span class="token builtin class-name">test</span> tpcc obcluster <span class="token parameter variable">--tenant</span><span class="token operator">=</span>test <span class="token parameter variable">--database</span><span class="token operator">=</span>test <span class="token parameter variable">--terminals</span><span class="token operator">=</span><span class="token number">10</span> --run-mins<span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--warehouses</span><span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--optimization</span><span class="token operator">=</span><span class="token number">0</span>
+
+<span class="token comment"># TPC-H测试</span>
+obd <span class="token builtin class-name">test</span> tpch obcluster <span class="token parameter variable">--tenant</span><span class="token operator">=</span>test <span class="token parameter variable">--database</span><span class="token operator">=</span>test --remote-tbl-dir<span class="token operator">=</span>/data/obcluster/tbl --scale-factor<span class="token operator">=</span><span class="token number">1</span> <span class="token parameter variable">--optimization</span><span class="token operator">=</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+<p>以上就是全部的流程，下次编写好代码继续执行时，还需要从头开始继续做一遍，才可以确保oceanbase正确部署。</p>
+<h3 id="优化点-one锁等待">优化点-One：锁等待</h3>
+<h3 id="优化点-two选举静默">优化点-Two：选举静默</h3>
+<h2 id="source-code-reading-note">Source Code Reading Note</h2>
+<h3 id="server-init">Server Init</h3>
+<h4 id="init_network">init_network()</h4>
+<p><code>init_network</code>对OB的网络子系统进行初始化操作，OBServer的网络处理由<code>ObSrvNetworkFrame</code>抽象，并且提供了初始化<code>init</code>方法。首先会根据global
+context的一些信息初始化一个ObNetOptions的</p>
+<h3 id="obinnertableschema">ObInnerTableSchema</h3>
+<p><code>ObInnerTableSchema</code>提供的是一系列创建table的schema的接口，以<code>ObTableSchema</code>作为输出参数，在此基础上调用宏定义好的函数，对<code>ObTableSchema</code>的属性进行设置。比如对于一号表（THE
+ONE）——
+all_core_table，会调用all_core_table_schema函数，内部会根据下图的模式来设置每一列的相关信息，以及一号表的属性（包括用什么类型的索引、存储格式等）。</p>
+<p><img src="ob1.png" /></p>
+<p>其余的所有表的模式创建同理。</p>
+<h3 id="obbootstrap-batch_create_schema">ObBootstrap::
+batch_create_schema</h3>
+<p>在系统自举的过程中，最消耗时间的部分就是batch_create_schema。输入参数是一个包含128个table的ObIArray数组，在batch内部会遍历每一个table进行创建。</p>
+<p>目前消耗时间最多的是创建all_core_table这一个batch批次的下一个批次。在我的一次测试中，create_all_schema的时间总共消耗9.3s，而第二个批次所花费的时间足足有5.6s左右，达到所有时间的60%。而后面的每一个batch所消耗的时间大约在400ms-500ms之间，总共14个batch。每一个batch，ob把它看做一次transaction，在完成正确性检查之后，开始任务前会调用transaction
+start，结束创建后会调用end，完成提交。</p>
+<p>进一步观察第二次batch的日志可以发现，耗时的关键在于<strong>log
+operation</strong>，有几个table的log
+operation操作占用了90%的创建时间。但后面的batch的log
+operation基本cost在微秒级别，而第二次的batch的前几个table的log
+operation达到了秒级（0.3-0.5s）。但为什么前几个table的log
+operation的时间这么多呢？</p>
+<p>想要优化它，目前最容易想到的思路就是并发创建schema，但需要确认的是batch与batch之间的table元信息是否存在依赖关系，另一个就是以什么样的方式实现并发创建，将时间藏起来。</p>
+<h3 id="section"></h3>
+<h2 id="election-日志">Election 日志</h2>
+<h3 id="init_and_start">init_and_start</h3>
+<p>is_inited:true, is_running:true</p>
+<p><strong>proposer</strong>:{ls_id:{id:1}, addr:"127.0.0.1:2882",
+role:Follower, ballot_number:-1, lease_interval:-0.00s,
+memberlist_with_states:{member_list:{addr_list:[],
+membership_version:{proposal_id:9223372036854775807, config_seq:-1},
+replica_num:0}, prepare_ok:[],
+accept_ok_promised_ts:[follower_promise_membership_version:[]},
+priority_seed:0x1000, restart_counter:1, last_do_prepare_ts:1970-01-01
+08:00:00.-1, self_priority:NULL, p_election:0x7fbc6db73030}</p>
+<p><strong>acceptor</strong>:{ls_id:{id:1}, addr:"127.0.0.1:2882",
+ballot_number:-1, ballot_of_time_window:-1, lease:{owner:"0.0.0.0:0",
+lease_end_ts:invalid, ballot_number:-1}, is_time_window_opened:False,
+vote_reason:, last_time_window_open_ts:1970-01-01 08:00:00.-1,
+p_election:0x7fbc6db73030},
+ls_biggest_min_cluster_version_ever_seen:0.0.0.0, priority:NULL},
+msg_handler=0x7fbc6db72ff0)</p>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2023</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

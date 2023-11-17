@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>CMU-Bustub 2023-Fall Project 0 - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    CMU-Bustub 2023-Fall Project 0
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2023-09-11</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/Database-Management-System/">Database Management System</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <blockquote>
+<p>之前做完了2022
+fall的数据库实现课程。从只会std::cout的c++到整个project完成，了解了很多c++尤其是c++11的特性和STL的用法、选取等。整个过程还是学到了很多有用的知识，无论从语言知识还是系统设计。但之前的实现已经有很多人做过了，并且网上有很多博客记录，时不时看到会给我的实现思路造成一个限制。因此今年想一直跟着这门课推进project，踩一踩坑。</p>
+</blockquote>
+<h2 id="intro">Intro</h2>
+<p>这个project需要通过写时复制（copy-on-write）技术，实现一个k-v存储的字典树（trie）。给定一个key，trie可以高效的提取出value。Trie中每一个节点可以有多个子节点，每个节点代表key的一个字母（本project中，需要实现以一个string为key，来存储任意类型的value的trie）。</p>
+<p>Trie的原理较简单，下面可以通过几个例子来理解Trie的不同操作。</p>
+<p align="center">
+<img src="p001.png" width="650">
+</p>
+<p>这个操作中并没有支持copy-on-write。删除的过程也很简单，找到对应的存储value的节点，此时会有两种情况。</p>
+<ul>
+<li>如果这个节点还有子节点，我们肯定是不能删掉的，因为这样就访问不到子节点们所存储的value了。此时仅仅需要把值去掉即可。在project中需要将这个node的类从<code>TrieNodeWithValue</code>换成<code>TrieNode</code>。</li>
+<li>如果这个节点已经不存在子节点，我们直接删掉这个节点即可。</li>
+</ul>
+<p>Get操作就是简单的搜索整个Trie树，直到获取到想要的值。如果没有找到，需要返回<code>nullptr</code>。</p>
+<h2 id="copy-on-write-trie">Copy-on-Write Trie</h2>
+<p>写时复制是一个很常用的提高“拷贝”这一操作效率的技术。这一般用在拷贝操作的代价十分昂贵的场景。比如，copy-on-write
+fork。Fork是操作系统中的一个系统调用，用来复制一个进程。复制这一操作会给性能带来损害，尤其是读多写少的场景。如果复制的进程在其地址空间内没有做任何改变，那么这个进程本质上和其父进程没有任何不同，因此复制成了多余的操作。Copy-on-write就是为了降低这一性能损耗，假设进程只做读操作，只有当子进程执行写操作时，才会复制一个空间（避免修改父进程的内存，复制之前，子进程的内存空间与父进程共享）。</p>
+<p>这个project要实现写时复制的trie。但最开始让我不解的是，为什么要做这样一个数据结构呢？我们每次读写都是在新root上去访问，既然都使用copy-on-write了，为什么不直接在一个trie树上原地做修改呢？这样插入或删除一个就要新复制一个node，既浪费时间又浪费空间。</p>
+<p>确实是这样的，我们完全可以不用copy-on-write来实现trie，正如2022
+fall的project一样。但这里有一个潜在的需求，<strong>我们需要能访问历史版本的能力（multi-versioning）</strong>。可从<code>trie_test.cpp</code>里找到<code>CopyOnWriteTest</code>，看一下测试的预期行为。通过阅读代码我们就可以发现，每次做put和remove操作，都会新建一个trie的版本。而这个新建的trie保存的是写操作之前的状态+写入的新状态。我们需要确保两件事：</p>
+<ul>
+<li>过去的trie只能访问到它所在的状态，且不会随着未来的写操作改变过去的trie所访问到的数据。始终具有一致性。</li>
+<li>新建的trie能访问到上一个版本的所包含的所有数据（除去自己修改的那部分）。</li>
+</ul>
+<p>要实现上面的两点，我们在插入或删除的时候，每一个经过的node都要做复制操作。</p>
+<p>Put操作的实现思路是，首先创建一个新的root节点；如果已经存在旧root，就调用clone复制。如果不存在任何root，直接创建一个新的root节点。从root节点开始，对每一个key中的元素开始查找遍历。如果找不到，就直接新建一个，并记录到children_里。如果找到了，调用clone复制。最后根据new
+root返回一个Trie。</p>
+<p>Remove操作，我的实现方法是使用递归，先一直深入到存储值的节点（每经过一个结点就做一次clone）。当到达底部的时候，判断是否有子结点。如果有，则将TrieNodeWithValue转化为TrieNode；如果没有，则直接删除。还有很多细节问题可以通过debug给代码打补丁解决。</p>
+<p>下面的图片展示了copy-on-write
+trie的put流程，可以加深对多版本的理解。</p>
+<p align="center">
+<img src="p002.png" width="650">
+</p>
+<h2 id="concurrent-key-value-store">Concurrent Key-Value Store</h2>
+<p>上一个任务中我们实现的是单线程的copy-on-write
+trie，这并没有办法支持多线程并发的插入和删除。这个任务已经为我们实现了TrieStore的定义文件，TrieStore定义了root_，write
+lock以及root
+lock。TrieStore所做的事情就是在之前实现的单线程Trie上增加一层封装，支持并发操作。同时，实验手册需要我们实现一个可以共多个reader和一个writer同时访问的trie。意思就是，当一个线程在修改这个trie时，其他线程仍然可以读取旧root下的值。当一些线程在读取时，writer仍然可以向root写入，而不用等待读取完成。</p>
+<p>这其实和我们平时接触的并发场景并不一样，也和2022
+fall的并发trie要求不同。我们平时接触的并发，都是读写互斥的。当一个线程对trie进行读取操作时，我们不可以对trie写入。同样当trie被写入时，我们不可以读取trie。这是由于2022
+fall的trie是单一版本所导致的。</p>
+<p>那为什么多版本可以让读写同时进行呢？</p>
+<p>观察Trie的类实现，里面仅仅定义了一个root的共享指针。假设我们当前什么都没有。首先创建一个trie
+store的实例对象。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">auto</span> store <span class="token operator">=</span> <span class="token function">TrieStore</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>调用TrieStore的Put方法，假设我们<code>Put("ab", 1)</code>。首先锁住write
+lock，再锁住root
+lock。获取root的一份拷贝，这里的拷贝仅仅是在root共享指针所指向的内存对象中增加了一个引用（这里put时，root是nullptr）。</p>
+<p>获取trie的拷贝之后，就可以释放root
+lock。进一步，put中调用trie的put：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">root <span class="token operator">=</span> root<span class="token punctuation">.</span><span class="token function">Put</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span><span class="token function">move</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>此时，root变成了一个新版本的root。我们在获取root lock，刷新trie
+store中的trie。完成了更新操作。</p>
+<p>上述描述的情况还是单线程场景，接下来我们在这个基础上再<code>Put("ac", 3)</code>。然后看一下多线程场景会发生什么，尝试理解为什么copy-on-write
+trie可以读写并行。</p>
+假设同时来了一个<code>Put("ab", 2)</code>和<code>Get("ab")</code>的请求。如果他们是同时的，那我们预期的行为是Get操作始终可以读取到之前存储的"ab"=1。第一种情况，Put先获取root
+lock，此时Get会等待。等到Put释放root lock的一瞬间，Get获取到root
+lock。两者近乎同时完成对同一个trie的复制。也就是说，当前的root有2个指针指向它。
+<p align="center">
+<img src="p003.png" width="650">
+</p>
+<p>当我们执行</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">root <span class="token operator">=</span> root<span class="token punctuation">.</span><span class="token function">Put</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span><span class="token function">move</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>内部所做的操作是copy-on-write。此时这个root指向了新版本的trie。Get操作则访问的是第一个版本的trie。因此不会冲突。</p>
+<p align="center">
+<img src="p004.png" width="650">
+</p>
+<p>第二种情况是Get先获取到root，这样其实和Put一样，由于copy-on-write的存在，互不影响。</p>
+那为什么Get需要一个ValueGuard呢？这是因为trie实现的Get返回的是Value的指针（还不是智能指针，因此不受其保护）。智能指针指向的是Get所找到的存储值的结点TrieNodeWithValue，而不是它内部的value。具体可以通过下面的图例理解。假设我们在<code>Get("ab")</code>的同时，也有一个并发的<code>Remove("ab")</code>。
+<p align="center">
+<img src="p005.png" width="650">
+</p>
+<p>ValueGuard的本质是在root所指的对象上再加一个reference
+count。当Get操作和Remove操作全部执行完后，如果没有ValueGuard再对root所指向的对象再加一个reference
+count，那么这个reference
+count就会变成0。意味着这块内存会被清除，此时通过Trie的Get方法获得的val就是一个悬挂指针。</p>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2023</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>
