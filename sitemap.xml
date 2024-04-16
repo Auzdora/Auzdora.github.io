@@ -2,15 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://auzdora.github.io/google6bb1823f3a123d2c.html</loc>
-    
-    <lastmod>2024-04-16</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/about2/index.html</loc>
     
     <lastmod>2024-04-16</lastmod>
@@ -284,13 +275,6 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
-    <lastmod>2024-04-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/tags/C/</loc>
     <lastmod>2024-04-16</lastmod>
     <changefreq>weekly</changefreq>
@@ -299,6 +283,13 @@
   
   <url>
     <loc>https://auzdora.github.io/tags/Distributed-System/</loc>
+    <lastmod>2024-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
     <lastmod>2024-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
