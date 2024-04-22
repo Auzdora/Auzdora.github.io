@@ -104,8 +104,7 @@
     <blockquote>
 <p>最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的模块。</p>
 </blockquote>
-<h2 id="batch-normalization">Batch Normalization</h2>
-<h3 id="introduction">Introduction</h3>
+<h3 id="batch-normalization">Batch Normalization</h3>
 <p>训练一个神经网络其实是比较困难的，因为神经网络的学习过程是<strong>反向传播（Back-propagation）</strong>：通过<strong>梯度下降（Gradient
 Descent）</strong>的方式一步步反向更新每一个神经元的权重。而且神经网络一般由多个层构成。这样就造成了一个问题，假设我们有A，B两层神经网络。A的输入是x，输出是y，B的输入是y，输出是z。计算与标签的损失，求梯度进行反向传播之后，A变成了A‘，B变成了B’。再向A输入x，得到的就再也不是y了，而可能是k。这时对于B而言，它之前所学到的关于y的信息就不适用了，必须重新进行adaptation。这样的现象叫做<strong>Internal
 covariate shift</strong>。这也是提出Batch
@@ -193,8 +192,7 @@ E[x^{ (k) } ]&#39; = momentum \times E[x^{ (k) } ]&#39; + (1 - momentum)
 Var[x^{ (k) } ]&#39; = momentum \times Var[x^{ (k) } ]&#39; + (1 -
 momentum) \times Var[x^{ (k) } ]
 \]</span></p>
-<h2 id="layer-normalization">Layer Normalization</h2>
-<h3 id="introduction-1">Introduction</h3>
+<h3 id="layer-normalization">Layer Normalization</h3>
 <p>加速神经网络训练的方法可以用之前提到的batch
 normalization。但是有两点需要注意：</p>
 <ul>
@@ -235,7 +233,7 @@ statistics越不能代表整体。而Layer
 normalization与batch的大小是独立的。</li>
 <li>Layer normalization更适合用于sequence model，处理变长数据。</li>
 </ul>
-<h2 id="reference">Reference</h2>
+<h3 id="reference">Reference</h3>
 <ul>
 <li>Batch Normalizaiton: Accelerating Deep Network Training by Reducing
 Internal Covariate Shift</li>

@@ -105,7 +105,7 @@
 <p>之前做完了2022
 fall的数据库实现课程。从只会std::cout的c++到整个project完成，了解了很多c++尤其是c++11的特性和STL的用法、选取等。整个过程还是学到了很多有用的知识，无论从语言知识还是系统设计。但之前的实现已经有很多人做过了，并且网上有很多博客记录，时不时看到会给我的实现思路造成一个限制。因此今年想一直跟着这门课推进project，踩一踩坑。</p>
 </blockquote>
-<h2 id="intro">Intro</h2>
+<h3 id="intro">Intro</h3>
 <p>这个project需要通过写时复制（copy-on-write）技术，实现一个k-v存储的字典树（trie）。给定一个key，trie可以高效的提取出value。Trie中每一个节点可以有多个子节点，每个节点代表key的一个字母（本project中，需要实现以一个string为key，来存储任意类型的value的trie）。</p>
 <p>Trie的原理较简单，下面可以通过几个例子来理解Trie的不同操作。</p>
 <p align="center">
@@ -117,7 +117,7 @@ fall的数据库实现课程。从只会std::cout的c++到整个project完成，
 <li>如果这个节点已经不存在子节点，我们直接删掉这个节点即可。</li>
 </ul>
 <p>Get操作就是简单的搜索整个Trie树，直到获取到想要的值。如果没有找到，需要返回<code>nullptr</code>。</p>
-<h2 id="copy-on-write-trie">Copy-on-Write Trie</h2>
+<h3 id="copy-on-write-trie">Copy-on-Write Trie</h3>
 <p>写时复制是一个很常用的提高“拷贝”这一操作效率的技术。这一般用在拷贝操作的代价十分昂贵的场景。比如，copy-on-write
 fork。Fork是操作系统中的一个系统调用，用来复制一个进程。复制这一操作会给性能带来损害，尤其是读多写少的场景。如果复制的进程在其地址空间内没有做任何改变，那么这个进程本质上和其父进程没有任何不同，因此复制成了多余的操作。Copy-on-write就是为了降低这一性能损耗，假设进程只做读操作，只有当子进程执行写操作时，才会复制一个空间（避免修改父进程的内存，复制之前，子进程的内存空间与父进程共享）。</p>
 <p>这个project要实现写时复制的trie。但最开始让我不解的是，为什么要做这样一个数据结构呢？我们每次读写都是在新root上去访问，既然都使用copy-on-write了，为什么不直接在一个trie树上原地做修改呢？这样插入或删除一个就要新复制一个node，既浪费时间又浪费空间。</p>
@@ -136,7 +136,7 @@ trie的put流程，可以加深对多版本的理解。</p>
 <p align="center">
 <img src="p002.png" width="650">
 </p>
-<h2 id="concurrent-key-value-store">Concurrent Key-Value Store</h2>
+<h3 id="concurrent-key-value-store">Concurrent Key-Value Store</h3>
 <p>上一个任务中我们实现的是单线程的copy-on-write
 trie，这并没有办法支持多线程并发的插入和删除。这个任务已经为我们实现了TrieStore的定义文件，TrieStore定义了root_，write
 lock以及root

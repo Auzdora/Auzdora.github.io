@@ -101,7 +101,7 @@
   </div>
   
   <div id="content">
-    <h2 id="intro">Intro</h2>
+    <h3 id="intro">Intro</h3>
 <p>优先队列和队列的区别在与“优先”的概念上。对于普通队列而言，遵循的是先进先出（FIFO）的驱逐原则。而优先队列是默认会驱逐队列中最大的元素，因为插入元素和驱逐元素是会始终保持队内有序。优先队列以对数时间复杂度的插入和提取为代价，提供了O(1)时间的提取最大元素的操作。</p>
 <p><code>priority_queue</code>的定义为：</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">template</span><span class="token operator">&lt;</span><span class="token keyword">class</span> <span class="token class-name">T</span><span class="token punctuation">,</span>
@@ -121,7 +121,7 @@ Container（std::vector or std::deque）。内部必须提供以下常用的函�
 target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/concepts/strict_weak_order">strict
 weak ordering</a>。否则会导致undefined behaviour。</p>
 <p>可以看到，默认情况下，在使用内建的类型时，会使用<code>std::less</code>方法作为比较器，在这个情况下，调用<code>top()</code>方法，获取的就是比较后最大的元素。</p>
-<h2 id="functions">Functions</h2>
+<h3 id="functions">Functions</h3>
 <p>常用的函数方法如下：</p>
 <table>
 <thead>
@@ -158,7 +158,7 @@ weak ordering</a>。否则会导致undefined behaviour。</p>
 </tbody>
 </table>
 <p>值得注意的是，优先队列并不支持访问除去顶部元素之外的其他元素。</p>
-<h2 id="use-case">Use Case</h2>
+<h3 id="use-case">Use Case</h3>
 <p>使用时需要<code>#include &lt;queue&gt;</code>。</p>
 <p>使用内建类型时，可以不定义Container和Compare，自动使用std::less的方法进行排序。</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span> data<span class="token punctuation">&#123;</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
@@ -272,7 +272,7 @@ compare就可以成功定义在private中了。</p>
 <span class="token number">9</span> <span class="token number">42</span> <span class="token number">22</span> <span class="token number">7</span> <span class="token number">32</span> <span class="token number">92</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>要正确使用lambda的方式进行调用，需要在C++20的条件下才能成功。具体的答案在<a
 target="_blank" rel="noopener" href="https://stackoverflow.com/questions/71488084/proper-declaration-of-c-private-standard-library-type-member">stackoverflow</a>上。</p>
-<h2 id="relative-pitfalls-and-notes">Relative pitfalls and notes</h2>
+<h3 id="relative-pitfalls-and-notes">Relative pitfalls and notes</h3>
 <ul>
 <li><p><a
 target="_blank" rel="noopener" href="https://stackoverflow.com/questions/68300641/capturing-only-a-specific-member-of-a-class-inside-lambda">Capturing

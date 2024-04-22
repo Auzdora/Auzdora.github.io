@@ -106,8 +106,8 @@
 Hash Table和LRU-K
 Replacer的关系，然后将它们组合起来。实现的难度并不高，只要按照注释内容好好分析，然后按逻辑写下来就可以。重点在于每一个操作的细节问题，细节问题很多，要时刻注意。</p>
 </blockquote>
-<h2 id="buffer-pool-manager-mechanism">Buffer Pool Manager
-Mechanism</h2>
+<h3 id="buffer-pool-manager-mechanism">Buffer Pool Manager
+Mechanism</h3>
 <p>想要实现Buffer Pool Manager，我们就要在high-level的角度理解一下Buffer
 Pool Manager在系统中的作用。先看下图：</p>
 <p><img src="bpm1.png" /></p>
@@ -129,8 +129,8 @@ List中有无空闲的空间。如果有，就采用这个对应的frame
 id。如果没有，说明内存中所有的page全都放满了，那么就需要从LRU-K
 Replacer中，选取一个适合驱逐的内存块驱逐它，留出位置给从Disk
 copy的page使用。</p>
-<h2 id="buffer-pool-manager-instance-implementation">Buffer Pool Manager
-Instance Implementation</h2>
+<h3 id="buffer-pool-manager-instance-implementation">Buffer Pool Manager
+Instance Implementation</h3>
 <p>相关文件夹提供了API及其注释，分别有<code>NewPgImp</code>、<code>FetchPgImp</code>、<code>UnpinPgImp</code>、<code>FlushPgImp</code>、<code>FlushAllPgsImp</code>以及<code>DeletePgImp</code>需要我们实现。相关实现需要注意的地方注释中写的很清晰，当然还有很多细节部分注释中并没有标注出来。比如哈希表的增加和删除的时机、pin
 count增加的时机等等，这些都是需要自己去debug过程中发现代码漏洞而去补全的。</p>
 <p>这里主要说明一下数据结构部分。<code>pages_</code>是一个page数组的首地址，既然是数组，那说明它们的内存空间是连续的，而且支持随机查找。<code>pages_</code>的索引就是frame

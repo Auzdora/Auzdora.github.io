@@ -101,7 +101,7 @@
   </div>
   
   <div id="content">
-    <h2 id="introduction">Introduction</h2>
+    <h3 id="introduction">Introduction</h3>
 <blockquote>
 <p>在用C++写一些Lab和项目的时候，涉及到cast在C++里的应用。发现自己并不熟悉这些东西，于是也仅仅在阅读一些博客后草草了事，没有很深的记忆。但是过一段时间之后，又全部都忘记了，所以想写一个博客来记录一下加深自己的理解。</p>
 </blockquote>
@@ -113,7 +113,7 @@
 <li>const_cast</li>
 </ul>
 <p>下面我们一个个的理解它们。</p>
-<h2 id="static_cast">static_cast</h2>
+<h3 id="static_cast">static_cast</h3>
 <p>Static_cast是在C++中最常用的casting方法。它可以用来在不同相关类型间做转换，例如数值类型（int，float）或者在父子类中转换。</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
 <span class="token keyword">float</span> b <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
@@ -155,7 +155,7 @@ dog<span class="token operator">-></span><span class="token function">makeSound<
 dog<span class="token operator">-></span><span class="token function">wagTail</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// Outputs: "The dog wags its tail"</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这个例子中，animal变量本质就是Dog，因此downcasting为Dog类型就可以使用对应的函数。</p></li>
 </ol>
-<h2 id="dynamic_cast">dynamic_cast</h2>
+<h3 id="dynamic_cast">dynamic_cast</h3>
 <p><code>dynamic_cast</code>主要用于类的downcasting和upcasting。这种cast会在runtime动态检查，在upcasting时，这种是更加安全的操作，效果与<code>static_cast</code>类似。但是在downcasting时，<code>dynamic_cast</code>会对其进行安全检查，这时后会访问父类的虚函数表（只有父类定义了虚函数才有虚函数表，有虚函数说明具有父类转换子类的需求和能力），如果没有虚函数表或没找到相关的信息，或者object不是目标类型，动态检查会失败，即返回一个nullptr。</p>
 <p><strong>Note</strong>：要使用<code>dynamic_cast</code>，且downcasting时，必须父类拥有虚函数。</p>
 <p>下面是使用<code>dynamic_cast</code>的例子：</p>
@@ -175,11 +175,11 @@ Derived<span class="token operator">*</span> derivedPtr <span class="token opera
     derivedPtr<span class="token operator">-></span><span class="token function">bar</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>这个例子中，Base是基类且有虚函数，Derived是派生类。</p>
-<h2 id="reinterpret_cast">reinterpret_cast</h2>
+<h3 id="reinterpret_cast">reinterpret_cast</h3>
 <p>Reinterpret_cast不会在cast过程中进行安全检查，需要程序员在使用的时候格外小心。理解起来较为方便，首先把某个数据或者object当作内存里的一块01组成的block。接下来，在做reinterpret
 cast的时候，本质就是在这个block之上加入不同的看待这个block的视角。我可以cast为int，那么使用的时候就被解释为int，我可以cast到一个class，那么使用的时候就被解释为一个class。</p>
 <p>给予最大的自由，不加繁琐的限制，至于安全问题交给程序员来操心。</p>
-<h2 id="const_cast">const_cast</h2>
+<h3 id="const_cast">const_cast</h3>
 <p><strong>🚧(building...)🚧</strong></p>
 
   </div>

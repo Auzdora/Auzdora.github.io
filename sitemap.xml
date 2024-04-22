@@ -2,6 +2,168 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/04/01/Buffer_Pool_Manager/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/09/11/bustub-primer-2023-fall/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/06/23/cast-in-cpp/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/08/05/ConcurrencyControl/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/08/02/critical-thinking-01/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/06/11/Life-001/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/05/27/LLM/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2022/12/23/Monodepth2/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/07/17/QueryExecution/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/07/01/QueryProcessing/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2022/11/10/SSIM/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/07/31/STL-priority-queue/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2024/01/01/summary-2023/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2023/11/17/Time-in-Distributed-System/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2024/04/22/leveldb-iterator/</loc>
+    
+    <lastmod>2024-04-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/about2/index.html</loc>
     
     <lastmod>2024-04-16</lastmod>
@@ -11,45 +173,9 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/2024/01/01/summary-2023/</loc>
-    
-    <lastmod>2024-01-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/11/17/Time-in-Distributed-System/</loc>
-    
-    <lastmod>2023-11-24</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/09/11/bustub-primer-2023-fall/</loc>
-    
-    <lastmod>2023-09-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/2023/09/03/wle-2023-0903/</loc>
     
     <lastmod>2023-09-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/08/05/ConcurrencyControl/</loc>
-    
-    <lastmod>2023-08-20</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -68,60 +194,6 @@
     <loc>https://auzdora.github.io/2023/08/13/wle-2023-0813/</loc>
     
     <lastmod>2023-08-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/07/17/QueryExecution/</loc>
-    
-    <lastmod>2023-08-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/08/02/critical-thinking-01/</loc>
-    
-    <lastmod>2023-08-08</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/06/23/cast-in-cpp/</loc>
-    
-    <lastmod>2023-08-08</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/07/31/STL-priority-queue/</loc>
-    
-    <lastmod>2023-08-01</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/07/01/QueryProcessing/</loc>
-    
-    <lastmod>2023-07-25</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2022/12/23/Monodepth2/</loc>
-    
-    <lastmod>2023-07-24</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -155,72 +227,9 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/2023/06/11/Life-001/</loc>
-    
-    <lastmod>2023-07-24</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/03/22/Extendible_Hash_Table/</loc>
-    
-    <lastmod>2023-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/03/26/LRU-K_Replacement_Policy/</loc>
-    
-    <lastmod>2023-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/05/27/LLM/</loc>
-    
-    <lastmod>2023-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/about1/index.html</loc>
     
     <lastmod>2023-07-23</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/06/13/BatchNorm-LayerNorm/</loc>
-    
-    <lastmod>2023-06-14</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2022/11/10/SSIM/</loc>
-    
-    <lastmod>2023-05-28</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/2023/04/01/Buffer_Pool_Manager/</loc>
-    
-    <lastmod>2023-05-27</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -247,57 +256,57 @@
 
   <url>
     <loc>https://auzdora.github.io/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   
   <url>
-    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
-    <lastmod>2024-04-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Study/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/C/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Distributed-System/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
-    <lastmod>2024-04-16</lastmod>
+    <lastmod>2024-04-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

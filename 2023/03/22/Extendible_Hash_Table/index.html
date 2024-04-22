@@ -108,12 +108,12 @@ hash
 table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，ConcurrentInsertFindTest和GetNumBucketsTest总是fail。又去参考了很多对可扩展哈希的文章，才发现自己一些细节是错误的。本篇文章尝试以我的理解说清楚extendible
 hash table，并作为我的菜坑记录。</p>
 </blockquote>
-<h2 id="task">Task</h2>
+<h3 id="task">Task</h3>
 <p>这一部分的任务就是搭建一个通用的存储unique
 KV对的哈希表。我们需要实现哈希表的插入、删除以及查找操作。实验手册中并没有要求我们实现shrink部分，所以只需要关注如何扩展哈希表即可。代码在<code>scr/include/container/hash/extendible_hash_table.h</code>以及
 <code>extendible_hash_table.cpp</code>下，实现之前建议先阅读这两个文件的代码和注释，明确我们的目标。</p>
-<h2 id="overview-of-extendible-hash-table">Overview of Extendible Hash
-Table</h2>
+<h3 id="overview-of-extendible-hash-table">Overview of Extendible Hash
+Table</h3>
 <p>在理解可扩展哈希表之前，我们需要了解几个概念。</p>
 <ul>
 <li><strong>Directory</strong>：是存放bucket指针的容器，可动态生长（以原大小的倍数作为增长率），容器的每个元素可用哈希值来索引。</li>
@@ -144,7 +144,7 @@ class="math inline">\(2^{globalDepth-localDepth}\)</span>。</li>
 </ul>
 <p>Global depth和local
 depth的概念就是这些，然而在实现算法的过程中还有对这些概念的应用，我们暂且先忽略，之后的部分会一一阐述。</p>
-<h2 id="implementation-scheme">Implementation Scheme</h2>
+<h3 id="implementation-scheme">Implementation Scheme</h3>
 <p>对于Bucket的Insert，Remove以及Find操作，熟悉一下C++的list容器相关操作就可以实现。不过有一个地方需要注意的是，实现bucket的Insert方法时，注释里说的是先检查key是否存在，如果存在就要更新value。这里如果先判断bucket是否满了，就会出现bug。因为如果一个bucket满了，但刚你要插入的key在这个bucket的中，先判断是否满的话就会直接返回，不会更新对应key的value，就会造成之后find的错误。</p>
 <p>实现了Bucket的三个操作之后，就可以实现ExtendibleHashTable的三大操作了。为了确保线程安全，每一个操作应当加锁来保证。</p>
 <p>这里阐述一下Insert的算法流程，然后结合一个具体的例子，分析算法可能遇到的情况。</p>
@@ -162,7 +162,7 @@ mask的标准，重新分配指针指向。执行步骤6。</li>
 <li>重新计算<code>IndexOf(key)</code>，执行步骤2。</li>
 <li>插入指定的key/value pair。</li>
 </ol>
-<h2 id="example">Example</h2>
+<h3 id="example">Example</h3>
 <p>这个例子来自于官方的Homework #2 - Question
 3。假定每一个bucket的容量大小为2，且哈希函数用最低的g个二进制位，g指global
 depth。</p>
@@ -240,7 +240,7 @@ pair。</p>
 <p><img src="eht11.png" /></p>
 <p>之后的继续添加和扩展大同小异，重点还是理解entry index、global
 depth和local depth的深层含义，还有相关位运算的思想。</p>
-<h2 id="踩坑记录">踩坑记录</h2>
+<h3 id="踩坑记录">踩坑记录</h3>
 <ul>
 <li>第一次实现的时候并没有考虑扩展后的指针指向问题，导致程序运行时访问到了nullptr的地址，报错。实际上directory的扩展本质上就是将原来的direcotry完完整整拷贝一份，不同的只是index不同。</li>
 <li>Grade

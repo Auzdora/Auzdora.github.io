@@ -106,22 +106,22 @@
 execution时，需要阅读大量的源码，并且尝试理清每一个系统组件之间的关系。在这篇博客中，从execution层的视角之下，记录一下bustub的execution
 engine的执行架构。在execution层之上的parser，binder，planner以及optimizer层，仅在必要时提及，详细对这些层的解析会在之后的博客中记录。</p>
 </blockquote>
-<h2 id="overview-on-top-of-execution-layer">Overview on top of execution
-layer</h2>
+<h3 id="overview-on-top-of-execution-layer">Overview on top of execution
+layer</h3>
 <p>官方网站的project
 3的handout中，在背景部分详细介绍了每一个project在bustub架构中的位置。在进入execution
 layer之前，简要理解前面几层的作用也是重要的。在execution
 layer之上，存在parser，binder，planner以及optimizer四层。这四层总体的作用可以描述为一句话：SQL语言通过解析、语法检查，绑定bustub内部object后，根据SQL语义构建execution
 plan并优化。优化过后的plan递交给execution
 engine，执行并返回对应的结果。</p>
-<h3 id="parser-binder">Parser &amp; Binder</h3>
+<h4 id="parser-binder">Parser &amp; Binder</h4>
 <p>Bustub的parser利用了duckdb的源码，将一个query输入到parser中，会对其进行解析和保存，生成一个AST（Abstract
 Syntax
 Tree）保存下来。Binder将绑定对应的statement。最后将statement提交到planner中。</p>
-<h3 id="planner">Planner</h3>
+<h4 id="planner">Planner</h4>
 <p>Planner负责对statement语句进行规划，将statement链接为一个plan node
 tree，并在plan node中加入必要的信息。</p>
-<h3 id="optimizer">Optimizer</h3>
+<h4 id="optimizer">Optimizer</h4>
 <p>Optimizer对生成好的plan tree进行评估并优化，返回一个优化后的plan
 tree。最终提交给Execution engine。</p>
 <p>Optimizer只提供了两个公开的接口，<code>Optimize</code>和<code>OptimizeCustom</code>。bustub是一个rule-based优化的数据库，而不是基于cost-based。当系统设置force
@@ -138,7 +138,7 @@ rule是true时，就使用默认的Optimize方法，否则使用用户自定义�
 <p><strong>Tips</strong>：在阅读源码时，可以根据<code>bustub_instance.cpp</code>这个文件来看。shell.cpp封装了bustub
 instance，并在shell中调用ExecuteSql，对string的sql进行解析，规划，优化以及执行等一系列操作。做project
 3的过程中也可以根据bustub instance进行debug，会很快发现问题的原因。</p>
-<h2 id="overview-of-execution-layer">Overview of execution layer</h2>
+<h3 id="overview-of-execution-layer">Overview of execution layer</h3>
 <p>了解了上面四层的基本作用和功能后，我们就可以将他们所有的细节和实现抛之脑后，并专注于optimizer给我们提供了什么。Optimizer返回的是一个plan
 node。这个plan
 node和planner返回的是同一个类型，不同的是内在的plan：optimizer返回的plan是经过优化后的。因此我们可以先简要理解一下Abstract
@@ -176,8 +176,6 @@ class之后，就有了类型的概念，不同类型的比较肯定无法成功
 node的子node存储于此。其中每一个元素通过RAII的shared_ptr指向另一个AbstractPlanNode。</li>
 </ul>
 <p>每一个Node都链接其子Node，构成了一个树形结构。因此Planner和Optimizer的返回值仅需要一个根节点，即可通过根节点遍历整个树形结构。</p>
-<h2 id="task">Task</h2>
-<p>在实现这些Task之前，请阅读上述的overview部分，首先先对执行引擎层有一个全面的了解。同时可以参考官方实现的一些写法，这样可以节省很多debug的时间。</p>
 <h3 id="task-1---access-method-executors">Task #1 - Access Method
 Executors</h3>
 <p>这一个Task主要实现最基础的增删改查的方法，包括插入、删除、查询和索引查询。这是之后Task的基础，必须确保这一部分没有bug。需要注意的是，实现Task1的全部任务后需要通过p3.00-p3.05的所有测试。</p>
@@ -511,7 +509,7 @@ href="https://auzdora.github.io/2023/07/31/STL-priority-queue/">《STL杂谈：p
 <p>这个实验还有一个需要实现的目标就是实现sort
 limit算子的优化。如果遇到类似的算子排列，需要将两个算子优化为一个topn算子，以减少sort整个table的时间开销。在实现之前建议了解优化器的架构，以及它是如何优化算子的。建议阅读optimizer文件夹中的各种优化实现（注意：bustub采用的是rule-based优化，即满足特定条件或规则就会做优化，不会采用估计开销的优化方式）。对比不同优化方案的写法，找出共性。实现起来相对简单，需要搞清楚sort
 plan和limit plan的父子关系。</p>
-<h2 id="summary">Summary</h2>
+<h3 id="summary">Summary</h3>
 <p>至此，就完成了全部的基本实验。更有趣和挑战的部分应该在Leaderboard
 Task。对于进一步的优化，今后会抽时间完善并做一些总结。这个实验阅读的代码量还是很大的，基本了解了optimizer，executor的工作原理，理清了executor，predicate以及对应evaluation的关系。整个部分相当于在b+tree和buffer
 pool
