@@ -23,7 +23,7 @@
 
 
   
-  <title>LevelDB Iterator - Auzdora&#39;s Blog</title>
+  <title>Understanding LevelDB Iterator - Auzdora&#39;s Blog</title>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 
@@ -84,7 +84,7 @@
   <div class="left-content">
     <article class="post-wrapper markdown-body">
   <h2 class="post-title">
-    LevelDB Iterator
+    Understanding LevelDB Iterator
   </h2>
   <div class="post-meta">
     <time datetime="Invalid date Invalid date ">2024-04-22</time>
@@ -93,26 +93,143 @@
        
     
     
+      
+        <a class="tag" href="/tags/LevelDB/">LevelDB</a> 
        
     
     
   </div>
   
   <div id="content">
-    <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">leveldb<span class="token double-colon punctuation">::</span>Iterator<span class="token operator">*</span> it <span class="token operator">=</span> db<span class="token operator">-></span><span class="token function">NewIterator</span><span class="token punctuation">(</span>leveldb<span class="token double-colon punctuation">::</span><span class="token function">ReadOptions</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <h3 id="intro">Intro</h3>
+<h4 id="understanding-iterators">Understanding Iterators</h4>
+<p>Before diving into the specifics of LevelDB, let's clarify what an
+iterator is in the context of programming. An iterator is an object that
+enables users to traverse a container, particularly lists and arrays,
+without exposing the underlying structure of the data. Iterators are
+fundamental for accessing the elements of a data structure sequentially,
+without needing to understand how the structure organizes its elements
+internally.</p>
+<h4 id="why-leveldb-uses-iterators">Why LevelDB Uses Iterators</h4>
+<p>LevelDB, a fast key-value storage library written by Google, employs
+iterators extensively. The design of LevelDB is such that it stores data
+in sorted order using an efficient disk-based data structure inspired by
+Log-Structured Merge-trees (LSM trees). This sorted arrangement makes it
+essential to have a robust system for traversing the data entries
+efficiently — hence, the use of iterators.</p>
+<p>Iterators in LevelDB are crucial for several reasons:</p>
+<ol type="1">
+<li><strong>Efficient Data Retrieval:</strong> They allow the
+application to access stored data in a sorted manner without loading the
+entire data set into memory. This is particularly beneficial for large
+data sets that do not fit entirely in RAM.</li>
+<li><strong>Abstraction:</strong> LevelDB iterators abstract the
+complexity of the underlying data structure. The user of the library
+does not need to know about the internals of the SSTables (Sorted String
+Tables) or the memtables. Instead, they interact with a clean, simple
+API that the iterator provides.</li>
+</ol>
+<p>In the following sections, we will explore how LevelDB implements its
+iterator interface, the functionalities it supports, and how iterators
+in LevelDB organized. The content below represents my personal
+understanding of the LevelDB iterator, so it may contain some flaws or
+misunderstandings. If you find any, please contact me through any social
+media platform. I'm very happy to discuss it.</p>
+<p><br></p>
+<h3 id="usage-of-the-api">Usage of the API</h3>
+<p>In LevelDB, the iterator is a powerful tool for traversing all the
+data within the database. From a user's perspective, APIs should be
+straightforward and user-friendly. Naturally, before delving deeper into
+how something works, it's essential to learn how to use it. Below, I
+outline some basic scenarios in which the LevelDB iterator can be
+utilized.</p>
+<h4 id="creating-and-using-an-iterator">Creating and Using an
+Iterator</h4>
+<p>To create an iterator in LevelDB, call the <code>NewIterator</code>
+method. This process is akin to how iterators are used in C++ to scan
+through data:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">leveldb<span class="token double-colon punctuation">::</span>Iterator<span class="token operator">*</span> it <span class="token operator">=</span> db<span class="token operator">-></span><span class="token function">NewIterator</span><span class="token punctuation">(</span>leveldb<span class="token double-colon punctuation">::</span><span class="token function">ReadOptions</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 <span class="token keyword">for</span> <span class="token punctuation">(</span>it<span class="token operator">-></span><span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> it<span class="token operator">-></span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> it<span class="token operator">-></span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-  cout <span class="token operator">&lt;&lt;</span> it<span class="token operator">-></span><span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">": "</span>  <span class="token operator">&lt;&lt;</span> it<span class="token operator">-></span><span class="token function">value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
+  cout <span class="token operator">&lt;&lt;</span> it<span class="token operator">-></span><span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token string">": "</span> <span class="token operator">&lt;&lt;</span> it<span class="token operator">-></span><span class="token function">value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> endl<span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span>
 <span class="token function">assert</span><span class="token punctuation">(</span>it<span class="token operator">-></span><span class="token function">status</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// Check for any errors found during the scan</span>
 <span class="token keyword">delete</span> it<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="starting-from-a-specific-point">Starting From a Specific
+Point</h4>
+<p>It is also possible to initiate the iterator at a specific starting
+point in the database:</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">for</span> <span class="token punctuation">(</span>it<span class="token operator">-></span><span class="token function">Seek</span><span class="token punctuation">(</span>start<span class="token punctuation">)</span><span class="token punctuation">;</span>
      it<span class="token operator">-></span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> it<span class="token operator">-></span><span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> limit<span class="token punctuation">;</span>
      it<span class="token operator">-></span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token comment">// Perform actions with each entry</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="reverse-scanning">Reverse Scanning</h4>
+<p>Furthermore, LevelDB's iterator can scan the data in reverse,
+starting from the last entry and moving to the first:</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">for</span> <span class="token punctuation">(</span>it<span class="token operator">-></span><span class="token function">SeekToLast</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> it<span class="token operator">-></span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> it<span class="token operator">-></span><span class="token function">Prev</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token comment">// Actions to be performed on each entry</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3 id="high-level-overview">High level Overview</h3>
+<p>Let's see how excatly iterator abstractions are orgnized in LevelDB
+source code.</p>
+<p>#TODO</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /> Draw the high level
+figure</label></li>
+<li><label><input type="checkbox" /> Explain every part</label></li>
+</ul>
+<p><br></p>
+<h3 id="iterator-abstraction">Iterator Abstraction</h3>
+<p>Iterator is a base class for many iterators within LevelDB. It
+provides a general interface that users can utilize. Basic access
+methods such as <code>Seek()</code>, <code>Valid()</code>,
+<code>SeekToFirst()</code>, <code>SeekToLast()</code>,
+<code>Next()</code>, <code>Prev()</code>, <code>Key()</code>, and
+<code>Value()</code> are provided. These are all pure virtual functions
+which need to be implemented in the inheriting class.</p>
+<p>One more thing about this base class is that it allows higher-level
+code to register a cleanup function that will be invoked when an
+iterator is destroyed.</p>
+<p><br></p>
+<h3 id="two-level-iterator">Two level iterator</h3>
+<p>Here’s your revised text with grammar corrections:</p>
+<p>Two-level iterators provide a general interface for <strong>table
+iterators</strong> and <strong>concatenating iterators</strong> (we will
+see how these two are implemented later). There are two iterators in the
+two-level iterator design. The basic idea behind this is that when we
+iterate, we first use an index iterator to locate the exact block data
+we need. We then call a block function to build the block iterator based
+on the block we searched, and subsequently iterate over this block
+iterator. Pretty simple and straightforward, right? However, the code is
+actually tricky, and there are a lot of things we need to take care
+of.</p>
+<p>#TODO</p>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /> Draw a diagram to
+demonstrate how two level iterator works</label></li>
+<li><label><input type="checkbox" /> Explain details of
+<code>SkipEmptyDataBlocksForward()</code>
+<code>SkipEmptyDataBlocksBackward()</code> and
+<code>InitDataBlock()</code></label></li>
+</ul>
+<p><br></p>
+<h3 id="reference">Reference</h3>
+<ol type="1">
+<li>https://kernelmaker.github.io/Leveldb_Iterator</li>
+<li>https://zhuanlan.zhihu.com/p/45829937</li>
+</ol>
+<p><br></p>
+<h3 id="todo">TODO</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /> Apr 23: Two level iterator
+explanation and Table iterator</label></li>
+<li><label><input type="checkbox" /> Apr 24: Concatenating
+iterator</label></li>
+<li><label><input type="checkbox" /> Apr 25: Block iterator &amp; Level
+file num iterator</label></li>
+<li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
+</ul>
 
   </div>
 
