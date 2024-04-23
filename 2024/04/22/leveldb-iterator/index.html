@@ -134,7 +134,7 @@ iterator interface, the functionalities it supports, and how iterators
 in LevelDB organized. The content below represents my personal
 understanding of the LevelDB iterator, so it may contain some flaws or
 misunderstandings. If you find any, please contact me through any social
-media platform. I'm very happy to discuss it.</p>
+media platform. I'm very happy to discuss about it.</p>
 <p><br></p>
 <h3 id="usage-of-the-api">Usage of the API</h3>
 <p>In LevelDB, the iterator is a powerful tool for traversing all the
@@ -204,11 +204,64 @@ on the block we searched, and subsequently iterate over this block
 iterator. Pretty simple and straightforward, right? However, the code is
 actually tricky, and there are a lot of things we need to take care
 of.</p>
+<p>After every index iterator operation, it will call
+<code>InitDataBlock()</code>function, the general role of this function
+is to construction target data block iterator (which can be also called
+second iterator) eventually call <code>SetDataIterator()</code>, set
+<code>data_iter</code>. There are some edge cases of course:</p>
+<ul>
+<li>If current index iterator is not valid, set data iterator to
+nullptr</li>
+<li>If current index is valid but the data iterator has already been
+set, and it is equal to <code>data_block_handle_</code>
+(<code>data_block_handle_</code> is index value), do nothing. Else call
+block function to construct a new iterator and set</li>
+</ul>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">TwoLevelIterator</span><span class="token double-colon punctuation">::</span><span class="token function">InitDataBlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>index_iter_<span class="token punctuation">.</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">SetDataIterator</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    Slice handle <span class="token operator">=</span> index_iter_<span class="token punctuation">.</span><span class="token function">value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data_iter_<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">nullptr</span> <span class="token operator">&amp;&amp;</span>
+        handle<span class="token punctuation">.</span><span class="token function">compare</span><span class="token punctuation">(</span>data_block_handle_<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// data_iter_ is already constructed with this iterator, so</span>
+      <span class="token comment">// no need to change anything</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      Iterator<span class="token operator">*</span> iter <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token operator">*</span>block_function_<span class="token punctuation">)</span><span class="token punctuation">(</span>arg_<span class="token punctuation">,</span> options_<span class="token punctuation">,</span> handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      data_block_handle_<span class="token punctuation">.</span><span class="token function">assign</span><span class="token punctuation">(</span>handle<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> handle<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token function">SetDataIterator</span><span class="token punctuation">(</span>iter<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>Now that we understand how a two-level index works, let’s explore
+further. Given an index iterator, we construct a data iterator, and atop
+this structure, we can retrieve data entries sequentially. But what
+happens when the first data block reaches its end? This is where the
+functions <code>SkipEmptyDataBlocksForward()</code> and
+<code>SkipEmptyDataBlocksBackward()</code> come into play. When the
+<code>data_iter_</code> is either <code>nullptr</code> or invalid, these
+functions move the index iterator to the next block—or to the previous
+one if the function is <code>SkipEmptyDataBlocksBackward()</code>. Here
+we got a new index iterator, so we also need call
+<code>InitDataBlock()</code> to construct corresponding data iterator,
+and then we set data iterator to first entry of this new data block.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">TwoLevelIterator</span><span class="token double-colon punctuation">::</span><span class="token function">SkipEmptyDataBlocksForward</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>data_iter_<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token keyword">nullptr</span> <span class="token operator">||</span> <span class="token operator">!</span>data_iter_<span class="token punctuation">.</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// Move to next block</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>index_iter_<span class="token punctuation">.</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">SetDataIterator</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    index_iter_<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">InitDataBlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data_iter_<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> data_iter_<span class="token punctuation">.</span><span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>#TODO</p>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="" /> Draw a diagram to
 demonstrate how two level iterator works</label></li>
-<li><label><input type="checkbox" /> Explain details of
+<li><label><input type="checkbox" checked="" /> Explain details of
 <code>SkipEmptyDataBlocksForward()</code>
 <code>SkipEmptyDataBlocksBackward()</code> and
 <code>InitDataBlock()</code></label></li>
