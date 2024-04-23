@@ -204,6 +204,9 @@ on the block we searched, and subsequently iterate over this block
 iterator. Pretty simple and straightforward, right? However, the code is
 actually tricky, and there are a lot of things we need to take care
 of.</p>
+<p align="center">
+<img src="lv1.jpeg" width="650">
+</p>
 <p>After every index iterator operation, it will call
 <code>InitDataBlock()</code>function, the general role of this function
 is to construction target data block iterator (which can be also called
@@ -257,15 +260,6 @@ and then we set data iterator to first entry of this new data block.</p>
     <span class="token keyword">if</span> <span class="token punctuation">(</span>data_iter_<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> data_iter_<span class="token punctuation">.</span><span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
   <span class="token punctuation">&#125;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<p>#TODO</p>
-<ul class="task-list">
-<li><label><input type="checkbox" checked="" /> Draw a diagram to
-demonstrate how two level iterator works</label></li>
-<li><label><input type="checkbox" checked="" /> Explain details of
-<code>SkipEmptyDataBlocksForward()</code>
-<code>SkipEmptyDataBlocksBackward()</code> and
-<code>InitDataBlock()</code></label></li>
-</ul>
 <p><br></p>
 <h3 id="reference">Reference</h3>
 <ol type="1">
@@ -275,10 +269,10 @@ demonstrate how two level iterator works</label></li>
 <p><br></p>
 <h3 id="todo">TODO</h3>
 <ul class="task-list">
-<li><label><input type="checkbox" /> Apr 23: Two level iterator
-explanation and Table iterator</label></li>
-<li><label><input type="checkbox" /> Apr 24: Concatenating
-iterator</label></li>
+<li><label><input type="checkbox" checked="" /> Apr 23: Two level
+iterator explanation</label></li>
+<li><label><input type="checkbox" /> Apr 24: Table iterator &amp;
+Concatenating iterator</label></li>
 <li><label><input type="checkbox" /> Apr 25: Block iterator &amp; Level
 file num iterator</label></li>
 <li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
