@@ -193,7 +193,6 @@ code to register a cleanup function that will be invoked when an
 iterator is destroyed.</p>
 <p><br></p>
 <h3 id="two-level-iterator">Two level iterator</h3>
-<p>Here’s your revised text with grammar corrections:</p>
 <p>Two-level iterators provide a general interface for <strong>table
 iterators</strong> and <strong>concatenating iterators</strong> (we will
 see how these two are implemented later). There are two iterators in the
@@ -261,6 +260,135 @@ and then we set data iterator to first entry of this new data block.</p>
   <span class="token punctuation">&#125;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p><br></p>
+<h3 id="table-iterator">Table iterator</h3>
+<p>The table iterator is essentially a two-level iterator as described
+earlier. To create a new two-level iterator, we start with an index
+iterator, then add a block function—used to create a data block iterator
+(<code>Table::BlockReader</code> in this case), the argument (the table
+itself), and some options to control the behavior of the database.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">Iterator<span class="token operator">*</span> <span class="token class-name">Table</span><span class="token double-colon punctuation">::</span><span class="token function">NewIterator</span><span class="token punctuation">(</span><span class="token keyword">const</span> ReadOptions<span class="token operator">&amp;</span> options<span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">return</span> <span class="token function">NewTwoLevelIterator</span><span class="token punctuation">(</span>
+      rep_<span class="token operator">-></span>index_block<span class="token operator">-></span><span class="token function">NewIterator</span><span class="token punctuation">(</span>rep_<span class="token operator">-></span>options<span class="token punctuation">.</span>comparator<span class="token punctuation">)</span><span class="token punctuation">,</span>
+      <span class="token operator">&amp;</span>Table<span class="token double-colon punctuation">::</span>BlockReader<span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">const_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span>Table<span class="token operator">*</span><span class="token operator">></span></span></span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">)</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>The key functionality lies within the <code>BlockReader()</code>
+function. Let’s break down this function step by step to understand its
+logic:</p>
+<p>Based on the <code>index_value</code> stored in the index iterator,
+we decode it into a <code>BlockHandle</code> object. A
+<code>BlockHandle</code> contains only two variables that help locate
+the block:</p>
+<ul>
+<li>offset</li>
+<li>size</li>
+</ul>
+<p>Now, we have two options regarding whether or not we use a
+<code>block_cache</code> to store the block:</p>
+<p>If the <code>cache_handle</code> is <code>nullptr</code>, we indeed
+need to manually release this memory space. Therefore, we register a
+<code>DeleteBlock()</code> function to the iterator.</p>
+<p align="center">
+<img src="lv2.jpeg" width="650">
+</p>
+<p>If we opt to use the <code>block_cache</code>, the initialization of
+the data block starts with constructing a key to find it in the cache.
+If the cache contains this key, we directly set the block; otherwise, we
+must read the block from the disk and insert it into the cache for
+future retrieval. Additionally, when utilizing <code>block_cache</code>
+to build this iterator, we also need register a cleanup
+function—<code>ReleaseBlock()</code> into iterator.</p>
+<p align="center">
+<img src="lv3.jpeg" width="650">
+</p>
+<p>Below is the code.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">Iterator<span class="token operator">*</span> <span class="token class-name">Table</span><span class="token double-colon punctuation">::</span><span class="token function">BlockReader</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span> arg<span class="token punctuation">,</span> <span class="token keyword">const</span> ReadOptions<span class="token operator">&amp;</span> options<span class="token punctuation">,</span>
+                             <span class="token keyword">const</span> Slice<span class="token operator">&amp;</span> index_value<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  Table<span class="token operator">*</span> table <span class="token operator">=</span> <span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span>Table<span class="token operator">*</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  Cache<span class="token operator">*</span> block_cache <span class="token operator">=</span> table<span class="token operator">-></span>rep_<span class="token operator">-></span>options<span class="token punctuation">.</span>block_cache<span class="token punctuation">;</span>
+  Block<span class="token operator">*</span> block <span class="token operator">=</span> <span class="token keyword">nullptr</span><span class="token punctuation">;</span>
+  Cache<span class="token double-colon punctuation">::</span>Handle<span class="token operator">*</span> cache_handle <span class="token operator">=</span> <span class="token keyword">nullptr</span><span class="token punctuation">;</span>
+
+  BlockHandle handle<span class="token punctuation">;</span>
+  Slice input <span class="token operator">=</span> index_value<span class="token punctuation">;</span>
+  Status s <span class="token operator">=</span> handle<span class="token punctuation">.</span><span class="token function">DecodeFrom</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    BlockContents contents<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>block_cache <span class="token operator">!=</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// we choose to use cache here</span>
+      <span class="token comment">// build lookup key</span>
+      <span class="token keyword">char</span> cache_key_buffer<span class="token punctuation">[</span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+      <span class="token function">EncodeFixed64</span><span class="token punctuation">(</span>cache_key_buffer<span class="token punctuation">,</span> table<span class="token operator">-></span>rep_<span class="token operator">-></span>cache_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token function">EncodeFixed64</span><span class="token punctuation">(</span>cache_key_buffer <span class="token operator">+</span> <span class="token number">8</span><span class="token punctuation">,</span> handle<span class="token punctuation">.</span><span class="token function">offset</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      Slice <span class="token function">key</span><span class="token punctuation">(</span>cache_key_buffer<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>cache_key_buffer<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token comment">// lookup in cache</span>
+      cache_handle <span class="token operator">=</span> block_cache<span class="token operator">-></span><span class="token function">Lookup</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>cache_handle <span class="token operator">!=</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// find it</span>
+        block <span class="token operator">=</span> <span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span>Block<span class="token operator">*</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>block_cache<span class="token operator">-></span><span class="token function">Value</span><span class="token punctuation">(</span>cache_handle<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// not found</span>
+        s <span class="token operator">=</span> <span class="token function">ReadBlock</span><span class="token punctuation">(</span>table<span class="token operator">-></span>rep_<span class="token operator">-></span>file<span class="token punctuation">,</span> options<span class="token punctuation">,</span> handle<span class="token punctuation">,</span> <span class="token operator">&amp;</span>contents<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+          block <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">Block</span><span class="token punctuation">(</span>contents<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token keyword">if</span> <span class="token punctuation">(</span>contents<span class="token punctuation">.</span>cachable <span class="token operator">&amp;&amp;</span> options<span class="token punctuation">.</span>fill_cache<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            cache_handle <span class="token operator">=</span> block_cache<span class="token operator">-></span><span class="token function">Insert</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> block<span class="token punctuation">,</span> block<span class="token operator">-></span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                               <span class="token operator">&amp;</span>DeleteCachedBlock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// we choose to not use cache here</span>
+      s <span class="token operator">=</span> <span class="token function">ReadBlock</span><span class="token punctuation">(</span>table<span class="token operator">-></span>rep_<span class="token operator">-></span>file<span class="token punctuation">,</span> options<span class="token punctuation">,</span> handle<span class="token punctuation">,</span> <span class="token operator">&amp;</span>contents<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>s<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        block <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">Block</span><span class="token punctuation">(</span>contents<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+	
+  <span class="token comment">// now we get the block, create iter and register cleanup function</span>
+  Iterator<span class="token operator">*</span> iter<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>block <span class="token operator">!=</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    iter <span class="token operator">=</span> block<span class="token operator">-></span><span class="token function">NewIterator</span><span class="token punctuation">(</span>table<span class="token operator">-></span>rep_<span class="token operator">-></span>options<span class="token punctuation">.</span>comparator<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>cache_handle <span class="token operator">==</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      iter<span class="token operator">-></span><span class="token function">RegisterCleanup</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>DeleteBlock<span class="token punctuation">,</span> block<span class="token punctuation">,</span> <span class="token keyword">nullptr</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      iter<span class="token operator">-></span><span class="token function">RegisterCleanup</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ReleaseBlock<span class="token punctuation">,</span> block_cache<span class="token punctuation">,</span> cache_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    iter <span class="token operator">=</span> <span class="token function">NewErrorIterator</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">return</span> iter<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3 id="concatenating-iterator">Concatenating Iterator</h3>
+<p>The Concatenating iterator itself functions as a two-level iterator.
+The first level is the <code>LevelFileNumIterator</code> (a basic type
+of iterator), which we have previously discussed. The second level is a
+Table Iterator, constructed by the block function
+<code>GetFileIterator()</code>.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">static</span> Iterator<span class="token operator">*</span> <span class="token function">GetFileIterator</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span> arg<span class="token punctuation">,</span> the ReadOptions<span class="token operator">&amp;</span> options<span class="token punctuation">,</span>
+                                 the Slice<span class="token operator">&amp;</span> file_value<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  TableCache<span class="token operator">*</span> cache <span class="token operator">=</span> <span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span>TableCache<span class="token operator">*</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>arg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>file_value<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token function">NewErrorIterator</span><span class="token punctuation">(</span>
+        <span class="token class-name">Status</span><span class="token double-colon punctuation">::</span><span class="token function">Corruption</span><span class="token punctuation">(</span><span class="token string">"FileReader invoked with an unexpected value"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> cache<span class="token operator">-></span><span class="token function">NewIterator</span><span class="token punctuation">(</span>options<span class="token punctuation">,</span> <span class="token function">DecodeFixed64</span><span class="token punctuation">(</span>file_value<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                              <span class="token function">DecodeFixed64</span><span class="token punctuation">(</span>file_value<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>In the <code>TableCache::NewIterator()</code> function, we use
+<code>FindTable()</code> to locate the corresponding table based on
+<code>file_number</code> and <code>file_size</code>. Once the table is
+located, we create a table iterator and return it. This table iterator,
+as previously described, is also a two-level iterator. Thus, the
+Concatenating iterator could be considered a "three-level iterator." The
+overall iteration scheme works as follows: based on the level file
+number iterator, it invokes <code>GetFileIterator()</code> to create a
+table iterator. We then iterate over this table iterator using the same
+scheme as discussed in the <strong>Table Iterator</strong> chapter.</p>
+<p><br></p>
 <h3 id="reference">Reference</h3>
 <ol type="1">
 <li>https://kernelmaker.github.io/Leveldb_Iterator</li>
@@ -274,7 +402,7 @@ iterator explanation</label></li>
 <li><label><input type="checkbox" /> Apr 24: Table iterator &amp;
 Concatenating iterator</label></li>
 <li><label><input type="checkbox" /> Apr 25: Block iterator &amp; Level
-file num iterator</label></li>
+file num iterator &amp; Memtable iterator</label></li>
 <li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
 </ul>
 
