@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles");
 @import url("https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles&family=Poppins:wght@300;400;500;700");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
 @media (prefers-color-scheme: light) {
   .markdown-body {
     color-scheme: light;
@@ -1429,7 +1430,8 @@ template {
 }
 .post-wrapper {
   position: relative;
-  font-size: 17px;
+  font-size: 16px;
+  font-family: 'Merriweather', serif;
   line-height: 1.7;
 }
 .post-wrapper .post-meta {
@@ -1872,7 +1874,7 @@ nav .container .menu-wrapper ul li:last-child {
   box-sizing: border-box;
 }
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Merriweather', serif;
   background-color: #fff;
   color: #202020;
 }
@@ -1884,7 +1886,7 @@ main {
 }
 :root {
   --dark-bg-color: #202020;
-  --dark-text-color: #fff;
+  --dark-text-color: #dadada;
   --dark-nav-color: #070707;
   --dark-footer-color: #070707; /* Add your desired footer color */
   --dark-description-color: #9f9f9f;

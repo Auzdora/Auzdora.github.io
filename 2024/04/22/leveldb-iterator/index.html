@@ -298,7 +298,7 @@ future retrieval. Additionally, when utilizing <code>block_cache</code>
 to build this iterator, we also need register a cleanup
 function—<code>ReleaseBlock()</code> into iterator.</p>
 <p align="center">
-<img src="lv3.jpeg" width="650">
+<img src="lv3.jpeg" width="950">
 </p>
 <p>Below is the code.</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">Iterator<span class="token operator">*</span> <span class="token class-name">Table</span><span class="token double-colon punctuation">::</span><span class="token function">BlockReader</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span> arg<span class="token punctuation">,</span> <span class="token keyword">const</span> ReadOptions<span class="token operator">&amp;</span> options<span class="token punctuation">,</span>
@@ -399,8 +399,8 @@ scheme as discussed in the <strong>Table Iterator</strong> chapter.</p>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="" /> Apr 23: Two level
 iterator explanation</label></li>
-<li><label><input type="checkbox" /> Apr 24: Table iterator &amp;
-Concatenating iterator</label></li>
+<li><label><input type="checkbox" checked="" /> Apr 24: Table iterator
+&amp; Concatenating iterator</label></li>
 <li><label><input type="checkbox" /> Apr 25: Block iterator &amp; Level
 file num iterator &amp; Memtable iterator</label></li>
 <li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
