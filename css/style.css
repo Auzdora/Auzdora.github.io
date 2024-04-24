@@ -1430,9 +1430,9 @@ template {
 }
 .post-wrapper {
   position: relative;
-  font-size: 16px;
+  font-size: 17px;
   font-family: 'Merriweather', serif;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 .post-wrapper .post-meta {
   color: #707070;
@@ -1727,6 +1727,11 @@ nav .container .menu-wrapper ul li:last-child {
 }
 .toc-wrapper .is-active-link::before {
   background-color: #8a6c51;
+}
+.about-wrapper {
+  font-size: 17px;
+  font-family: 'Merriweather', serif;
+  line-height: 1.7;
 }
 .about-wrapper .row {
   align-items: flex-end;
