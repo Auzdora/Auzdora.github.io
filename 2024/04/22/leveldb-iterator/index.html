@@ -192,6 +192,299 @@ which need to be implemented in the inheriting class.</p>
 code to register a cleanup function that will be invoked when an
 iterator is destroyed.</p>
 <p><br></p>
+<h3 id="three-basic-iterator---memtable-iterator">Three Basic Iterator -
+Memtable Iterator</h3>
+<p>Memtable iterator is built on top of iterator abstraction, it's an
+encapsulation of SkipList iterator.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">MemTableIterator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">Iterator</span></span> <span class="token punctuation">&#123;</span>
+ <span class="token keyword">public</span><span class="token operator">:</span>
+  <span class="token keyword">explicit</span> <span class="token function">MemTableIterator</span><span class="token punctuation">(</span>MemTable<span class="token double-colon punctuation">::</span>Table<span class="token operator">*</span> table<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">iter_</span><span class="token punctuation">(</span>table<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+  <span class="token function">MemTableIterator</span><span class="token punctuation">(</span><span class="token keyword">const</span> MemTableIterator<span class="token operator">&amp;</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token keyword">delete</span><span class="token punctuation">;</span>
+  MemTableIterator<span class="token operator">&amp;</span> <span class="token keyword">operator</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token keyword">const</span> MemTableIterator<span class="token operator">&amp;</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token keyword">delete</span><span class="token punctuation">;</span>
+
+  <span class="token operator">~</span><span class="token function">MemTableIterator</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token operator">=</span> <span class="token keyword">default</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">bool</span> <span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> iter_<span class="token punctuation">.</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Seek</span><span class="token punctuation">(</span><span class="token keyword">const</span> Slice<span class="token operator">&amp;</span> k<span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> iter_<span class="token punctuation">.</span><span class="token function">Seek</span><span class="token punctuation">(</span><span class="token function">EncodeKey</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tmp_<span class="token punctuation">,</span> k<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> iter_<span class="token punctuation">.</span><span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">SeekToLast</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> iter_<span class="token punctuation">.</span><span class="token function">SeekToLast</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> iter_<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Prev</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> iter_<span class="token punctuation">.</span><span class="token function">Prev</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  Slice <span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> <span class="token function">GetLengthPrefixedSlice</span><span class="token punctuation">(</span>iter_<span class="token punctuation">.</span><span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  Slice <span class="token function">value</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    Slice key_slice <span class="token operator">=</span> <span class="token function">GetLengthPrefixedSlice</span><span class="token punctuation">(</span>iter_<span class="token punctuation">.</span><span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">GetLengthPrefixedSlice</span><span class="token punctuation">(</span>key_slice<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> key_slice<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  Status <span class="token function">status</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> <span class="token class-name">Status</span><span class="token double-colon punctuation">::</span><span class="token function">OK</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+
+ <span class="token keyword">private</span><span class="token operator">:</span>
+  MemTable<span class="token double-colon punctuation">::</span>Table<span class="token double-colon punctuation">::</span>Iterator iter_<span class="token punctuation">;</span>
+  std<span class="token double-colon punctuation">::</span>string tmp_<span class="token punctuation">;</span>  <span class="token comment">// For passing to EncodeKey</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3 id="three-basic-iterator---block-iterator">Three Basic Iterator -
+Block Iterator</h3>
+<p>The Block iterator is implemented in <code>block.cc</code> and
+inherits from the Iterator abstraction. The essence of this class lies
+in overriding all the virtual functions of the Iterator. To comprehend
+how the iterator calculates, it's essential first to understand how data
+blocks are organized. The image below depicts the layout of a data
+block.</p>
+<p align="center">
+<img src="lv4.png" width="650">
+</p>
+<p>As illustrated, a restart point stores the offset of an actual data
+entry (you can also think of it as a pointer pointing to a data entry).
+The length records how many restart points this data block contains.</p>
+<p>In the implementation of the block iterator, there are some key
+meta-information pieces that we should pay attention to:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">Block</span><span class="token operator">:</span><span class="token base-clause"><span class="token operator">:</span><span class="token class-name">Iter</span> <span class="token operator">:</span> <span class="token keyword">public</span> <span class="token class-name">Iterator</span></span> <span class="token punctuation">&#123;</span>
+ <span class="token keyword">private</span><span class="token operator">:</span>
+  <span class="token keyword">const</span> Comparator<span class="token operator">*</span> <span class="token keyword">const</span> comparator_<span class="token punctuation">;</span>
+  <span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> <span class="token keyword">const</span> data_<span class="token punctuation">;</span>       <span class="token comment">// underlying block contents</span>
+  <span class="token keyword">uint32_t</span> <span class="token keyword">const</span> restarts_<span class="token punctuation">;</span>      <span class="token comment">// Offset of restart array (list of fixed32)</span>
+  <span class="token keyword">uint32_t</span> <span class="token keyword">const</span> num_restarts_<span class="token punctuation">;</span>  <span class="token comment">// Number of uint32_t entries in restart array</span>
+
+  <span class="token comment">// current_ is the offset in data_ of the current entry.  >= restarts_ if !Valid</span>
+  <span class="token keyword">uint32_t</span> current_<span class="token punctuation">;</span>
+  <span class="token keyword">uint32_t</span> restart_index_<span class="token punctuation">;</span>  <span class="token comment">// Index of restart block in which current_ falls</span>
+  std<span class="token double-colon punctuation">::</span>string key_<span class="token punctuation">;</span>
+  Slice value_<span class="token punctuation">;</span>
+  Status status_<span class="token punctuation">;</span>
+
+  <span class="token comment">// other code ....</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><code>data_</code> points to the beginning of the block as shown
+above. <code>restarts_</code> points to the beginning of the restart
+points. <code>num_restarts_</code> equals the length.
+<code>current_</code> and <code>restart_index_</code> help us navigate
+within the data block. The following function is quite important:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">uint32_t</span> <span class="token function">GetRestartPoint</span><span class="token punctuation">(</span><span class="token keyword">uint32_t</span> index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token function">assert</span><span class="token punctuation">(</span>index <span class="token operator">&lt;</span> num_restarts_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token function">DecodeFixed32</span><span class="token punctuation">(</span>data_ <span class="token operator">+</span> restarts_ <span class="token operator">+</span> index <span class="token operator">*</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">uint32_t</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>The input parameter <code>index</code> indicates the ith restart
+point. In this function, we perform some simple offset calculation and
+decode the data entry offset, then return it. With this function, we can
+now jump to any restart point we desire within this data block.</p>
+<p>Navigating with <code>Prev()</code> and <code>Next()</code></p>
+<p>In <code>Next()</code>, the function calls
+<code>ParseNextKey()</code>. This includes some shared or non-shared
+elements, which we don't discuss in this blog; we can simply consider it
+as an entry to help us focus on the iterator implementation. The idea
+behind this function is straightforward. We first calculate the next
+data entry address. If it's beyond the data entry limit, return false.
+Otherwise, decode this entry, set the value and key, and update the
+restart_index when necessary (e.g., assume the current data entry is the
+end of restart point 0 block; when we call
+<code>NextEntryOffset()</code>, the current data entry is in restart
+point 1 field now, so we need to update the restart index too).</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">  <span class="token keyword">void</span> <span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ParseNextKey</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">bool</span> <span class="token function">ParseNextKey</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    current_ <span class="token operator">=</span> <span class="token function">NextEntryOffset</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> p <span class="token operator">=</span> data_ <span class="token operator">+</span> current_<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> limit <span class="token operator">=</span> data_ <span class="token operator">+</span> restarts_<span class="token punctuation">;</span>  <span class="token comment">// Restarts come right after data</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>p <span class="token operator">>=</span> limit<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// No more entries to return.  Mark as invalid.</span>
+      current_ <span class="token operator">=</span> restarts_<span class="token punctuation">;</span>
+      restart_index_ <span class="token operator">=</span> num_restarts_<span class="token punctuation">;</span>
+      <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">// Decode next entry</span>
+    <span class="token keyword">uint32_t</span> shared<span class="token punctuation">,</span> non_shared<span class="token punctuation">,</span> value_length<span class="token punctuation">;</span>
+    p <span class="token operator">=</span> <span class="token function">DecodeEntry</span><span class="token punctuation">(</span>p<span class="token punctuation">,</span> limit<span class="token punctuation">,</span> <span class="token operator">&amp;</span>shared<span class="token punctuation">,</span> <span class="token operator">&amp;</span>non_shared<span class="token punctuation">,</span> <span class="token operator">&amp;</span>value_length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>p <span class="token operator">==</span> <span class="token keyword">nullptr</span> <span class="token operator">||</span> key_<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> shared<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">CorruptionError</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      key_<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>shared<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      key_<span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>p<span class="token punctuation">,</span> non_shared<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      value_ <span class="token operator">=</span> <span class="token function">Slice</span><span class="token punctuation">(</span>p <span class="token operator">+</span> non_shared<span class="token punctuation">,</span> value_length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>restart_index_ <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> num_restarts_ <span class="token operator">&amp;&amp;</span>
+             <span class="token function">GetRestartPoint</span><span class="token punctuation">(</span>restart_index_ <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> current_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token operator">++</span>restart_index_<span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>
+      <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>In <code>Prev()</code>, because in a data block, data entries are
+searched based on the 'restart point block'. A restart point will
+contain a number of data entries, for example, 4. And in the image
+below, assume we are now at entry 2 and we want to get to entry 1. Since
+we don't have any information on how long an entry is, we cannot simply
+subtract the length of entry 1 to get to entry 1. The only way to do
+<code>Prev()</code> is to find the restart point of this 'restart point
+block' and then sequentially search and stop before entry 2.</p>
+<p align="center">
+<img src="lv5.png" width="650">
+</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">  <span class="token keyword">void</span> <span class="token function">Prev</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Scan backwards to a restart point before current_</span>
+    <span class="token keyword">const</span> <span class="token keyword">uint32_t</span> original <span class="token operator">=</span> current_<span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>Get
+
+<span class="token function">RestartPoint</span><span class="token punctuation">(</span>restart_index_<span class="token punctuation">)</span> <span class="token operator">>=</span> original<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>restart_index_ <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// No more entries</span>
+        current_ <span class="token operator">=</span> restarts_<span class="token punctuation">;</span>
+        restart_index_ <span class="token operator">=</span> num_restarts_<span class="token punctuation">;</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span>
+      restart_index_<span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token function">SeekToRestartPoint</span><span class="token punctuation">(</span>restart_index_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">do</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// Loop until the end of the current entry hits the start of the original entry</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">ParseNextKey</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">NextEntryOffset</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> original<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>How Does <code>Seek()</code> Function Work?</p>
+<p><code>Seek()</code> has one single parameter which is the target. The
+target is the key we want to find in this data block. The simple idea is
+that we can compare the key entry by entry until we find the entry we
+want. But remember data entries are divided into many restart point
+blocks? So we can first use a restart point to search the restart point
+block that the target might locate in, using binary search. Once we find
+the specific restart point block, we can use linear search to walk
+through and find the target.</p>
+<p align="center">
+<img src="lv6.png" width="650">
+</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">Seek</span><span class="token punctuation">(</span><span class="token keyword">const</span> Slice<span class="token operator">&amp;</span> target<span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">// Binary search in restart array to find the last restart point</span>
+  <span class="token comment">// with a key &lt; target</span>
+  <span class="token keyword">uint32_t</span> left <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">uint32_t</span> right <span class="token operator">=</span> num_restarts_ <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> current_key_compare <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// If we're already scanning, use the current position as a starting</span>
+    <span class="token comment">// point. This is beneficial if the key we're seeking to is ahead of the</span>
+    <span class="token comment">// current position.</span>
+    current_key_compare <span class="token operator">=</span> <span class="token function">Compare</span><span class="token punctuation">(</span>key_<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>current_key_compare <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// key_ is smaller than target</span>
+      left <span class="token operator">=</span> restart_index_<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>current_key_compare <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      right <span class="token operator">=</span> restart_index_<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// We're seeking to the key we're already at.</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>left <span class="token operator">&lt;</span> right<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">uint32_t</span> mid <span class="token operator">=</span> <span class="token punctuation">(</span>left <span class="token operator">+</span> right <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span><span class="token punctuation">;</span>
+    <span class="token keyword">uint32_t</span> region_offset <span class="token operator">=</span> <span class="token function">GetRestartPoint</span><span class="token punctuation">(</span>mid<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">uint32_t</span> shared<span class="token punctuation">,</span> non_shared<span class="token punctuation">,</span> value_length<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> key_ptr <span class="token operator">=</span>
+        <span class="token function">DecodeEntry</span><span class="token punctuation">(</span>data_ <span class="token operator">+</span> region_offset<span class="token punctuation">,</span> data_ <span class="token operator">+</span> restarts_<span class="token punctuation">,</span> <span class="token operator">&amp;</span>shared<span class="token punctuation">,</span>
+                    <span class="token operator">&amp;</span>non_shared<span class="token punctuation">,</span> <span class="token operator">&amp;</span>value_length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>key_ptr <span class="token operator">==</span> <span class="token keyword">nullptr</span> <span class="token operator">||</span> <span class="token punctuation">(</span>shared <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">CorruptionError</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    Slice <span class="token function">mid_key</span><span class="token punctuation">(</span>key_ptr<span class="token punctuation">,</span> non_shared<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">Compare</span><span class="token punctuation">(</span>mid_key<span class="token punctuation">,</span> target<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// Key at "mid" is smaller than "target".  Therefore all</span>
+      <span class="token comment">// blocks before "mid" are uninteresting.</span>
+      left <span class="token operator">=</span> mid<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      <span class="token comment">// Key at "mid" is >= "target".  Therefore all blocks at or</span>
+      <span class="token comment">// after "mid" are uninteresting.</span>
+      right <span class="token operator">=</span> mid <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token comment">// We might be able to use our current position within the restart block.</span>
+  <span class="token comment">// This is true if we determined the key we desire is in the current block</span>
+  <span class="token comment">// and is after than the current key.</span>
+  <span class="token function">assert</span><span class="token punctuation">(</span>current_key_compare <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> <span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">bool</span> skip_seek <span class="token operator">=</span> left <span class="token operator">==</span> restart_index_ <span class="token operator">&amp;&amp;</span> current_key_compare <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>skip_seek<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">SeekToRestartPoint</span><span class="token punctuation">(</span>left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token comment">// Linear search (within restart block) for first key >= target</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">ParseNextKey</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">Compare</span><span class="token punctuation">(</span>key_<span class="token punctuation">,</span> target<span class="token punctuation">)</span> <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3 id="three-basic-iterator---levelfilenum-iterator">Three Basic
+Iterator - LevelFileNum Iterator</h3>
+<p>LevelFileNum Iterator also build on top of Iterator abstraction. It
+enables user ability to navigate through files within a level. Assume
+that we create a LevelFileNum Iterator on level 0. And level 0 contains
+10 files. To navigate through this level, we just need to maintain an
+index number and the pointer to this level file vector. We can then get
+key or value based on these information.</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// An internal iterator.  For a given version/level pair, yields</span>
+<span class="token comment">// information about the files in the level.  For a given entry, key()</span>
+<span class="token comment">// is the largest key that occurs in the file, and value() is an</span>
+<span class="token comment">// 16-byte value containing the file number and file size, both</span>
+<span class="token comment">// encoded using EncodeFixed64.</span>
+<span class="token keyword">class</span> <span class="token class-name">Version</span><span class="token operator">:</span><span class="token base-clause"><span class="token operator">:</span><span class="token class-name">LevelFileNumIterator</span> <span class="token operator">:</span> <span class="token keyword">public</span> <span class="token class-name">Iterator</span></span> <span class="token punctuation">&#123;</span>
+ <span class="token keyword">public</span><span class="token operator">:</span>
+  <span class="token function">LevelFileNumIterator</span><span class="token punctuation">(</span><span class="token keyword">const</span> InternalKeyComparator<span class="token operator">&amp;</span> icmp<span class="token punctuation">,</span>
+                       <span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>FileMetaData<span class="token operator">*</span><span class="token operator">></span><span class="token operator">*</span> flist<span class="token punctuation">)</span>
+      <span class="token operator">:</span> <span class="token function">icmp_</span><span class="token punctuation">(</span>icmp<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">flist_</span><span class="token punctuation">(</span>flist<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">index_</span><span class="token punctuation">(</span>flist<span class="token operator">-></span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">// Marks as invalid</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">bool</span> <span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> index_ <span class="token operator">&lt;</span> flist_<span class="token operator">-></span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Seek</span><span class="token punctuation">(</span><span class="token keyword">const</span> Slice<span class="token operator">&amp;</span> target<span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    index_ <span class="token operator">=</span> <span class="token function">FindFile</span><span class="token punctuation">(</span>icmp_<span class="token punctuation">,</span> <span class="token operator">*</span>flist_<span class="token punctuation">,</span> target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">SeekToFirst</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> index_ <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">SeekToLast</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    index_ <span class="token operator">=</span> flist_<span class="token operator">-></span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token number">0</span> <span class="token operator">:</span> flist_<span class="token operator">-></span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    index_<span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">void</span> <span class="token function">Prev</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>index_ <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      index_ <span class="token operator">=</span> flist_<span class="token operator">-></span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// Marks as invalid</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      index_<span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+  Slice <span class="token function">key</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token operator">*</span>flist_<span class="token punctuation">)</span><span class="token punctuation">[</span>index_<span class="token punctuation">]</span><span class="token operator">-></span>largest<span class="token punctuation">.</span><span class="token function">Encode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  Slice <span class="token function">value</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">Valid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EncodeFixed64</span><span class="token punctuation">(</span>value_buf_<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token operator">*</span>flist_<span class="token punctuation">)</span><span class="token punctuation">[</span>index_<span class="token punctuation">]</span><span class="token operator">-></span>number<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EncodeFixed64</span><span class="token punctuation">(</span>value_buf_ <span class="token operator">+</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token operator">*</span>flist_<span class="token punctuation">)</span><span class="token punctuation">[</span>index_<span class="token punctuation">]</span><span class="token operator">-></span>file_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token function">Slice</span><span class="token punctuation">(</span>value_buf_<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>value_buf_<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  Status <span class="token function">status</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token keyword">override</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> <span class="token class-name">Status</span><span class="token double-colon punctuation">::</span><span class="token function">OK</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+
+ <span class="token keyword">private</span><span class="token operator">:</span>
+  <span class="token keyword">const</span> InternalKeyComparator icmp_<span class="token punctuation">;</span>
+  <span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span>FileMetaData<span class="token operator">*</span><span class="token operator">></span><span class="token operator">*</span> <span class="token keyword">const</span> flist_<span class="token punctuation">;</span>
+  <span class="token keyword">uint32_t</span> index_<span class="token punctuation">;</span>
+
+  <span class="token comment">// Backing store for value().  Holds the file number and size.</span>
+  <span class="token keyword">mutable</span> <span class="token keyword">char</span> value_buf_<span class="token punctuation">[</span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
 <h3 id="two-level-iterator">Two level iterator</h3>
 <p>Two-level iterators provide a general interface for <strong>table
 iterators</strong> and <strong>concatenating iterators</strong> (we will
@@ -401,8 +694,8 @@ scheme as discussed in the <strong>Table Iterator</strong> chapter.</p>
 iterator explanation</label></li>
 <li><label><input type="checkbox" checked="" /> Apr 24: Table iterator
 &amp; Concatenating iterator</label></li>
-<li><label><input type="checkbox" /> Apr 25: Block iterator &amp; Level
-file num iterator &amp; Memtable iterator</label></li>
+<li><label><input type="checkbox" checked="" /> Apr 25: Block iterator
+&amp; Level file num iterator &amp; Memtable iterator</label></li>
 <li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
 </ul>
 
