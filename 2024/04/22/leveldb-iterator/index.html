@@ -171,14 +171,34 @@ starting from the last entry and moving to the first:</p>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 <p><br></p>
 <h3 id="high-level-overview">High level Overview</h3>
-<p>Let's see how excatly iterator abstractions are orgnized in LevelDB
+<p>Let's delve into how iterator abstractions are organized in LevelDB's
 source code.</p>
-<p>#TODO</p>
-<ul class="task-list">
-<li><label><input type="checkbox" /> Draw the high level
-figure</label></li>
-<li><label><input type="checkbox" /> Explain every part</label></li>
-</ul>
+<p>When we call NewIterator(), several processes are triggered. First,
+NewInternalIterator() is called to create an overall iterator, which
+hides the complexity of internal data. This includes mem tables,
+immutable mem tables, level 0 files, and other level files. This general
+iterator allows upper-level code to scan efficiently. Next,
+NewIterator() calls NewDBIterator(), which builds upon the internal
+iterator.</p>
+<p>As illustrated in the image below, the internal iterator is actually
+a merging iterator. This merging iterator consists of three key
+components:</p>
+<ol type="1">
+<li>Mem Iterator: This encompasses the mem table iterator and the
+immutable mem table iterator.</li>
+<li>Table Iterator: This is a two-level iterator, comprising the index
+iterator and the data iterator. Both the index iterator and data
+iterator are built on top of the block iterator.</li>
+<li>Concatenate Iterator: This is a two-level iterator featuring the
+LevelFileNum iterator, followed by another two-level iterator. This
+sub-iterator is, in fact, a table iterator.</li>
+</ol>
+<p>In LevelDB's design, there are three fundamental iterators. Any
+iterator in LevelDB is essentially an encapsulation of these three basic
+iterators, represented by the purple squares in the image.</p>
+<p align="center">
+<img src="lv7.png">
+</p>
 <p><br></p>
 <h3 id="iterator-abstraction">Iterator Abstraction</h3>
 <p>Iterator is a base class for many iterators within LevelDB. It
@@ -192,8 +212,8 @@ which need to be implemented in the inheriting class.</p>
 code to register a cleanup function that will be invoked when an
 iterator is destroyed.</p>
 <p><br></p>
-<h3 id="three-basic-iterator---memtable-iterator">Three Basic Iterator -
-Memtable Iterator</h3>
+<h3 id="three-basic-iterator---mem-iterator">Three Basic Iterator - Mem
+Iterator</h3>
 <p>Memtable iterator is built on top of iterator abstraction, it's an
 encapsulation of SkipList iterator.</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">MemTableIterator</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">Iterator</span></span> <span class="token punctuation">&#123;</span>
@@ -682,22 +702,18 @@ number iterator, it invokes <code>GetFileIterator()</code> to create a
 table iterator. We then iterate over this table iterator using the same
 scheme as discussed in the <strong>Table Iterator</strong> chapter.</p>
 <p><br></p>
+<h3 id="conclusion">Conclusion</h3>
+<p>That's a wrap! After delving into the various iterator
+implementations in LevelDB, you should now have a solid grasp of the
+concepts. This is just my take on the subject, so if you spot any
+mistakes or would like to discuss further, please don't hesitate to
+reach out to me on any platform – I'm more than happy to chat!</p>
+<p><br></p>
 <h3 id="reference">Reference</h3>
 <ol type="1">
 <li>https://kernelmaker.github.io/Leveldb_Iterator</li>
 <li>https://zhuanlan.zhihu.com/p/45829937</li>
 </ol>
-<p><br></p>
-<h3 id="todo">TODO</h3>
-<ul class="task-list">
-<li><label><input type="checkbox" checked="" /> Apr 23: Two level
-iterator explanation</label></li>
-<li><label><input type="checkbox" checked="" /> Apr 24: Table iterator
-&amp; Concatenating iterator</label></li>
-<li><label><input type="checkbox" checked="" /> Apr 25: Block iterator
-&amp; Level file num iterator &amp; Memtable iterator</label></li>
-<li><label><input type="checkbox" /> Apr 26: Conclusion</label></li>
-</ul>
 
   </div>
 
