@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>Networking CS144 Lab2 - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    Networking CS144 Lab2
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2025-01-02</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/Computer-Network/">Computer Network</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <blockquote>
+<p>在checkpoint0中，实现了一个流控制的byte
+stream抽象。在checkpoint1中，实现了一个reassembler，它可以将接受到的数据按照原来的数据流顺序组装起来。在本实验中需要实现一个<code>TCP Reciever</code>，这是TCP协议中的一个组件。</p>
+</blockquote>
+<p><code>TCP Reciver</code>在接受peer’s sender的信息后，也会向peer’s
+sender发送一个消息，通过<code>send()</code>方法。这些信息负责通知sender两件事情：</p>
+<ul>
+<li>第一个unassembled字节的index，又叫做acknowledgment
+number或ackno。这是reciver迫切希望sender发送的第一个字节。</li>
+<li>Bytestream中的available capacity。又被称为window size。</li>
+</ul>
+<p>Ackno和window
+size描述了reciver的窗口大小：这个窗口表示允许sender发送的范围。使用这个窗口，recevier就可以控制到来数据的数据流，可以让sender知道限制在哪里（也就是数据流控制）。</p>
+<p>TCP是一个在不可靠的datagram上构建的可以可靠传递数据的协议（并且是双向可靠传输，也就是说通信两端的实体，可以是sender也可以是reciever）。</p>
+<blockquote>
+<p>Why am I doing
+this？流控制的信息对于TCP来说非常重要，在TCP中，acknowledgment意味着“为了尽快组成bytestream，receiver迫切需要的下一个字节的index是什么”。这会通知sender什么是需要send或者resend的。Flow
+control意味着“receiver愿意接受那些范围内的数据”，也就是不会让sender随意发送数据流，而是需要发送receiver感兴趣和允许发送的数据。</p>
+</blockquote>
+<p><br></p>
+<h3
+id="translating-between-64-bit-indexes-and-32-bit-seqnos">Translating
+between 64-bit indexes and 32-bit seqnos</h3>
+<p>首先需要实现TCP如何表示indexes。在TCP的header数据中，空间十分的宝贵，因为为了尽量减少网络通信的开销。之前实现的Reassembler是采用64bit的数据作为index，但是TCP不行。数据的索引需要被表示成32bit的sequence
+number，因此这引入了三个复杂度：</p>
+<ul>
+<li>需要考虑数据index超出2<sup>32之后该怎么计算，2</sup>32所能表示的index十分有限，当数据一直发送，index超过32bit所能表示的范围之后，下一个数据索引会从0开始重新计算。</li>
+<li>为了提升TCP的鲁棒性，以及避免TCP将同一端口号的旧连接的数据与新连接数据的index搞混，TCP会确保sequence
+number是不可猜测的，而且不太可能重复的（还需要想明白为什么要随机sequence
+number）。所以sequence number一般不会从0开始计算。第一个sequence
+number是一个随机的32bit数字，叫做initial sequence
+number（ISN）。ISN代表SYN（beginning of stream）的开始索引。</li>
+<li>除了确保接受成功所有的数据，TCP还要确保最开始和结束的stream需要可靠的传输。因此，SYN和FIN（end
+of stream）标志位也会被分配sequence number。被SYN占用的sequence
+number是ISN。</li>
+</ul>
+<p>这些sequence number是放在TCP header中传输的。以下来区分Sequence
+number，absolute Sequence Number和stream indices的区别：</p>
+<p align="center">
+<img src="tcp1.png" width="550">
+</p>
+<p align="center">
+<img src="tcp2.png" width="550">
+</p>
+<p>可以发现absolute sequence number和stream
+indices之间的转换非常简单，absolute number-1就是stream indices，stream
+indices+1就是absolute number。但absolute sequence number和sequence
+number的转换就很tricky。所以为了区分两者，可以实现一个类Wrap32，直接负责两者之间的转换，抽象如下，这是一个wrapper
+type（意思是内部有一个inner type，但提供不一样的计算和操作）：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">Wrap32</span>
+<span class="token punctuation">&#123;</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+  <span class="token keyword">explicit</span> <span class="token function">Wrap32</span><span class="token punctuation">(</span> <span class="token keyword">uint32_t</span> raw_value <span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">raw_value_</span><span class="token punctuation">(</span> raw_value <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+  <span class="token comment">/* Construct a Wrap32 given an absolute sequence number n and the zero point. */</span>
+  <span class="token keyword">static</span> Wrap32 <span class="token function">wrap</span><span class="token punctuation">(</span> <span class="token keyword">uint64_t</span> n<span class="token punctuation">,</span> Wrap32 zero_point <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token comment">/*
+   * The unwrap method returns an absolute sequence number that wraps to this Wrap32, given the zero point
+   * and a "checkpoint": another absolute sequence number near the desired answer.
+   *
+   * There are many possible absolute sequence numbers that all wrap to the same Wrap32.
+   * The unwrap method should return the one that is closest to the checkpoint.
+   */</span>
+  <span class="token keyword">uint64_t</span> <span class="token function">unwrap</span><span class="token punctuation">(</span> Wrap32 zero_point<span class="token punctuation">,</span> <span class="token keyword">uint64_t</span> checkpoint <span class="token punctuation">)</span> <span class="token keyword">const</span><span class="token punctuation">;</span>
+
+  Wrap32 <span class="token keyword">operator</span><span class="token operator">+</span><span class="token punctuation">(</span> <span class="token keyword">uint32_t</span> n <span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> Wrap32 <span class="token punctuation">&#123;</span> raw_value_ <span class="token operator">+</span> n <span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+  <span class="token keyword">bool</span> <span class="token keyword">operator</span><span class="token operator">==</span><span class="token punctuation">(</span> <span class="token keyword">const</span> Wrap32<span class="token operator">&amp;</span> other <span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> raw_value_ <span class="token operator">==</span> other<span class="token punctuation">.</span>raw_value_<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+
+<span class="token keyword">protected</span><span class="token operator">:</span>
+  <span class="token keyword">uint32_t</span> raw_value_ <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>wrap函数负责将给定的absolute sequence number转化成sequence
+number。函数的zero_point代表ISN。</p>
+<p>zero point中的raw data代表的是sequence number，checkpoint表示absolute
+sequence number，自带的数据也是sequence
+number。Unwrap函数的目标就是根据checkpoint数据以及当前的zero
+point来确定当前的wrap数据表示的absolute sequence
+number是多少。再实现之前，应当明确一点就是，wrap数据中保存的raw
+value代表的是sequence number，我们可以把sequence
+number序列比作一个圆圈。</p>
+<p align="center">
+<img src="tcp3.png" width="550">
+</p>
+<p>这个圆圈的起点是0，也可以表示为2<sup>32（但实际已经超出了32bit的表示范围，2</sup>32的二进制第33位是1，前面32位都是0）。0的前一个数据的index是2<sup>32-1，后面一个数据的index是1。可以发现无论absolute的值有多大，只是在圆圈上转动几圈的问题，最终的表示都是0到2</sup>32-1的一个数字而已。但是仅仅知道在圆圈上的数字是没有办法确定absolute
+sequence number的，假设当前的sequence number是778，那么它对应的absolute
+sequence
+number可能就是778，也可能是转了1圈+778，转了两圈+778，转了n圈778等等。解决该问题的方法就是函数里引入一个checkpoint，这个checkpoint是uint64_t类型的index，表示一个absolute
+sequence number，我们只需要寻找距离它最近的那个数字即可。</p>
+<p>那么如何寻找距离checkpoint最近的数字呢？</p>
+<p>因为zero point和raw
+value都是经过变换转化到32bit环上的数据，为了统一表示我们也需要将checkpoint放在32bit环上。接下来我们需要计算raw
+value和checkpoint的seqno的相对距离。为什么需要计算两者之间的相对距离？因为我们最后的值需要根据当前的checkpoint的值寻找，在absolute
+seqno表示空间内，raw value的absolute seqno和checkpoint的absolute
+seqno的距离为Diff_absseq，在32bit环空间的距离可表示为Diff_seq，那么两者之间的关系满足以下等式：</p>
+<p><span class="math display">\[ Diff_{absseq}=Diff_{seq} \]</span></p>
+<p align="center">
+<img src="tcp4.png" width="550">
+</p>
+<p>也就是两者的距离无论在哪里都是一样的。因此就可以利用这一点，先把checkpoint对齐到32bit环空间上，求出与raw
+value的距离（因为raw value不能对齐到abs
+seqno空间，这毕竟是我们需要求解的结果），然后再利用abs
+seqno空间的checkpoint
+index与diff相加，这样就能求出距离checkpoint最近的那个值。</p>
+<p>当然由于是环的原因，raw
+value与checkpoint的距离可以是diff，也可以是counter diff（2^32 -
+diff）。需要比较diff和counter
+diff的大小，选择最小的那个与checkpoint加减。</p>
+<p>还有一个corner case需要注意，即如果counter diff更小，就需要checkpoint
+- counter diff。这时候如果checkpoint是小于counter
+diff的情况，那么就会出现溢出，此情况一般发生在checkpoint落在0到2^32-1区间内。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">Wrap32 <span class="token class-name">Wrap32</span><span class="token double-colon punctuation">::</span><span class="token function">wrap</span><span class="token punctuation">(</span> <span class="token keyword">uint64_t</span> n<span class="token punctuation">,</span> Wrap32 zero_point <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">// Your code here.</span>
+  <span class="token keyword">return</span> Wrap32 <span class="token punctuation">&#123;</span> zero_point <span class="token operator">+</span> n <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">uint64_t</span> <span class="token class-name">Wrap32</span><span class="token double-colon punctuation">::</span><span class="token function">unwrap</span><span class="token punctuation">(</span> Wrap32 zero_point<span class="token punctuation">,</span> <span class="token keyword">uint64_t</span> checkpoint <span class="token punctuation">)</span> <span class="token keyword">const</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">// Your code here.</span>
+  <span class="token keyword">uint32_t</span> checkpoint_seqno <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">uint32_t</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>checkpoint <span class="token operator">+</span> zero_point<span class="token punctuation">.</span>raw_value_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">uint32_t</span> diff <span class="token operator">=</span> raw_value_ <span class="token operator">-</span> checkpoint_seqno<span class="token punctuation">;</span>
+  <span class="token keyword">uint32_t</span> counter_diff <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1LL</span> <span class="token operator">&lt;&lt;</span> <span class="token number">32</span><span class="token punctuation">)</span> <span class="token operator">-</span> diff<span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>diff <span class="token operator">>=</span> counter_diff <span class="token operator">&amp;&amp;</span> checkpoint <span class="token operator">>=</span> counter_diff<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> checkpoint <span class="token operator">-</span> counter_diff<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">return</span> checkpoint <span class="token operator">+</span> diff<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3 id="implementing-the-tcp-receiver">Implementing the TCP
+receiver</h3>
+<p>TCP
+receiver需要接受peer发送的信息，并通过reassembler重组，同时还要将ackno和windows
+size发送到peer。</p>
+<p>首先来看TCP sender发送信息的格式。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">struct</span> <span class="token class-name">TCPSenderMessage</span>
+<span class="token punctuation">&#123;</span>
+  Wrap32 seqno <span class="token punctuation">&#123;</span> <span class="token number">0</span> <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">bool</span> SYN <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  std<span class="token double-colon punctuation">::</span>string payload <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  <span class="token keyword">bool</span> FIN <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">bool</span> RST <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+  <span class="token comment">// How many sequence numbers does this segment use?</span>
+  size_t <span class="token function">sequence_length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span> <span class="token punctuation">&#123;</span> <span class="token keyword">return</span> SYN <span class="token operator">+</span> payload<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> FIN<span class="token punctuation">;</span> <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>seqno表示数据开始的index，如果SYN是true，那么这个seqno表示ISN，也代表zero
+point。Payload表示数据。FIN表示字节流的结束。RST表示出现错误，连接需要断开。</p>
+<p>TCP Receiver发送信息的格式为：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">struct</span> <span class="token class-name">TCPReceiverMessage</span>
+<span class="token punctuation">&#123;</span>
+  std<span class="token double-colon punctuation">::</span>optional<span class="token operator">&lt;</span>Wrap32<span class="token operator">></span> ackno <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  <span class="token keyword">uint16_t</span> window_size <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  <span class="token keyword">bool</span> RST <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>Ackno：TCP需要的下一个seqno。Window
+size，从ackno开始到ackno+capacity结束。</p>
+<p>TCP receive实现时，需要考虑以下情况：</p>
+<ul>
+<li>SYN包发送之后，再发送数据</li>
+<li>SYN包本身也包含数据</li>
+<li>SYN包包含数据，也包含FIN</li>
+</ul>
+<p>这里还需要注意的一点是stream index和absolute sequence
+number的转换。SYN包发送之后会创建一个初始的isn，如果此时SYN没有包含数据，下一次发送的数据解析得到的absolute
+seqno就是isn+1，此时就需要-1，如果包含了数据就不需要-1，总之stream
+index必须从0开始。</p>
+<p>同时receive还需要检查错误状态，如果RST设置为true，就要将bytestream设置错误。如果此时发送的是SYN包，还要更新一些内部的元数据。同时，要保证在没有建立好连接前，也就是SYN还没有发送过来，不接受和处理任何数据。</p>
+<p>同时，如果这个segment包含FIN，在reassembler内部就要做额外的处理，因为TCP规定SYN和FIN都占用一个absolute
+seqno，</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">TCPReceiver</span><span class="token double-colon punctuation">::</span><span class="token function">receive</span><span class="token punctuation">(</span> TCPSenderMessage message <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">// check error</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>message<span class="token punctuation">.</span>RST<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    reassembler_<span class="token punctuation">.</span><span class="token function">reader</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">set_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token comment">// Initial handshake</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>message<span class="token punctuation">.</span>SYN<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    isn_ <span class="token operator">=</span> message<span class="token punctuation">.</span>seqno<span class="token punctuation">;</span>
+    sync_ <span class="token operator">=</span> message<span class="token punctuation">.</span>SYN<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>sync_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  
+  <span class="token keyword">uint64_t</span> ckpt <span class="token operator">=</span> reassembler_<span class="token punctuation">.</span><span class="token function">Ackno_64</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">uint64_t</span> abs_seqno <span class="token operator">=</span> message<span class="token punctuation">.</span>seqno<span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span>isn_<span class="token punctuation">,</span> ckpt<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">uint64_t</span> stream_index <span class="token operator">=</span> message<span class="token punctuation">.</span>SYN <span class="token operator">?</span> abs_seqno <span class="token operator">:</span> abs_seqno <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+  reassembler_<span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span>stream_index<span class="token punctuation">,</span> message<span class="token punctuation">.</span>payload<span class="token punctuation">,</span> message<span class="token punctuation">.</span>FIN<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>send的实现逻辑首先获取对应的window
+size（超出uint16大小要进行截断），再从reassembler读取对应的current
+index，注意这里的current index代表的是stream index，要转化成absolute
+index就需要+1。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">TCPReceiverMessage <span class="token class-name">TCPReceiver</span><span class="token double-colon punctuation">::</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">const</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">uint64_t</span> windows <span class="token operator">=</span> reassembler_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">available_capacity</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>windows <span class="token operator">></span> UINT16_MAX<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    windows <span class="token operator">=</span> UINT16_MAX<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">uint16_t</span> win_size <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">uint16_t</span><span class="token operator">></span></span></span><span class="token punctuation">(</span>windows<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>sync_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token punctuation">&#123;</span>std<span class="token double-colon punctuation">::</span>nullopt<span class="token punctuation">,</span> win_size<span class="token punctuation">,</span> reassembler_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">has_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">uint64_t</span> ackno_abs <span class="token operator">=</span> reassembler_<span class="token punctuation">.</span><span class="token function">Ackno_64</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token punctuation">&#123;</span><span class="token class-name">Wrap32</span><span class="token double-colon punctuation">::</span><span class="token function">wrap</span><span class="token punctuation">(</span>ackno_abs<span class="token punctuation">,</span> isn_<span class="token punctuation">)</span><span class="token punctuation">,</span> win_size<span class="token punctuation">,</span> reassembler_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">has_error</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2025</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

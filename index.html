@@ -195,18 +195,28 @@ mjx-container[display="true"] + br {
             <div class="index-wrapper">
   
     
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/avatar.png" />
+        <img src="/img/avatar.JPG" />
       </div>
     
     <div class="col title-wrapper">
       <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love AI & Systems</div>
+      <div class="sub-title">Love Coding & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -237,16 +247,6 @@ mjx-container[display="true"] + br {
   </div>
 </div>
 
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
     
   
     
@@ -303,6 +303,109 @@ Machine的缩写，即JAVA虚拟机。是实体计算机的一种抽象和虚拟
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
+          <a href="/2025/01/02/TCP2/" target="_self">
+            <h3>Networking CS144 Lab2</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+在checkpoint0中，实现了一个流控制的byte
+stream抽象。在checkpoint1中，实现了一个reassembler，它可以将接受到的数据按照原来的数据流顺序组装起来。在本实验中需要实现一个TCP Reciever，这是TCP协议中的一个组件。
+
+TCP Reciver在接受peer’s sender的信息后，也会向peer’s
+sender发送一个消息，通过send()方法。...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2025-01-02 19:33" pubdate>
+            2025-01-02
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Computer-Network/">Computer Network</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2024/11/20/TCP1/" target="_self">
+            <h3>Networking CS144 Lab1</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+最近在疯狂科研中，无数次尝试不同的方法，调各种各样的参数。闲暇之余想了解一下TCP内部的原理，看到CS144的Lab有这个实验，开一个新的坑，不知道在忙碌的研二期间能不能完成...
+
+Task
+Lab的任务是基于上一个lab实现的stream抽象，实现一个TCP
+receiver：将接受到的datagram变成一个可靠有序的字节流。从TCP
+sender的角度讲，它会把字节流分割成segment...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-11-20 12:11" pubdate>
+            2024-11-20
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Computer-Network/">Computer Network</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2024/06/01/mapreduce/" target="_self">
+            <h3>MapReduce Implementation</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Introduction
+Google的研发人员在过去处理大数据任务时，经常需要手写实现很多不同的拥有特定功能的程序，比如爬去文档、网络日志等等。这些任务经常需要将任务分布到很多台计算机处理，以提升处理的性能和速度；但在这个前提下，如何实现并行、分布数据、处理异常机器和失败的任务、保证系统正确运行是一个较为复杂和综合性的问题。
+为了解决这样的问题，Google的研发人员开发了一套系统——Mapre...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-06-01 22:00" pubdate>
+            2024-06-01
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
           <a href="/2024/05/10/leveldb-memory/" target="_self">
             <h3>Understanding LevelDB Memory Management</h3>
           </a>
@@ -332,111 +435,13 @@ LevelDB的内存池实现在arena.cc以及arena.h中。内存池是池化技术�
         </div>
       </div>
     </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/05/04/customize-optimizer-in-pytorch/" target="_self">
-            <h3>Customize optimizer in PyTorch</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            In this post, we are gonna implement our own optimizer instead of
-using built-in pytorch optimizers. Before we dive into implementation
-details of it, we first need to understand what optimizer in pyt...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-05-04 15:46" pubdate>
-            2024-05-04
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Deep-Learning/">Deep Learning</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/04/22/leveldb-iterator/" target="_self">
-            <h3>Understanding LevelDB Iterator</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Intro
-Understanding Iterators
-Before diving into the specifics of LevelDB, let's clarify what an
-iterator is in the context of programming. An iterator is an object that
-enables users to traverse a co...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-04-22 11:15" pubdate>
-            2024-04-22
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/11/17/Time-in-Distributed-System/" target="_self">
-            <h3>分布式系统-时间以及全局状态</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            此博客是对自己学习的总结，有些部分并非原创，具体参考会在最后的reference部分给出。
-What is Time
-什么是时间呢？在我们日常生活中时时刻刻离不开的就是时间这一个概念。但实际上，时间就是帮助人们理清事物发生顺序和先后关系的一个标记，有了时间，我们就知道谁先发生、谁后发生。谁对谁产生了影响。我们可以知道此时该干什么事，知道之前吃饭到这次吃饭间隔了多久等等。可以发现，时间和事件发生顺序...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-11-17 21:02" pubdate>
-            2023-11-17
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Distributed-System/">Distributed System</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
    
 </div>
 
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
  -->

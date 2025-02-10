@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>Networking CS144 Lab1 - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    Networking CS144 Lab1
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2024-11-20</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/Computer-Network/">Computer Network</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <blockquote>
+<p>最近在疯狂科研中，无数次尝试不同的方法，调各种各样的参数。闲暇之余想了解一下TCP内部的原理，看到CS144的Lab有这个实验，开一个新的坑，不知道在忙碌的研二期间能不能完成...</p>
+</blockquote>
+<h3 id="task">Task</h3>
+<p>Lab的任务是基于上一个lab实现的stream抽象，实现一个TCP
+receiver：将接受到的datagram变成一个可靠有序的字节流。从TCP
+sender的角度讲，它会把字节流分割成segments，但是网络本身是不可靠的，在传输datagram的过程中，可能会发生丢包，或者将同一个包发送两次。所以TCP
+receiver需要实现的不仅仅是接受数据，还需要确保将接受到的datagram重新组合成连续不重复的字节流，保证可靠的通信。</p>
+<p>本次实验的目的就是实现一个<code>Reassembler</code>。它负责接受子字符串（子字符串包含一个字节的string，和对应字节的index，数据流的每一个字节都有自己的index。</p>
+<p>上个实验实现的bytestream有两个端点，一个是writer side，一个是reader
+side。Writer side负责向stream写数据，reader
+side作为消费者，从stream中读取数据。</p>
+<p><code>Reassembler</code>的interface：</p>
+<p align="center">
+<img src="tcp1.png" width="550">
+</p>
+<blockquote>
+<p>Why am I doing
+this？TCP对重排序和重复的鲁棒性来源于其将字节流的任意片段重新拼接回原始流的能力。将此功能实现为一个离散的可测试模块，将使处理接收的数据段更加容易。</p>
+</blockquote>
+<h4 id="what-should-the-reassembler-store-internally">What should the
+Reassembler store internally?</h4>
+<p>Reassembler是receiver的一个组件。它需要解决三种输入的问题：</p>
+<ul>
+<li>stream中的next
+bytes。如果当前的byte的index与stream中存储的index符合next关系，则立马将该字节推入writer。</li>
+<li>当前的bytes仍然可以放入stream，但是由于它之前的bytes还没有接受到，这些需要存储在reassembler内部等待使用。</li>
+<li>超出当前stream可用容量的字节。这些应当被丢弃。</li>
+</ul>
+<p align="center">
+<img src="tcp2.png" width="550">
+</p>
+<p>从图中可以理解到，capacity代表的就是stream的capacity，如果在当前capacity内，可以直接向bytestream内部推送，如果不在则存储在reassembler内部等待使用。</p>
+<p><br></p>
+<h3 id="implementation">Implementation</h3>
+<h4 id="如何存储un-assemble的数据">如何存储un-assemble的数据</h4>
+<p>un-assemble的数据表示在capacity范围之内但由于前面index的byte未到达而不能立即push到writer中的bytes。这些bytes应当存放在<code>Reassembler</code>内部，而且需要一个检查机制，一旦当前的index符合un-assemble数据，就立刻找出这个数据并插入writer中。</p>
+<p>这里可以用hash map去实现。</p>
+<p>Hash map的key存储index，hash
+map的value存储对应的byte。同时<code>Reassembler</code>内部维护一个<code>curr_idx</code>，表示first
+unassembled index数据。</p>
+<p>每次插入一个新的数据时，先去对比curr_idx，如果比curr_idx大，则存储到哈希表中，如果等于curr_idx则直接插入writer中。</p>
+<p>如果新插入的idx小于curr_idx，情况就比较复杂。</p>
+<p>首先需要计算新插入的idx和curr_idx之间的间隔，标记为l。对比l和新插入的bytes
+len，会产生以下几种情况：</p>
+<ul>
+<li>len&gt;l：说明新插入的与当前有重复部分，但后半段不重复，应把前半段重复部分省去，只保留后部分，push到writer，更新curr_idx</li>
+<li>len=l：完全重复，抛弃</li>
+<li>len&lt;l：完全重复，抛弃</li>
+</ul>
+<p>如果新插入的bytes增加了curr_idx，而且当前的curr_idx覆盖了Reassembler内部哈希表中的一些entry，也需要上述操作，因此可以抽象一个方法：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token comment">// store into hash map or if it already exist, skip</span>
+		<span class="token comment">// update minimum_index</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token comment">// call writer to write into bytestream</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	
+	<span class="token comment">// curr_index > first_index</span>
+	<span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> curr_index <span class="token operator">-</span> first_index<span class="token punctuation">;</span>
+	<span class="token keyword">uint64_t</span> byte_len <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token comment">// discard</span>
+		<span class="token keyword">return</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token comment">// byte_len > overlap_len</span>
+	<span class="token comment">// get un overlap part of data and write to writer</span>
+	<span class="token keyword">return</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4
+id="如何自动检测当前的un-assemble的数据是否该push到writer">如何自动检测当前的un-assemble的数据是否该push到writer？</h4>
+<p>这本质上是在解决insert的算法流程，下面用伪代码的形式说明</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">,</span> <span class="token keyword">bool</span> is_last_substring<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token comment">// fisrt push</span>
+	<span class="token function">push</span><span class="token punctuation">(</span>first_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token comment">// checking hash map</span>
+	<span class="token comment">// we need maintain a variable that indicates current minimum index of hash map</span>
+	<span class="token keyword">while</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;=</span> minimum_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token comment">// there are still entries need to be pushed to writer</span>
+		<span class="token function">push</span><span class="token punctuation">(</span>minimum_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">return</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>每次插入新的数据时，都需要先尝试去插入，然后检测当前内部的hash
+map中是否存在可以继续插入的元素。还需要在插入hash
+map时，始终维护一个minimum index，方便后续插入操作进行判别。</p>
+<p>以上仅为大致的思路，在实际的实现过程中还是会有很多边界case需要根据单元测试进行调整，以下详细叙述整体的实现方案。综合来看，实现Reassembler有两个比较核心的问题，需要分类讨论。</p>
+<ul>
+<li>Q1：数据推送时，判断直接推送到bytestream中；一部分推送到bytestream中；还是推送到未装配的缓存区域中</li>
+<li>Q2：在未装配的缓存区域中的数据，如何避免重复，如何合并</li>
+</ul>
+<p><br></p>
+<h3 id="q1数据该放到哪里">Q1：数据该放到哪里</h3>
+<p>首先需要知道，控制容量大小的信息在Bytestream中，已经推送到Bytestream中的数据会占用一部分capacity，剩余的容量可以通过<code>output_.writer().available_capacity()</code>获取。</p>
+<p align="center">
+<img src="tcp3.png" width="550">
+</p>
+<p>如上图所示，蓝色部分表示已经推入bytestream但还没有被consumer读取的数据，红色部分表示不能立即推送到bytestream而缓存在<code>Reassembler</code>内部的数据。</p>
+<p>当新输入一个数据时，这个数据会携带一个<code>first_index</code>，表示当前字节流中第一个字节在全局数据中的位置。举个例子，比如客户端想发送“abcdefghigklmn”这一串数据到服务器，因为字节流会被截断发送，同时TCP是一个面向连接的，可靠的，基于字节流的传输层通信协议，可靠性是指接受端接受到的数据不能出现丢包、错误以及乱序。因此为了保证顺序，在每一个数据包中会包含其在全局中的位置，可以让接受端的TCP协议重组，组装好后再推送给上层，这样在应用层的角度来看，数据就是可靠的。</p>
+<p>由于网络的不可靠性，因此数据很有可能与前方的包有重叠的情况。因此需要Reassmebler拥有自动处理这种重叠情况的能力。综合以上因素考虑，可以根据first_index把数据分成四种情况。</p>
+<ul>
+<li>当first index ≤ current index 并且数据包的长度也小于current
+index：这种情况的处理非常简单，直接抛弃数据包即可（因为数据完全重叠）。</li>
+</ul>
+<p align="center">
+<img src="tcp4.png" width="550">
+</p>
+<ul>
+<li>当first index ≤ current index并且数据包的长度大于current
+index：这种表示有部分重叠，需要做的操作就是根据当前的current
+index和first index计算在数据包内的相对索引，从current
+index所表示的位置处截断，保留后面的数据，并立即推入bytestream。</li>
+</ul>
+<p align="center">
+<img src="tcp5.png" width="550">
+</p>
+<ul>
+<li>当first index &gt; current
+index并且数据包的长度可以放入缓存区中：这表示数据包不能被立即推入bytestream，因此需要推送到缓存区中缓存。</li>
+</ul>
+<p align="center">
+<img src="tcp6.png" width="550">
+</p>
+<ul>
+<li>当first index &gt; current
+index并且数据包的一部分可以放入缓存区中：这表示当前数据包的前半部分才能放入缓存区，需要把后半部分截断。</li>
+</ul>
+<p align="center">
+<img src="tcp7.png" width="550">
+</p>
+<p>还有一种就是当现在available
+capacity所支持的数据量不能容纳超过数据量的数据，这种数据也应当直接丢弃。举个例子，比如当前的bytestream的capacity是8，current
+index是56，available
+capacity是3，也就是当前最多能接受数据的索引应当在56-58之内，59之后不能被接受。</p>
+<p>但这种只是正常情况，还有很多极限的情况，比如数据长度比capacity还要长，这时候就只能保留可以放入缓存区的数据。</p>
+<p>根据上面的分类讨论，可以抽象出一个push操作，涵盖所有情况。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">// check if its beyond capacity</span>
+  <span class="token keyword">uint64_t</span> cap <span class="token operator">=</span> output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">available_capacity</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>cap <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> first_index <span class="token operator">>=</span> current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+	
+	<span class="token comment">// truncate data beyond the capacity, so the data below will always fit in available capacity</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>first_index <span class="token operator">+</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token punctuation">(</span>current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">uint64_t</span> end_index <span class="token operator">=</span> current_index_ <span class="token operator">+</span> cap<span class="token punctuation">;</span>
+    data <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> end_index <span class="token operator">-</span> first_index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+	
+	<span class="token comment">// insert into unassembled map</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">merge_and_insert</span><span class="token punctuation">(</span>first_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+	
+	<span class="token comment">// can directly input into bytestream</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    current_index_ <span class="token operator">+=</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token comment">// current_index > first_index</span>
+  <span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> current_index_ <span class="token operator">-</span> first_index<span class="token punctuation">;</span>
+  <span class="token keyword">uint64_t</span> byte_len <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// discard this data, already input into bytestream</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token comment">// byte_len > overlap_len</span>
+  std<span class="token double-colon punctuation">::</span>string rest <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>overlap_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>rest<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  current_index_<span class="token operator">+=</span> rest<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><br></p>
+<h3
+id="q2缓存区中的数据如何自动校准">Q2：缓存区中的数据如何自动校准</h3>
+<p>Reassembler的缓存数据结构选择std::map。原因是因为每一个需要缓存的数据都包含index和data两种数据，为了在需要数据时更快的查找到相关的数据，采用哈希表。不采用unordered
+map的原因是，unordered
+map是无序的，在每次插入数据之后，如果新插入的数据与前后两个相邻数据有重叠，那么就需要从哈希表访问相邻两个index的数据，合并之后还需要再检查有无重复，实现比较复杂。如果采用有序的map，直接按顺序遍历一边哈希表，把相邻两个有重叠的数据处理一下即可，实现较为简单。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">merge_and_insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">// insert first</span>
+  <span class="token keyword">auto</span> entry <span class="token operator">=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>first_index<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>entry <span class="token operator">==</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    unassemble_map_<span class="token punctuation">[</span>first_index<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> entry<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      unassemble_map_<span class="token punctuation">[</span>first_index<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">auto</span> it <span class="token operator">=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">auto</span> next_it <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span><span class="token function">next</span><span class="token punctuation">(</span>it<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>next_it <span class="token operator">==</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">uint64_t</span> data_len <span class="token operator">=</span> it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">uint64_t</span> idx <span class="token operator">=</span> it<span class="token operator">-></span>first<span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">==</span> next_it<span class="token operator">-></span>first<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      unassemble_map_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>next_it<span class="token operator">-></span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">>=</span> next_it<span class="token operator">-></span>first <span class="token operator">+</span> next_it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">></span> next_it<span class="token operator">-></span>first<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> data_len <span class="token operator">+</span> idx <span class="token operator">-</span> next_it<span class="token operator">-></span>first<span class="token punctuation">;</span>
+      std<span class="token double-colon punctuation">::</span>string surpass_str <span class="token operator">=</span> next_it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>overlap_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      unassemble_map_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>surpass_str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      <span class="token operator">++</span>it<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2025</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

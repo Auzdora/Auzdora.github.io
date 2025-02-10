@@ -24,7 +24,119 @@
 
   
   <title>Auzdora&#39;s Blog</title>
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 
 <body>
@@ -83,18 +195,28 @@
             <div class="index-wrapper">
   
     
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/avatar.png" />
+        <img src="/img/avatar.JPG" />
       </div>
     
     <div class="col title-wrapper">
       <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love AI & Systems</div>
+      <div class="sub-title">Love Coding & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -129,16 +251,6 @@
   
     
   
-    
-  
-    
-  
-    
-  
-    
-  
-    
-  
   <br>
   <br>
   <br>
@@ -156,124 +268,24 @@
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/06/13/BatchNorm-LayerNorm/" target="_self">
-            <h3>BatchNorm vs LayerNorm</h3>
+          <a href="/2023/08/05/ConcurrencyControl/" target="_self">
+            <h3>CMU 15-445 Concurrency Control</h3>
           </a>
           
         </div>
         <div class="description">
           
             
-最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的...
+Project 4需要我们为bustub添加并发事务的控制和支持。同Project
+1的Buffer Pool
+Manager一样，这里采用的是集中化的控制思路，即抽象出一个管理层——Lock
+Manager（LM）。当不同事务产生获取锁的需求时，统一向LM提出请求，LM负责处理锁冲突、授权获取、释放以及事务级别等等逻辑。Task
+1先实现了Lock Manager，Task 2为LM添加了死锁...
           
         </div>
         <div class="post-footer">
-          <time datetime="2023-06-13 17:06" pubdate>
-            2023-06-13
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Deep-Learning-Optimization/">Deep Learning Optimization</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/06/11/Life-001/" target="_self">
-            <h3>Life Blog - Trip to Qingdao</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-因为疫情的原因，19年上大学的我整整三年没有怎么出去旅行。大四下学期是一个比较惬意的时候，没有繁琐的课程、需要参加的活动等等，时间相对空闲。也算是弥补一下前三年的遗憾，赶着毕业前，去一趟青岛和蓬莱。
-
-01 前言
-还是花了一些时间规划的。对于像我这样的穷游党而言，主要的开销就是出行和住宿。刚开始制定的旅游计划相当极限，青岛、烟台、蓬莱和济南要在五天四夜之间全部游览完。有两天晚上都需要在火车上度过...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-11 18:25" pubdate>
-            2023-06-11
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/05/27/LLM/" target="_self">
-            <h3>Workflow in the era of LLM</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-在大语言模型时代，我们的学习和工作方式都有了很大的变化。依赖于生成式AI的强大能力，当前的LLM已经成为了各种APP、甚至操作系统的一部分。ChatGPT以及new
-bing的出现，展现出LLM的可能性。在写代码、学习新知识、撰写文档、归纳总结、阅读文献等众多任务中，可以成为很智能的Copilot。
-之前学习的流程十分的复杂，东一块西一块，被各种所谓的“生产力”APP迷的眼花缭乱。我觉得也是时候...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-05-27 15:21" pubdate>
-            2023-05-27
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Study/">Study</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/04/01/Buffer_Pool_Manager/" target="_self">
-            <h3>CMU 15-445 Buffer Pool Manager</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-Buffer Pool Manager Instance这个Task本质而言就是理解清楚Extendible
-Hash Table和LRU-K
-Replacer的关系，然后将它们组合起来。实现的难度并不高，只要按照注释内容好好分析，然后按逻辑写下来就可以。重点在于每一个操作的细节问题，细节问题很多，要时刻注意。
-
-Buffer Pool Manager
-Mechanism
-想要实现Buffer ...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-04-01 10:46" pubdate>
-            2023-04-01
+          <time datetime="2023-08-05 12:33" pubdate>
+            2023-08-05
           </time>
           <div>
              
@@ -291,21 +303,126 @@ Mechanism
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/03/26/LRU-K_Replacement_Policy/" target="_self">
-            <h3>CMU 15-445 LRU-K Replacement Policy</h3>
+          <a href="/2023/08/02/critical-thinking-01/" target="_self">
+            <h3>Critical Thinking Tool - Self-understanding</h3>
           </a>
           
         </div>
         <div class="description">
           
             
-实现LRU-K的时候，先去完成了LeetCode的146题LRU，实现的时候运用了哈希链表结构，题目中要求get和put操作都是O(1)的时间复杂度。一种实现方式就是用STL的list和unordered
-map，list本质是双向链表，但实现出来最后的结果总是不尽人意。因此将list结构换成自己实现的双向链表，运行起来的速度和内存都优于list的实现。因此在15-445的LRU的实现中，我也采...
+思维（Mind），是我们时时刻刻在使用的东西。大多数人的一生，都没有办法显式的意识到它的存在，或者透彻的理解和熟练的驾驭它，当然包括我自己。对于我个人来说，由于初高中时代的个人学习经历以及学习计算机技术时培养的习惯，对于自己感兴趣的东西是十分想透彻的理解它内部运行的逻辑的。当阅读一些源代码或者使用一些工具，难免会想知道：这个现象怎么来的？它背后有哪些机制支持了它？Under
+the
+hood，整...
           
         </div>
         <div class="post-footer">
-          <time datetime="2023-03-26 20:11" pubdate>
-            2023-03-26
+          <time datetime="2023-08-02 20:31" pubdate>
+            2023-08-02
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2023/07/31/STL-priority-queue/" target="_self">
+            <h3>STL杂谈：priority_queue</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Intro
+优先队列和队列的区别在与“优先”的概念上。对于普通队列而言，遵循的是先进先出（FIFO）的驱逐原则。而优先队列是默认会驱逐队列中最大的元素，因为插入元素和驱逐元素是会始终保持队内有序。优先队列以对数时间复杂度的插入和提取为代价，提供了O(1)时间的提取最大元素的操作。
+priority_queue的定义为：
+template&lt;class T,
+				 class Contain...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-07-31 18:23" pubdate>
+            2023-07-31
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/C/">C++</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2023/07/17/QueryExecution/" target="_self">
+            <h3>CMU 15-445 Query Execution</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+在完成bustub的project 3 query
+execution时，需要阅读大量的源码，并且尝试理清每一个系统组件之间的关系。在这篇博客中，从execution层的视角之下，记录一下bustub的execution
+engine的执行架构。在execution层之上的parser，binder，planner以及optimizer层，仅在必要时提及，详细对这些层的解析会在之后的博客中记录。...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-07-17 22:10" pubdate>
+            2023-07-17
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Database-Management-System/">Database Management System</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2023/07/01/QueryProcessing/" target="_self">
+            <h3>Query Processing</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+Query
+Processing指的是从数据库抽取数据的一系列活动。是用户和物理存储底层交互的中间层，其中包含三个阶段：
+
+解析和翻译（Parsing &amp;
+translation）：解析用户的意图（通过构造Abstract Syntax
+Tree），并与DBMS内部的数据结构相对应（通过binder）然后进行翻译
+优化（Optimization）：对Query流程进行优化，找到开销最小的...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-07-01 22:06" pubdate>
+            2023-07-01
           </time>
           <div>
              
@@ -324,7 +441,7 @@ map，list本质是双向链表，但实现出来最后的结果总是不尽人�
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
+      <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
  -->

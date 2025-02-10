@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>xv6 Operating System — File System - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    xv6 Operating System — File System
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2024-02-12</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/OS/">OS</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <h3 id="why-interesting">Why interesting</h3>
+<ul>
+<li>文件系统可以提供用户友好的文件名，可以帮助用户组织管理文件</li>
+<li>根据文件名可以实现多用户和多进程之间更为简单的共享</li>
+<li>存放于硬盘的文件具有持久化的特性</li>
+<li>文件系统是硬件的一个抽象</li>
+<li>计算机崩溃后，保证文件的数据的安全和重复使用，实现Crash
+safety机制</li>
+<li>对硬盘进行分区，布局文件系统</li>
+<li>访问硬盘的速度十分缓慢，采用block cache缓存技术实现性能的提升</li>
+</ul>
+<p><br></p>
+<h3 id="file-system-layers">File System Layers</h3>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>File descriptor</td>
+<td>文件描述符。</td>
+</tr>
+<tr class="even">
+<td>Pathname</td>
+<td>路径层。</td>
+</tr>
+<tr class="odd">
+<td>Directory</td>
+<td>目录层。</td>
+</tr>
+<tr class="even">
+<td>Inode</td>
+<td>Inode是存储于Disk中的数据结构，负责记录一个文件的元数据。该层实现了read/write。</td>
+</tr>
+<tr class="odd">
+<td>Logging</td>
+<td>为了保证持久性，是日志层。</td>
+</tr>
+<tr class="even">
+<td>Buffer cache</td>
+<td>利用局部性原理，将经常调用的文件存储cache中，提升系统性能。</td>
+</tr>
+<tr class="odd">
+<td>Disk</td>
+<td>磁盘层，是物理层，用于保存实际的文件，以二进制的方式存储数据，文件系统会对其进行初始化。</td>
+</tr>
+</tbody>
+</table>
+<p>文件系统的核心数据结构是 <strong>inode</strong> 和 <strong>file
+descriptor</strong>。接下来的笔记中，自底向上的解释不通层的作用和工作原理。</p>
+<h4 id="disk-layer">Disk Layer</h4>
+<p>Disk一般被分为大小一样的sector。Sector是磁盘驱动读写的最小单元，过去通常是512B。Block是在操作系统下，文件系统视角下的硬盘的读写最小单元，XV6中的大小是1024B。所以XV6中一个block对应了两个sector。</p>
+<p>从文件系统的角度来看Disk，可以把它当做一个巨大的以block（1024KB）为单位的数组。</p>
+<table>
+<thead>
+<tr class="header">
+<th>Block Range</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Block 0</td>
+<td>Boot block</td>
+</tr>
+<tr class="even">
+<td>Block 1</td>
+<td>Super block</td>
+</tr>
+<tr class="odd">
+<td>Block 2 - 31</td>
+<td>Log</td>
+</tr>
+<tr class="even">
+<td>Block 32 - 44</td>
+<td>Inode</td>
+</tr>
+<tr class="odd">
+<td>Block 45</td>
+<td>Bitmap</td>
+</tr>
+<tr class="even">
+<td>Block 46 to Block N</td>
+<td>Binary Data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Boot Block</strong>：用来存放启动操作系统的代码</p>
+<p><strong>Super Block</strong>：存放了构建文件系统的相关信息</p>
+<p><strong>Log</strong>： Super block中定义的Log块，日志功能</p>
+<p><strong>Inode</strong>：存放文件的Inode数据。XV6中，一个Inode有64字节</p>
+<p><strong>Bitmap</strong>：记录了数据block是否空闲，0位空闲，1为使用</p>
+<p><strong>Binary Data</strong>：真正存放文件的block区域</p>
+<h4 id="buffer-cache">Buffer Cache</h4>
+<p>Buffer cache主要有两个作用：</p>
+<ul>
+<li>同步不同CPU或者进程对于disk
+block的访问，确保在内存中只有相应block的一份拷贝以及一段时间内只有一个内核线程使用它</li>
+<li>缓存经常使用的block，降低读写磁盘的频率，提升系统的性能</li>
+</ul>
+<p>XV6中，实现buffer cache的代码在 <code>bio.c</code>
+中。具体关于<code>bio.c</code> 的源码分析可以详见：</p>
+<p><a
+target="_blank" rel="noopener" href="https://www.notion.so/Lecture-13-Sleep-Wake-up-1421596ebca14a659afa91bfb25d7ea8?pvs=21">Lecture
+13 Sleep &amp; Wake up</a></p>
+<p>改笔记中的Lab
+Locks详细解释了bio.c的源码，以及如何优化，提升并发性能。</p>
+<h4 id="log">Log</h4>
+<p>Log是为了crash safety而必要的存在，具体对于log和crash
+safety的关系解释在笔记：</p>
+<p><a
+target="_blank" rel="noopener" href="https://www.notion.so/Lecture-15-Crash-recovery-978d32597c344dc88989cf391bb75d44?pvs=21">Lecture
+15 Crash recovery</a></p>
+<h4 id="inode">Inode</h4>
+<p>Inode是存放于Disk相应区块中，用于索引一个文件的元数据头。它是一个64KB大小的数据结构。通常来说，inode的设计如下图表格所示：</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 75%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>type</th>
+<th>标明该Inode指向的是文件还是目录</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>nlink</td>
+<td>记录有多少文件名指向当前的inode，用于实现hard link 和 soft
+link的元数据</td>
+</tr>
+<tr class="even">
+<td>size</td>
+<td>记录文件的大小</td>
+</tr>
+<tr class="odd">
+<td>direct block no 0</td>
+<td>存储block的块号，对应的块中存储文件数据，每个编号4个字节</td>
+</tr>
+<tr class="even">
+<td>…</td>
+<td>有12个direct block no</td>
+</tr>
+<tr class="odd">
+<td>direct block no 11</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>indirect block no 12</td>
+<td>存储block的块号，对应块中存储了direct block no，存储了256个</td>
+</tr>
+</tbody>
+</table>
+<p>根据direct block和indirect
+block的数量，就可以计算出该文件系统一个inode可以存储文件的最大容量</p>
+<p><span class="math display">\[ FileCapacity = DirectNumber\times 1KB +
+InDirectNumber\times256\times1KB \]</span></p>
+<p>XV6中12个direct block，1个indirect
+block，计算出来可以存储文件的最大容量为268KB。</p>
+<h4 id="directory">Directory</h4>
+<p>文件系统的炫酷特性就是具有层次化的命名空间。目录在XV6中本质也是一个文件，每一个目录文件包含若干条directory
+entries。每一条entry都有固定的格式：</p>
+<ul>
+<li>前两个字节包含目录中文件或子目录的inode编号</li>
+<li>接下来的14个字节包含了文件或者子目录的名字</li>
+</ul>
+<p>假设此时要查找<code>/y/x</code> 文件，首先从root
+inode开始查找。通常root
+inode会有固定的inode编号，在XV6中，这个编号是1。我们该如何根据编号找到root
+inode呢？inode从block 32开始，如果是inode1，那么必然在block
+32中的64到128字节的位置。所以文件系统可以直接读到root inode的内容。
+对于路径名查找程序，接下来就是扫描root
+inode包含的所有block，以找到“y”。该怎么找到root
+inode所有对应的block呢？根据前一节的内容就是读取所有的direct block
+number和indirect block number。</p>
+<h4 id="pathname">Pathname</h4>
+<p>Path
+name的查询包含了一系列的<code>dirlookup</code>函数调用，每一次调用查询一个path
+name的子目录。<code>namei</code>根据路径返回与之对应的inode。函数<code>nameiparent</code>在path的最后一个元素前停止查询，并且返回这个目录的inode，把最后一个元素复制到name变量中。两个函数都调用了<code>namex</code>完成实际的工作。</p>
+<p><code>namex</code>首先决定路径评估从哪个地方开始。如果路径从<code>‘/’</code>开始，那么评估就从根路径开始。否则就从当前路径开始。假设我们要寻找路径为<code>/a/b</code>的文件，首先从根目录开始，<code>iget</code>函数获取了根目录的inode。进入while循环，调用<code>skipelem</code>函数进行判断，<code>skiplelem</code>函数将path变为<code>b</code>
+。锁住根目录的inode的lock，判断当前的inode是不是指向了一个文件夹；如果不是文件夹，返回错误；检查调用它的是不是<code>nameiparent</code>函数，如果是且path为空，则早停并且返回ip；调用<code>dirlookup</code>函数</p>
+<blockquote>
+<p><code>dirlookup</code>函数接受三个参数（inode，name以及poff），在当前情况下，调用了<code>skipelem</code>之后，name保存的值是<code>a</code>
+。首先检查当前的inode指向的是不是文件夹，不是的话触发panic。如果是，遍历对应block之下的directory
+entry。找到对应的名字，与输入的名字进行比较；如果相同，设置poff为当前的off，获取当前directory
+entry的inode号码，返回前调用<code>iget</code> 。</p>
+</blockquote>
+<p>得到了对应文件夹的inode，赋值给next（如果next为0，说明<code>dirlookup</code>函数发生错误）。继续循环，直到循环结束。此时就可以找到文件<code>b</code>对应的inode。</p>
+<p>查询路径的过程中也会遇到并行运算的挑战。</p>
+<ul>
+<li>风险一：当一个内核线程在查询一个路径时，另一个内核线程可能会通过取消链接文件夹的方式修改directory
+tree。这就会导致查询的内核线程可能在搜索一个已经被其他内核线程删除的文件夹，并且对应的block已经被其它文件夹或文件利用了。Xv6通过加锁的方式避免了这个风险：当在<code>namex</code>执行<code>dirlookup</code>函数时，查询线程会hold当前文件夹的锁，而且<code>dirlookup</code>函数返回inode是用的<code>iget</code>函数。iget负责增加inode的reference
+count。只有<code>namex</code>从<code>dirlookup</code>中收到inode之后，才会释放当前文件夹的锁。这时候，尽管其他线程可能取消对应文件夹的链接，但reference
+count仍然大于0，不会被删除。</li>
+<li>风险二：死锁问题。当next指向的下一个inode和当前的ip相同时（查询<code>“.”</code>会出现这个问题），在释放ip的锁前给next加锁会导致死锁。为了避免死锁，namex会在获取next的锁前释放当前的文件夹的锁。</li>
+</ul>
+<h4 id="file-descriptor">File Descriptor</h4>
+<p>Unix一个很酷的方面就是它把所有的资源看作文件，包括console、pipes等一些硬件软件资源。File
+descriptor
+layer实现了这种资源文件化的统一性。Xv6给每一个进程分配了一个记录打开文件的table（即file
+descriptor）。每一个打开的文件用结构体<code>struct file</code>
+表示。每次调用<code>open</code>
+系统调用的时候就会创建一个新文件（新的<code>struct file</code>
+）。当不同的进程打开同一个文件的时候，会根据对应的进程的table创建不同的文件实例，根据自身当前文件描述符的数，创建一个新的文件描述符。</p>
+<p>比如A进程的0，1，2文件描述符代表着标准输入、标准输出以及标准错误，那么想要打开文件X的话，就要创建一个文件描述符为3的。</p>
+<p>如果B进程同样要打开文件X，但是B文件已经有5个文件描述符，那么就要创建一个文件描述符为5的，因为0，1，2，3，4被占用了。</p>
+<p>所有打开的文件都被记录在一个全局的file table里。File
+table可以使用<code>filealloc</code>函数分配一个文件，使用<code>filedup</code>创建一个复制的reference，使用<code>fileclose</code>函数释放一个reference，使用<code>fileread</code>和<code>filewrite</code>进行读写操作。</p>
+<p><br></p>
+<h3 id="what-is-file-system-crash">What is File System Crash</h3>
+<p>File System
+Crash是指计算机在运行过程中，涉及到大量的磁盘读写操作，如果在某些操作之间，计算机因为故障死机或者断电，会导致系统崩溃，此时文件系统会因为未能原子性的完成某种磁盘读写而产生了不一致性，导致再次开机时，文件系统处于一种bad的状态，甚至无法使用。下面是一个系统crash的例子：</p>
+<blockquote>
+<p>首先可以再回顾一下文件系统的磁盘排布方式：</p>
+<p align="center">
+<img src="os1.png" width="550">
+</p>
+<p>Log block就是我们想要存储日志的地方。</p>
+<p>当我们创建文件的时候，比如写一个<code>echo “hi” &gt; x</code>指令，目的是在根目录下创建一个x文件，在x文件中写入hi。涉及到了磁盘交互过程是：</p>
+<p align="center">
+<img src="os2.png" width="550">
+</p>
+<p>假设crash发生在<code>init inode x</code>和<code>write 46</code>之间，会发生什么呢？首先已经在inode
+block上分配了一个inode并且完成了初始化。但是还没有对x目录block进行修改，就crash了，说明分配好的inode不属于任何文件夹。这就导致系统重启之后找不到也无法删除。</p>
+<p>如果把<code>write 46 + write 32</code>和<code>write 33 + write 33</code>换一下位置呢，会解决问题吗？</p>
+<p>显然如果在<code>write 46 + write 32</code>
+和<code>write 33 + write 33</code>
+之间发生crash的话，文件夹里记录到的是没有分配的inode。这个没有分配的inode会被别的文件操作识别到，划归到其他文件夹中。但此时，根目录文件还是可以访问到这个文件的，这不利于文件的安全性。</p>
+</blockquote>
+<p><br></p>
+<h3 id="crash-safety">Crash Safety</h3>
+<p>Crash Safety是解决File System
+Crash问题的文件系统层面的方案。一个很通用的解决方案就是采用logging系统，logging确保了操作可以在操作系统crash和重启前能恢复文件系统的统一性。</p>
+<h4 id="logging">Logging</h4>
+文件系统中的log块的布局如下：
+<p align="center">
+<img src="os3.png" width="550">
+</p>
+<p>最开始有一个header block，里面包含了：</p>
+<ul>
+<li>数字n代表有效的log block数量</li>
+<li>每个log block的实际对应的block编号</li>
+</ul>
+<p>之后就是很多个block的数据。</p>
+<p>文件系统运行时，内存中会有一份header block的拷贝。如果某一个log
+block需要读写，那么也和平常的block一样会存在于cache当中。</p>
+<p>Logging系统的思想是很直观的，一般一个完整的logging流程是</p>
+<ul>
+<li>log write</li>
+<li>commit op</li>
+<li>install log</li>
+<li>clean log</li>
+</ul>
+<h4 id="transaction">Transaction</h4>
+<p>有一个需要提前了解的概念就是Transaction，即事务。事务确保了操作的安全性和原子性，和数据结构中的事务类似。在做一些磁盘操作的时候，必须以<code>begin_op()</code>和<code>end_op()</code>作为事务的开始和结束，这两个函数确保完成了logging的完整流程。在<code>begin_op()</code>之后的代码，并不会实际的更新磁盘内容，在<code>end_op()</code>之前，不会有实际的改变。<code>begin_op()</code>的代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// called at the start of each FS system call.</span>
+<span class="token keyword">void</span>
+<span class="token function">begin_op</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">acquire</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>committing<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+      <span class="token function">sleep</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">,</span> <span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">+</span> <span class="token punctuation">(</span>log<span class="token punctuation">.</span>outstanding<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token operator">*</span>MAXOPBLOCKS <span class="token operator">></span> LOGSIZE<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+      <span class="token comment">// this op might exhaust log space; wait for commit.</span>
+      <span class="token function">sleep</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">,</span> <span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      log<span class="token punctuation">.</span>outstanding <span class="token operator">+=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+      <span class="token function">release</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>首先获取log系统的锁，如果当前的log仍然在提交的过程中，则让该进程sleep；如果当前操作需要记录的log超出了预定的log，则让该进程sleep；否则outstanding+1，标志着又有一个FS系统调用在调用log。</p>
+<p><code>end_op()</code>的代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// called at the end of each FS system call.</span>
+<span class="token comment">// commits if this was the last outstanding operation.</span>
+<span class="token keyword">void</span>
+<span class="token function">end_op</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> do_commit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+  <span class="token function">acquire</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  log<span class="token punctuation">.</span>outstanding <span class="token operator">-=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>committing<span class="token punctuation">)</span>
+    <span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">"log.committing"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>outstanding <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    do_commit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    log<span class="token punctuation">.</span>committing <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// begin_op() may be waiting for log space,</span>
+    <span class="token comment">// and decrementing log.outstanding has decreased</span>
+    <span class="token comment">// the amount of reserved space.</span>
+    <span class="token function">wakeup</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">release</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span><span class="token punctuation">(</span>do_commit<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token comment">// call commit w/o holding locks, since not allowed</span>
+    <span class="token comment">// to sleep with locks.</span>
+    <span class="token function">commit</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">acquire</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    log<span class="token punctuation">.</span>committing <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token function">wakeup</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">release</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="log-write">Log write</h4>
+<p>当需要更新文件系统时，不更新实际的block，而是先写到log
+block当中。任何一个在<code>begin_op()</code>和<code>end_op()</code>之间的文件系统调用最终都会走到<code>log_write</code>函数。为了理解<code>log_write</code>函数，首先需要理解一下log的数据结构。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">logheader</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> block<span class="token punctuation">[</span>LOGSIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">struct</span> <span class="token class-name">log</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">spinlock</span> lock<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> start<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> size<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> outstanding<span class="token punctuation">;</span> <span class="token comment">// how many FS sys calls are executing.</span>
+  <span class="token keyword">int</span> committing<span class="token punctuation">;</span>  <span class="token comment">// in commit(), please wait.</span>
+  <span class="token keyword">int</span> dev<span class="token punctuation">;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">logheader</span> lh<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>log header对应了on-disk的log header
+block，存在于内存中。log结构体含有log
+header，一个lock，以及相关的标志位。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// Caller has modified b->data and is done with the buffer.</span>
+<span class="token comment">// Record the block number and pin in the cache by increasing refcnt.</span>
+<span class="token comment">// commit()/write_log() will do the disk write.</span>
+<span class="token comment">//</span>
+<span class="token comment">// log_write() replaces bwrite(); a typical use is:</span>
+<span class="token comment">//   bp = bread(...)</span>
+<span class="token comment">//   modify bp->data[]</span>
+<span class="token comment">//   log_write(bp)</span>
+<span class="token comment">//   brelse(bp)</span>
+<span class="token keyword">void</span>
+<span class="token function">log_write</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>b<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> i<span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">>=</span> LOGSIZE <span class="token operator">||</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">>=</span> log<span class="token punctuation">.</span>size <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">"too big a transaction"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>log<span class="token punctuation">.</span>outstanding <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">"log_write outside of trans"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">acquire</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>block<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> b<span class="token operator">-></span>blockno<span class="token punctuation">)</span>   <span class="token comment">// log absorbtion</span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>block<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> b<span class="token operator">-></span>blockno<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">// Add new block to log?</span>
+    <span class="token function">bpin</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token operator">++</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">release</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><code>log_write</code>接受一个buffer
+cache作为参数，先对当前log系统做一些检查，再获取log的lock。对于lock
+header中的每一个block扫描，看看当前的block是否已经被记录了。如果已经记录了，就进行log
+absorbtion；如果没有则在末尾添加记录，并且把当前的block固定在buffer
+cache中（防止被缓存驱逐），然后对header的n进行扩容。总的来说，<code>log_write</code>做了两件事：</p>
+<ul>
+<li>记录block number到自己的log中</li>
+<li>把新加入的block固定在buffer cache</li>
+</ul>
+<h4 id="commit-op">Commit op</h4>
+<p><code>commit()</code>函数最终会被<code>end_op()</code>调用。commit的代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span>
+<span class="token function">commit</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">write_log</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>     <span class="token comment">// Write modified blocks from cache to log</span>
+    <span class="token function">write_head</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">// Write header to disk -- the real commit</span>
+    <span class="token function">install_trans</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// Now install writes to home locations</span>
+    log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token function">write_head</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">// Erase the transaction from the log</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>首先调用了<code>write_log()</code>，这个函数的目的是把固定在buffer
+cache之间的block（这些block是log
+header中记录的）写到log对应的存储区域上。可以看一下对应的代码：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// Copy modified blocks from cache to log.</span>
+<span class="token keyword">static</span> <span class="token keyword">void</span>
+<span class="token function">write_log</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> tail<span class="token punctuation">;</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>tail <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> tail <span class="token operator">&lt;</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">;</span> tail<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>to <span class="token operator">=</span> <span class="token function">bread</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>dev<span class="token punctuation">,</span> log<span class="token punctuation">.</span>start<span class="token operator">+</span>tail<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// log block</span>
+    <span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>from <span class="token operator">=</span> <span class="token function">bread</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>dev<span class="token punctuation">,</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>block<span class="token punctuation">[</span>tail<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// cache block</span>
+    <span class="token function">memmove</span><span class="token punctuation">(</span>to<span class="token operator">-></span>data<span class="token punctuation">,</span> from<span class="token operator">-></span>data<span class="token punctuation">,</span> BSIZE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">bwrite</span><span class="token punctuation">(</span>to<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// write the log</span>
+    <span class="token function">brelse</span><span class="token punctuation">(</span>from<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">brelse</span><span class="token punctuation">(</span>to<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>可以看到这里才真正调用了<code>bwrite</code>函数，实现了cache到磁盘的写入操作。</p>
+<p>之后又调用了write_head()操作，代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// Write in-memory log header to disk.</span>
+<span class="token comment">// This is the true point at which the</span>
+<span class="token comment">// current transaction commits.</span>
+<span class="token keyword">static</span> <span class="token keyword">void</span>
+<span class="token function">write_head</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>buf <span class="token operator">=</span> <span class="token function">bread</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>dev<span class="token punctuation">,</span> log<span class="token punctuation">.</span>start<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">logheader</span> <span class="token operator">*</span>hb <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">logheader</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>buf<span class="token operator">-></span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> i<span class="token punctuation">;</span>
+  hb<span class="token operator">-></span>n <span class="token operator">=</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    hb<span class="token operator">-></span>block<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>block<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">bwrite</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">brelse</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这里做的工作是，先从buffer cache里获取硬盘上的log block，读取出log
+header，再从内存中的log header里复制内容到buffer里的log
+header，最后调用<code>bwrite</code>写入磁盘。这里的<code>bwrite</code>被称为<strong>commit
+point</strong>。这是因为，如果在bwrite之前发生crush，log
+header的信息没有真实存储到磁盘的log header里，尽管log
+block已经记录了一些信息，但系统重启后开始恢复是基于log
+header的内容的，因此就什么也不会发生。如果发生在<code>bwrite</code>之后，log
+header已经记录了相关的信息，系统重启之后就会开始恢复文件系统，完成对应操作。</p>
+<h4 id="install-log">Install log</h4>
+<p>Install
+log操作就是<code>commit</code>函数里的<code>install_trans</code>函数。代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">// Copy committed blocks from log to their home location</span>
+<span class="token keyword">static</span> <span class="token keyword">void</span>
+<span class="token function">install_trans</span><span class="token punctuation">(</span><span class="token keyword">int</span> recovering<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> tail<span class="token punctuation">;</span>
+
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>tail <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> tail <span class="token operator">&lt;</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n<span class="token punctuation">;</span> tail<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>lbuf <span class="token operator">=</span> <span class="token function">bread</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>dev<span class="token punctuation">,</span> log<span class="token punctuation">.</span>start<span class="token operator">+</span>tail<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// read log block</span>
+    <span class="token keyword">struct</span> <span class="token class-name">buf</span> <span class="token operator">*</span>dbuf <span class="token operator">=</span> <span class="token function">bread</span><span class="token punctuation">(</span>log<span class="token punctuation">.</span>dev<span class="token punctuation">,</span> log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>block<span class="token punctuation">[</span>tail<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// read dst</span>
+    <span class="token function">memmove</span><span class="token punctuation">(</span>dbuf<span class="token operator">-></span>data<span class="token punctuation">,</span> lbuf<span class="token operator">-></span>data<span class="token punctuation">,</span> BSIZE<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// copy block to dst</span>
+    <span class="token function">bwrite</span><span class="token punctuation">(</span>dbuf<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// write dst to disk</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>recovering <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+      <span class="token function">bunpin</span><span class="token punctuation">(</span>dbuf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">brelse</span><span class="token punctuation">(</span>lbuf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">brelse</span><span class="token punctuation">(</span>dbuf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>首先读取磁盘中log block的块，再读取内存中的对应固定好的block，将log
+block之前保存好的数据，移动到实际的buffer block中，最后将buffer
+block写会磁盘。</p>
+<h4 id="clean-log">Clean log</h4>
+<p>最后commit函数将内存中log的n清零，再写会磁盘中，实现了清除日志的效果。</p>
+<p><br></p>
+<h3 id="file-system-recovering">File System Recovering</h3>
+<p>了解了logging系统的运行机制之后，那么系统重启之后怎么工作呢？操作系统重启的第一步就是调用<code>initlog</code>函数。代码如下：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span>
+<span class="token function">initlog</span><span class="token punctuation">(</span><span class="token keyword">int</span> dev<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">superblock</span> <span class="token operator">*</span>sb<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">logheader</span><span class="token punctuation">)</span> <span class="token operator">>=</span> BSIZE<span class="token punctuation">)</span>
+    <span class="token function">panic</span><span class="token punctuation">(</span><span class="token string">"initlog: too big logheader"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">initlock</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>log<span class="token punctuation">.</span>lock<span class="token punctuation">,</span> <span class="token string">"log"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  log<span class="token punctuation">.</span>start <span class="token operator">=</span> sb<span class="token operator">-></span>logstart<span class="token punctuation">;</span>
+  log<span class="token punctuation">.</span>size <span class="token operator">=</span> sb<span class="token operator">-></span>nlog<span class="token punctuation">;</span>
+  log<span class="token punctuation">.</span>dev <span class="token operator">=</span> dev<span class="token punctuation">;</span>
+  <span class="token function">recover_from_log</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>主要就是调用了<code>recover_from_log()</code>函数：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span>
+<span class="token function">recover_from_log</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">read_head</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">install_trans</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// if committed, copy from log to disk</span>
+  log<span class="token punctuation">.</span>lh<span class="token punctuation">.</span>n <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token function">write_head</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// clear the log</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>首先调用了read_head，读取磁盘的log
+header到内存的log中。install_trans会检查是否有需要恢复的block，如果有，就把磁盘上的log
+block数据复制到对应的实际block中，完成crash之前未完成的操作。</p>
+<p><br></p>
+<h3 id="lab-file-system">Lab File System</h3>
+<p>在这个lab中，你将在xv6文件系统中支持大文件以及symbolic link。</p>
+<h4 id="large-files">Large files</h4>
+<p>在这个实验中你将增大xv6文件系统支持的最大文件容量。目前的xv6文件限制在268个block（269*1024字节）。这个限制来源于xv6的inode数据仅仅有12个direct
+block number和一个“singly-indirect” block number，这就可以索引12 + 256 =
+268个block。<code>bigfile</code>命令尽可能创建大文件，并且报告文件的大小。</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ bigfile
+<span class="token punctuation">..</span>
+wrote <span class="token number">268</span> blocks
+bigfile: <span class="token function">file</span> is too small
+$<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这个测试失败了，因为bigfile期望它能穿件65803个block，单没有修改的xv6只能索引268个。</p>
+<p>你需要改变xv6的文件系统代码来支持双重索引，包含256个单索引block，并且每一个又可以继续索引256个block。结果将会是256*256
++ 256 + 11 = 65803个block。</p>
+<h4 id="what-to-look-at">What to Look At</h4>
+<p>磁盘上的inode结构被定义在<code>fs.h</code>文件的<code>struct dinode</code>中。你将会对NDIRECT，NINDIRECT，MAXFILE，以及<code>struct dinode</code>的<code>addrs[]</code>感兴趣。找到指定文件数据的代码在<code>fs.c</code>中的<code>bmap()</code>函数中。确保你理解这个函数在干什么。当读写文件时就会调用bmap。当写文件的时候，<code>bmap</code>会分配一个新的block供给文件使用，同时也会根据是否需要保留block地址而分配一个间接block。bmap解决两种block
+number的索引问题。bn参数时一个逻辑块number，这个number时在文件内部的，相对于文件开始的一个number。</p>
+<h4 id="your-job">Your Job</h4>
+<blockquote>
+<p>修改<code>bmap</code>函数，可以让它索引doubly-indirect
+block。你需要分配11个direct block，而不是12个，来为doubly-indirect
+block腾出一个空间。你不允许改变磁盘上inode的大小。前11个<code>ip-&gt;addr[]</code>的元素应当是direct
+block；第十二个应该是singly-indirect
+block；第十三个应该是你新加入的doubly-indirect
+block。当<code>bigfile</code>可以写65803个block，且<code>usertests</code>成功运行的时候，说明你完成了这个实验。</p>
+</blockquote>
+<p>Hints：</p>
+<ul>
+<li>确保你理解了函数bmap()。可以尝试写出ip addrs[]，indirect
+block，doubly-indirect
+block之间的框图或关系。确保你理解了为什么添加一个doubly-indirect
+block可以增加256*256个新的block到最大文件容量中。</li>
+<li>想象你怎么索引doubly-indirect block</li>
+<li>改变相关的声明</li>
+<li>确保itrunc释放掉一个文件中的所有的block，包括doubly-indirect
+blocks</li>
+</ul>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2025</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

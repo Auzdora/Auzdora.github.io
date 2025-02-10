@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>MapReduce Implementation - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    MapReduce Implementation
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2024-06-01</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <h3 id="introduction">Introduction</h3>
+<p>Google的研发人员在过去处理大数据任务时，经常需要手写实现很多不同的拥有特定功能的程序，比如爬去文档、网络日志等等。这些任务经常需要将任务分布到很多台计算机处理，以提升处理的性能和速度；但在这个前提下，如何实现并行、分布数据、处理异常机器和失败的任务、保证系统正确运行是一个较为复杂和综合性的问题。</p>
+<p>为了解决这样的问题，Google的研发人员开发了一套系统——Mapreduce。它可以为程序员屏蔽掉这些复杂性，让写代码的过程中专注于逻辑的实现，系统内部则负责并行、并发、数据控制能复杂的问题。</p>
+<p>Mapreduce的本质是一种编程模型，它主要面向集群计算机处理大型数据分布式计算而设计。用户在使用Mapreduce的时候，需要指定一个可以处理KV
+pair的名为map函数，该函数会把输入的KV pair处理输出为中间层的KV
+pair；然后再指定一个名为reduce的函数，来将中间的KV
+pair相同的key合并起来，产生最后的输出。程序员写的这种程序底层自动实现了并行和在大集群计算机上的部署。</p>
+<p><br></p>
+<h3 id="programming-model">Programming Model</h3>
+<p>模型的输入是一系列KV pair，并且产生另一系列的KV
+pair。Mapreduce库的使用者只需要关注实现两个函数：Map和Reduce。</p>
+<p>Map函数：输入一个KV pair，输出一个由中间KV
+pair组成的集合。Mapreduce会将由相同中间Key的值的组合起来，传递给Reduce函数。</p>
+<p>Reduce函数：接收中间的KV
+pair作为输入，合并相同Key值的pair，输出一个更小的集合。</p>
+<h4 id="example">Example</h4>
+<p>如果需要对大文件中每个单词出现的次数做统计，可以写出下面的伪代码：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">func</span> <span class="token keyword">map</span><span class="token punctuation">(</span><span class="token builtin">string</span> key<span class="token punctuation">,</span> <span class="token builtin">string</span> value<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token comment">// key: document name</span>
+	<span class="token comment">// value: document contents</span>
+	<span class="token keyword">for</span> each word w in value<span class="token punctuation">:</span>
+		<span class="token function">EmitIntermediate</span><span class="token punctuation">(</span>w<span class="token punctuation">,</span> <span class="token string">"1"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">reduce</span><span class="token punctuation">(</span><span class="token builtin">string</span> key<span class="token punctuation">,</span> iterator values<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token comment">// key: a word</span>
+	<span class="token comment">// values: alist of counts</span>
+	result <span class="token operator">:=</span> <span class="token number">0</span>
+	<span class="token keyword">for</span> each v in values<span class="token punctuation">:</span>
+		result <span class="token operator">+=</span> <span class="token function">ParseInt</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span>
+	<span class="token function">Emit</span><span class="token punctuation">(</span><span class="token function">AsString</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="types">Types</h4>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">map</span> <span class="token punctuation">(</span>k1<span class="token punctuation">,</span> v1<span class="token punctuation">)</span>         <span class="token operator">-</span><span class="token operator">></span> <span class="token function">list</span><span class="token punctuation">(</span>k2<span class="token punctuation">,</span> v2<span class="token punctuation">)</span>
+<span class="token function">reduce</span><span class="token punctuation">(</span>k2<span class="token punctuation">,</span> <span class="token function">list</span><span class="token punctuation">(</span>v2<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token function">list</span><span class="token punctuation">(</span>v2<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>用户提供的map和reduce函数需要遵循一定的类型。输入的KV
+pair于map的输出的KV pair是不同domain的。而中间KV
+pair和输出属于同样的domain。</p>
+<p><br></p>
+<h3 id="implementation">Implementation</h3>
+<h4 id="execution-overview">Execution Overview</h4>
+<p align="center">
+<img src="mp1.png" width="550">
+</p>
+<p>上图展现了Mapreduce的基本工作原理。</p>
+<p>首先，map函数分布在不同worker计算机上，它会自动将输入的数据分为M个splits。Input
+splits可以被不同机器并行处理。Reduce函数使用partitioning函数（例如，hash（key）mod
+R）将每一个map worker产生的中间KV
+pair分成R片。R的数量以及partitioning函数由用户指定。</p>
+<p>Mapreduce的工作流如下：</p>
+<ol type="1">
+<li>Mapreduce首先在<strong>User
+Program</strong>中将输入文件分成16MB-64MB大小的M个数据段。然后在集群中fork
+<strong>User Program</strong>给每一台机器。</li>
+<li>再众多机器中，只有一个机器被标记为Master，剩余的都是Worker。有M个Map任务和R个Reduce任务等待分配。Master会选择一个空闲的Worker分配其中一个任务。</li>
+<li>被分配Map任务的Worker会读取对应的input
+split的内容。它会解析输入数据，得到key/value
+pair，并且将它传递给每一个用户定义的Map函数中。然后Map函数会产生中间KV
+pair，最后缓存在内存里。</li>
+<li>内存中的pairs会周期性的写到本地磁盘中，并且会被partitioning函数分成R个数据段。这些在本地磁盘中存储的pairs的地址会被发送到Master，Master随后负责把这些地址传递给执行Reduce任务的Worker。</li>
+<li>当执行Reduce任务的Worker接收到Master发送的文件地址之后，Worker使用RPC来从Map
+Worker中根据地址读取本地磁盘上的数据。当一个Reduce
+Worker读取完毕属于它的中间数据后，它会根据中间key值对其进行排序，这样就可以把相同键值的数据聚集到一起（排序是必须的，因为会有很多不同的keys分配到一个Reduce
+Worker）。</li>
+<li>Reduce
+Worker对排序后的中间数据迭代，对于每一个遇到的新的key值，Worker会将key和对应的value传递给用户定义的Reduce函数。Reduce函数的输出会追加到最后输出文件中。</li>
+<li>当所有的map任务和reduce任务完成后，Master会唤醒<strong>User
+Program</strong>。这就完成了一次Mapreduce的使用。</li>
+</ol>
+<h4 id="master-data-structures">Master Data Structures</h4>
+<p>Master需要维护几个数据结构。对于每一个map任务和reduce任务，它需要存储任务的状态，以及能够识别worker机器的identity。Master童谣需要存储每一个map任务完成后，中间文件的位置和大小。</p>
+<h4 id="unix-domain-socket">Unix Domain Socket</h4>
+<p>现实世界中两个人进行信息交流的整个过程被称作一次通信（Communication），通信的双方被称为端点（Endpoint）。工具通讯环境的不同，端点之间可以选择不同的工具进行通信，距离近可以直接对话，距离远可以选择打电话、微信聊天。这些工具就被称为
+Socket。</p>
+<p align="center">
+<img src="mp2.jpeg" width="550">
+</p>
+<p>同理，在计算机中也有类似的概念：在 Unix
+中，一次通信由两个端点组成，例如 HTTP 服务端和 HTTP
+客户端。端点之间想要通信，必须借助某些工具，Unix 中端点之间使用 Socket
+来进行通信。</p>
+<p>Socket 原本是为网络通信而设计的，但后来在 Socket 的框架上发展出一种
+IPC 机制，就是 UDS。Unix Domain Socket（UDS，Unix
+域套接字），它还有另一个名字叫 IPC（inter-process
+communication，进程间通信）。</p>
+<p>使用 UDS
+的好处显而易见：不需要经过网络协议栈，不需要打包拆包、计算校验和、维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程。这是因为，IPC
+机制本质上是可靠的通讯，而网络协议是为不可靠的通讯设计的。</p>
+<p>UDS 与网络 Socket 最明显的区别在于，网络 Socket 地址是 IP
+地址加端口号，而 UDS 的地址是一个 Socket
+类型的文件在文件系统中的路径，一般名字以 .sock 结尾。</p>
+<p>这个 Socket 文件可以被系统进程引用，两个进程可以同时打开一个 UDS
+进行通信，而且这种通信方式只会发生在系统内核里，不会在网络上进行传播。</p>
+<h4 id="go中使用unix-domain-socket">Go中使用Unix Domain Socket</h4>
+<p>我们从一个简单例子开始，使用Go监听Unix域套接字：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">import</span> <span class="token punctuation">(</span>
+    <span class="token string">"io"</span>
+    <span class="token string">"log"</span>
+    <span class="token string">"net"</span>
+    <span class="token string">"os"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">const</span> SockAddr <span class="token operator">=</span> <span class="token string">"/tmp/echo.sock"</span>
+
+<span class="token keyword">func</span> <span class="token function">echoServer</span><span class="token punctuation">(</span>c net<span class="token punctuation">.</span>Conn<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    log<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Client connected [%s]"</span><span class="token punctuation">,</span> c<span class="token punctuation">.</span><span class="token function">RemoteAddr</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Network</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span><span class="token function">Copy</span><span class="token punctuation">(</span>c<span class="token punctuation">,</span> c<span class="token punctuation">)</span>
+    c<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> err <span class="token operator">:=</span> os<span class="token punctuation">.</span><span class="token function">RemoveAll</span><span class="token punctuation">(</span>SockAddr<span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+
+    l<span class="token punctuation">,</span> err <span class="token operator">:=</span> net<span class="token punctuation">.</span><span class="token function">Listen</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> SockAddr<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"listen error:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">defer</span> l<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// Accept new connections, dispatching them to echoServer</span>
+        <span class="token comment">// in a goroutine.</span>
+        conn<span class="token punctuation">,</span> err <span class="token operator">:=</span> l<span class="token punctuation">.</span><span class="token function">Accept</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+            log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"accept error:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">go</span> <span class="token function">echoServer</span><span class="token punctuation">(</span>conn<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>UDS通过文件系统中的路径进行识别；对于服务器端代码，我们使用/tmp/echo.sock。以上代码从删除这个文件开始，如果文件存在说明已经有服务在监听会报错。</p>
+<p>当服务器关闭时，表示套接字的文件可以保留在文件系统中，除非服务停止后自动清理。如果我们用相同的套接字路径重新运行另一个服务器，会得到以下错误:</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token number">2021</span><span class="token operator">/</span><span class="token number">10</span><span class="token operator">/</span><span class="token number">20</span> <span class="token number">23</span><span class="token punctuation">:</span><span class="token number">23</span><span class="token punctuation">:</span><span class="token number">24</span> listen <span class="token builtin">error</span><span class="token punctuation">:</span>listen unix <span class="token operator">/</span>tmp<span class="token operator">/</span>echo<span class="token punctuation">.</span>sock<span class="token punctuation">:</span> bind<span class="token punctuation">:</span> address already in use<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>为了防止这种情况，服务端首先删除套接字文件(如果存在的话)。</p>
+<p>我们可以在Go中编写一个简单的客户端，它连接到服务器，发送消息，等待响应并退出。客户端代码如下：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+    <span class="token string">"io"</span>
+    <span class="token string">"log"</span>
+    <span class="token string">"net"</span>
+    <span class="token string">"time"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">reader</span><span class="token punctuation">(</span>r io<span class="token punctuation">.</span>Reader<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    buf <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">)</span>
+    n<span class="token punctuation">,</span> err <span class="token operator">:=</span> r<span class="token punctuation">.</span><span class="token function">Read</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"Client got:"</span><span class="token punctuation">,</span> <span class="token function">string</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">:</span>n<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    c<span class="token punctuation">,</span> err <span class="token operator">:=</span> net<span class="token punctuation">.</span><span class="token function">Dial</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> <span class="token string">"/tmp/echo.sock"</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">defer</span> c<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">go</span> <span class="token function">reader</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>
+    <span class="token boolean">_</span><span class="token punctuation">,</span> err <span class="token operator">=</span> c<span class="token punctuation">.</span><span class="token function">Write</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span><span class="token string">"hi"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"write error:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">reader</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>
+    time<span class="token punctuation">.</span><span class="token function">Sleep</span><span class="token punctuation">(</span><span class="token number">100</span> <span class="token operator">*</span> time<span class="token punctuation">.</span>Millisecond<span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>我们可以看到，编写UDS服务器和客户端与编写常规套接字服务和客户端非常相似。唯一的不同就是必须传入“unix”作为网络类型参数到net.Listen和net.Dial中。其余代码都是一样的。显然，这使得编写通用的服务端和客户端代码变得非常容易，这些代码与所使用的套接字的实际类型无关。</p>
+<h4 id="基于uds实现http和rpc协议">基于UDS实现HTTP和RPC协议</h4>
+<p>网络协议如HTTP和各种形式的RPC，并不特别关心网络栈的底层是如何实现的，只要能对一些功能保持一致就可以。Go标准库自带rpc包，使得实现RPC服务器和客户端变得非常简单。下面是一个使用UDS实现简单的服务器:</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">const</span> SockAddr <span class="token operator">=</span> <span class="token string">"/tmp/rpc.sock"</span>
+
+<span class="token keyword">type</span> Greeter <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">func</span> <span class="token punctuation">(</span>g Greeter<span class="token punctuation">)</span> <span class="token function">Greet</span><span class="token punctuation">(</span>name <span class="token operator">*</span><span class="token builtin">string</span><span class="token punctuation">,</span> reply <span class="token operator">*</span><span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">&#123;</span>
+    <span class="token operator">*</span>reply <span class="token operator">=</span> <span class="token string">"Hello, "</span> <span class="token operator">+</span> <span class="token operator">*</span>name
+    <span class="token keyword">return</span> <span class="token boolean">nil</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> err <span class="token operator">:=</span> os<span class="token punctuation">.</span><span class="token function">RemoveAll</span><span class="token punctuation">(</span>SockAddr<span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+
+    greeter <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span>Greeter<span class="token punctuation">)</span>
+    rpc<span class="token punctuation">.</span><span class="token function">Register</span><span class="token punctuation">(</span>greeter<span class="token punctuation">)</span>
+    rpc<span class="token punctuation">.</span><span class="token function">HandleHTTP</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    l<span class="token punctuation">,</span> e <span class="token operator">:=</span> net<span class="token punctuation">.</span><span class="token function">Listen</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> SockAddr<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> e <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"listen error:"</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"Serving..."</span><span class="token punctuation">)</span>
+    http<span class="token punctuation">.</span><span class="token function">Serve</span><span class="token punctuation">(</span>l<span class="token punctuation">,</span> <span class="token boolean">nil</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>注意，我们使用的是rpc服务器的HTTP版本。它用HTTP包注册一个HTTP处理程序，实际的服务使用标准HTTP.serve完成。这里的网络栈看起来像这样:</p>
+<p align="center">
+<img src="mp3.png" width="250">
+</p>
+<p>这里提供了一个可以连接到上面所示服务器的RPC客户端。它使用标准的rpc.Client.Call方法连接到服务器。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+    <span class="token string">"fmt"</span>
+    <span class="token string">"log"</span>
+    <span class="token string">"net/rpc"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    client<span class="token punctuation">,</span> err <span class="token operator">:=</span> rpc<span class="token punctuation">.</span><span class="token function">DialHTTP</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> <span class="token string">"/tmp/rpc.sock"</span><span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"dialing:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">// Synchronous call</span>
+    name <span class="token operator">:=</span> <span class="token string">"Joe"</span>
+    <span class="token keyword">var</span> reply <span class="token builtin">string</span>
+    err <span class="token operator">=</span> client<span class="token punctuation">.</span><span class="token function">Call</span><span class="token punctuation">(</span><span class="token string">"Greeter.Greet"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>name<span class="token punctuation">,</span> <span class="token operator">&amp;</span>reply<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"greeter error:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"Got '%s'\\n"</span><span class="token punctuation">,</span> reply<span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="go-plugin">Go plugin</h4>
+<p>mrapps文件夹中定义了很多有关于mapreduce的应用程序，最开始的一个测试用例就是<code>wc.go</code>（word
+counter），用于统计众多txt文件下不同词汇出现的频率。wc.go中只定义了Map和Reduce两个函数，它作为go的插件被用到了Mapreduce库中。需要使用如下命令构建：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">go</span> build <span class="token operator">-</span>buildmode<span class="token operator">=</span>plugin <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token operator">/</span>mrapps<span class="token operator">/</span>wc<span class="token punctuation">.</span><span class="token keyword">go</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>构建会生成一个wc.so文件（动态链接库，因为是个插件，会在运行时被调用）。这个插件需要与mrworker.go文件共同编译运行：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">go</span> run mrworker<span class="token punctuation">.</span><span class="token keyword">go</span> wc<span class="token punctuation">.</span>so<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>mrworker.go中存在一个加载插件的代码，会提取出wc.go文件中定义的两个函数：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">//</span>
+<span class="token comment">// load the application Map and Reduce functions</span>
+<span class="token comment">// from a plugin file, e.g. ../mrapps/wc.so</span>
+<span class="token comment">//</span>
+<span class="token keyword">func</span> <span class="token function">loadPlugin</span><span class="token punctuation">(</span>filename <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>mr<span class="token punctuation">.</span>KeyValue<span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	p<span class="token punctuation">,</span> err <span class="token operator">:=</span> plugin<span class="token punctuation">.</span><span class="token function">Open</span><span class="token punctuation">(</span>filename<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalf</span><span class="token punctuation">(</span><span class="token string">"cannot load plugin %v"</span><span class="token punctuation">,</span> filename<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	xmapf<span class="token punctuation">,</span> err <span class="token operator">:=</span> p<span class="token punctuation">.</span><span class="token function">Lookup</span><span class="token punctuation">(</span><span class="token string">"Map"</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalf</span><span class="token punctuation">(</span><span class="token string">"cannot find Map in %v"</span><span class="token punctuation">,</span> filename<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	mapf <span class="token operator">:=</span> xmapf<span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>mr<span class="token punctuation">.</span>KeyValue<span class="token punctuation">)</span>
+	xreducef<span class="token punctuation">,</span> err <span class="token operator">:=</span> p<span class="token punctuation">.</span><span class="token function">Lookup</span><span class="token punctuation">(</span><span class="token string">"Reduce"</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalf</span><span class="token punctuation">(</span><span class="token string">"cannot find Reduce in %v"</span><span class="token punctuation">,</span> filename<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	reducef <span class="token operator">:=</span> xreducef<span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token keyword">func</span><span class="token punctuation">(</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token builtin">string</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">return</span> mapf<span class="token punctuation">,</span> reducef
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="rpc框架分析">RPC框架分析</h4>
+<p>Lab中的rpc框架使用的是go语言自带的net/rpc库，并采用unix domain socket
++ http的方式，建立起单机上服务器与客户端之间的rpc通信。既然使用了unix
+domain
+socket的方式，我们就需要创建一个文件作为通讯的基础。源代码中使用定义在<code>rpc.go</code>文件中的函数<code>coordinatorSock()</code>作为产生文件名的封装。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// Cook up a unique-ish UNIX-domain socket name</span>
+<span class="token comment">// in /var/tmp, for the coordinator.</span>
+<span class="token comment">// Can't use the current directory since</span>
+<span class="token comment">// Athena AFS doesn't support UNIX-domain sockets.</span>
+<span class="token keyword">func</span> <span class="token function">coordinatorSock</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token builtin">string</span> <span class="token punctuation">&#123;</span>
+	s <span class="token operator">:=</span> <span class="token string">"/var/tmp/824-mr-"</span>
+	s <span class="token operator">+=</span> strconv<span class="token punctuation">.</span><span class="token function">Itoa</span><span class="token punctuation">(</span>os<span class="token punctuation">.</span><span class="token function">Getuid</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span> s
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>接下来我们就需要两个东西，一个是服务器，另一个就是客户端。服务器负责通过UDS监听可能的请求，客户端负责向服务器发出RPC申请。服务器的代码定义在<code>coordinator.go</code>的<code>server()</code>函数中。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// start a thread that listens for RPCs from worker.go</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>c <span class="token operator">*</span>Coordinator<span class="token punctuation">)</span> <span class="token function">server</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	rpc<span class="token punctuation">.</span><span class="token function">Register</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span>
+	rpc<span class="token punctuation">.</span><span class="token function">HandleHTTP</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token comment">//l, e := net.Listen("tcp", ":1234")</span>
+	sockname <span class="token operator">:=</span> <span class="token function">coordinatorSock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	os<span class="token punctuation">.</span><span class="token function">Remove</span><span class="token punctuation">(</span>sockname<span class="token punctuation">)</span>
+	l<span class="token punctuation">,</span> e <span class="token operator">:=</span> net<span class="token punctuation">.</span><span class="token function">Listen</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> sockname<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> e <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"listen error:"</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">go</span> http<span class="token punctuation">.</span><span class="token function">Serve</span><span class="token punctuation">(</span>l<span class="token punctuation">,</span> <span class="token boolean">nil</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>这个函数被<code>MakeCoordinator()</code>调用，进一步被<code>mrcoordinator.go</code>调用，负责创建一个master。</p>
+<p>Worker作为客户端，需要提出RPC请求。这个被定义在<code>worker.go</code>文件的<code>call()</code>函数中。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// send an RPC request to the coordinator, wait for the response.</span>
+<span class="token comment">// usually returns true.</span>
+<span class="token comment">// returns false if something goes wrong.</span>
+<span class="token keyword">func</span> <span class="token function">call</span><span class="token punctuation">(</span>rpcname <span class="token builtin">string</span><span class="token punctuation">,</span> args <span class="token keyword">interface</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> reply <span class="token keyword">interface</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span> <span class="token builtin">bool</span> <span class="token punctuation">&#123;</span>
+	<span class="token comment">// c, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")</span>
+	sockname <span class="token operator">:=</span> <span class="token function">coordinatorSock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>sockname<span class="token punctuation">)</span>
+	c<span class="token punctuation">,</span> err <span class="token operator">:=</span> rpc<span class="token punctuation">.</span><span class="token function">DialHTTP</span><span class="token punctuation">(</span><span class="token string">"unix"</span><span class="token punctuation">,</span> sockname<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"dialing:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">defer</span> c<span class="token punctuation">.</span><span class="token function">Close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	err <span class="token operator">=</span> c<span class="token punctuation">.</span><span class="token function">Call</span><span class="token punctuation">(</span>rpcname<span class="token punctuation">,</span> args<span class="token punctuation">,</span> reply<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">==</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">return</span> <span class="token boolean">true</span>
+	<span class="token punctuation">&#125;</span>
+
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+	<span class="token keyword">return</span> <span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="mrsequential.go分析">mrsequential.go分析</h4>
+<p>mrsequential.go文件与实验需要实现的东西没有关系，这个只是做了一个完整的mapreduce流程的演示（线性执行）。可以运行如下指令观察mapreduce的输出：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go">$ cd src<span class="token operator">/</span>main
+$ <span class="token keyword">go</span> build <span class="token operator">-</span>buildmode<span class="token operator">=</span>plugin <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token operator">/</span>mrapps<span class="token operator">/</span>wc<span class="token punctuation">.</span><span class="token keyword">go</span>
+$ rm mr<span class="token operator">-</span>out<span class="token operator">*</span>
+$ <span class="token keyword">go</span> run mrsequential<span class="token punctuation">.</span><span class="token keyword">go</span> wc<span class="token punctuation">.</span>so pg<span class="token operator">*</span><span class="token punctuation">.</span>txt
+$ more mr<span class="token operator">-</span>out<span class="token operator">-</span><span class="token number">0</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>了解这个源代码是有必要的，可以帮助我们后续实现分布式的Mapreduce提供指导。</p>
+<p align="center">
+<img src="mp4.png" width="850">
+</p>
+<p>上面的图片提供了一个对<code>mrsequential.go</code>运行流程的一个叙述。在理解Mapreduce任务的过程中，需要区分一些概念：Map
+worker和Map function以及Reduce worker和Reduce
+function是两个不同的概念，Map function和Reduce
+function只是worker的一个子集，只能完成一小部分的任务，剩下的一些重要工作是由worker内部的代码完成的。</p>
+<h4 id="distributed-mapreduce-design">Distributed MapReduce Design</h4>
+<p>通过阅读实验手册Your
+Job的第一段，我们可以分析一波。手册中说，运行过程中只有一个coordinator进程，以及多个并行运行的worker进程。从上面的<code>mrsequential.go</code>中，只有一个coordinator和一个worker（也可以说基本没有coordinator，coordinator的存在就是管理workers的，如果只有一个worker，不存在管理的问题）。它们之间交互很单纯，读取文件，调用插件的map和reduce函数，输出到文件。</p>
+<p>但是如果有多个worker，就不能这么写了。需要一个领导者来做任务分发和统筹规划，一堆工人做简单重复性的工作。但是如果由单一的worker架构进化成coordinator-workers架构，需要解决什么问题呢？</p>
+<p align="center">
+<img src="mp5.png" width="700">
+</p>
+<p>我们可以先简单的列举一下：</p>
+<ul>
+<li>通信问题：coordinator如何才能和workers实现通信</li>
+<li>任务界定：在<code>mrsequential.go</code>中，都是在main函数写的，但如果想要实现Map
+worker和Redcue worker，它们分别完成哪部分任务需要明确一下</li>
+<li>intermediate文件存储：这个文件存储到哪里</li>
+</ul>
+<p>实验手册中说，worker可以通过RPC的方式实现与Coordinator的通信。进一步讲，每一个worker进程需要像coordinator索要任务，这个任务有两种：</p>
+<ul>
+<li>Map任务</li>
+<li>Reduce任务</li>
+</ul>
+<p>一个任务的行为可以界定为：从一个或者多个文件中读取数据，执行任务，将任务的输出保存到一个或多个文件中（Map任务和Reduce任务有相同的表现）。这里可以说明，worker负责索要任务，coordinator通过RPC分发任务。Coordinator需要知道worker是否指定时间完成任务，如果没有，认定worker出现故障，应当将相同的任务分发给不同的worker。</p>
+<p>通过阅读实验手册，我们可以得知，每一个Map任务结束后需要将输出的KV
+pair分到nReduce个intermediate file中，intermediate
+file需要存储到当前路径下，并且命名规则为mr-X-Y，其中X为Map任务的序号，Y为Reduce任务的序号。比如有两个Map任务，指定有2个Reduce任务，那么就会产生4个文件，分别为mr-0-0，mr-0-1，mr-1-0，mr-1-1。</p>
+<p>解决了上面的三个问题。</p>
+<p align="center">
+<img src="mp6.png" width="700">
+</p>
+<h4 id="实验过程">实验过程</h4>
+<p>我首先从第二个Hints开始入手，先做个任务分解。</p>
+<ul>
+<li>修改Worker()，发送一个RPC请求，向coordinator申请一个任务。</li>
+<li>修改coordinator，回应一个没有开始map task的文件名。</li>
+<li>修改worker，读取这个文件，调用Map函数，就和mrsequential.go中的一样。</li>
+</ul>
+<p>可以先观察一下看看worker.go的CallExample()是如何实现RPC调用的。刚开始的想法很简单，简单实现一个直接询问Coordinator要一个文件名。为了符合RPC的定义，观察了example代码后，在<code>rpc.go</code>中定义了如下结构：</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">type</span> TaskAsk <span class="token keyword">struct</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+<span class="token keyword">type</span> TaskReply <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+	taskNo <span class="token builtin">int</span>
+	filename <span class="token builtin">string</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>在<code>worker.go</code>实现了简单的<code>AskTask()</code>函数</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// ask for a map task to the coordinator</span>
+<span class="token keyword">func</span> <span class="token function">AskTask</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+	<span class="token comment">// declare an argument</span>
+	args <span class="token operator">:=</span> TaskAsk<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+	<span class="token comment">// declare a task reply structure</span>
+	reply <span class="token operator">:=</span> TaskReply<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+	ok <span class="token operator">:=</span> <span class="token function">call</span><span class="token punctuation">(</span><span class="token string">"Coordinator.DeployTask"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>args<span class="token punctuation">,</span> <span class="token operator">&amp;</span>reply<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> ok <span class="token punctuation">&#123;</span>
+		fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"receive file"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+		fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"call failed!\\n"</span><span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>接下来就需要考虑coordinator端如何实现了。我首先想到的第一个问题是，如何记录所有的txt文件名？文件名还需要有个是否被分配的标记，文件路径等等元数据。这些其实都是需要Coordinator管理和安排的东西。我们可以先实现一个文件管理的struct，然后记录到Coordinator中去。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token keyword">type</span> FileStatus <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+	filename <span class="token builtin">string</span>
+	allocate   <span class="token builtin">int</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">type</span> Coordinator <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+	<span class="token comment">// Your definitions here.</span>
+	files <span class="token punctuation">[</span><span class="token punctuation">]</span>FileStatus
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>Coordinator需要在<code>MakeCoordinator()</code>函数中初始化。那么所有的txt文件都在main文件夹下，下一步任务就是如何读取这个文件夹下有关的文件。首先实现一个函数，从main文件夹下读取txt后缀的所有文件。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// get the specify ext, e.g., ".txt", in dirpath directory</span>
+<span class="token keyword">func</span> <span class="token function">GetFile</span><span class="token punctuation">(</span>dirpath <span class="token builtin">string</span><span class="token punctuation">,</span> exts <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span> <span class="token punctuation">&#123;</span>
+	dirs<span class="token punctuation">,</span> err <span class="token operator">:=</span> os<span class="token punctuation">.</span><span class="token function">ReadDir</span><span class="token punctuation">(</span>dirpath<span class="token punctuation">)</span>
+	<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">&#123;</span>
+		fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"ReadDir Error:"</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+	txtFiles <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+	<span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> entry <span class="token operator">:=</span> <span class="token keyword">range</span> dirs <span class="token punctuation">&#123;</span>
+		<span class="token keyword">if</span> ext <span class="token operator">:=</span> filepath<span class="token punctuation">.</span><span class="token function">Ext</span><span class="token punctuation">(</span>entry<span class="token punctuation">.</span><span class="token function">Name</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> ext <span class="token operator">==</span> exts <span class="token punctuation">&#123;</span>
+			txtFiles <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>txtFiles<span class="token punctuation">,</span> entry<span class="token punctuation">.</span><span class="token function">Name</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token keyword">return</span> txtFiles
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>进一步在<code>MakeCoordinator()</code>部署。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// create a Coordinator.</span>
+<span class="token comment">// main/mrcoordinator.go calls this function.</span>
+<span class="token comment">// nReduce is the number of reduce tasks to use.</span>
+<span class="token keyword">func</span> <span class="token function">MakeCoordinator</span><span class="token punctuation">(</span>files <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">,</span> nReduce <span class="token builtin">int</span><span class="token punctuation">)</span> <span class="token operator">*</span>Coordinator <span class="token punctuation">&#123;</span>
+	c <span class="token operator">:=</span> Coordinator<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+
+	<span class="token comment">// Your code here.</span>
+	txtFiles <span class="token operator">:=</span> <span class="token function">GetFile</span><span class="token punctuation">(</span><span class="token string">"../main"</span><span class="token punctuation">,</span> <span class="token string">".txt"</span><span class="token punctuation">)</span>
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>txtFiles<span class="token punctuation">)</span>
+
+	<span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> txtf <span class="token operator">:=</span> <span class="token keyword">range</span> txtFiles <span class="token punctuation">&#123;</span>
+		fs <span class="token operator">:=</span> FileStatus<span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+		fs<span class="token punctuation">.</span>filename <span class="token operator">=</span> txtf
+		fs<span class="token punctuation">.</span>status <span class="token operator">=</span> <span class="token number">0</span>
+		c<span class="token punctuation">.</span>files <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>c<span class="token punctuation">.</span>files<span class="token punctuation">,</span> fs<span class="token punctuation">)</span>
+	<span class="token punctuation">&#125;</span>
+
+	c<span class="token punctuation">.</span><span class="token function">server</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">return</span> <span class="token operator">&amp;</span>c
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>实现另一个定义在Coordinator下的rpc函数，这个函数有可能需要实现很复杂的调度逻辑，不过这里先不考虑，目标是先实现功能。</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// RPC deploy task</span>
+<span class="token comment">// provide a task for a worker</span>
+<span class="token comment">// taskNo == 1: map task</span>
+<span class="token comment">// taskM0 == 2: reduce task</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>c <span class="token operator">*</span>Coordinator<span class="token punctuation">)</span> <span class="token function">DeployTask</span><span class="token punctuation">(</span>args <span class="token operator">*</span>TaskAsk<span class="token punctuation">,</span> reply <span class="token operator">*</span>TaskReply<span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">&#123;</span>
+	reply<span class="token punctuation">.</span>TaskNo <span class="token operator">=</span> <span class="token number">1</span>
+
+	<span class="token keyword">if</span> reply<span class="token punctuation">.</span>TaskNo <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">&#123;</span>
+		<span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> f <span class="token operator">:=</span> <span class="token keyword">range</span> c<span class="token punctuation">.</span>files <span class="token punctuation">&#123;</span>
+			<span class="token keyword">if</span> f<span class="token punctuation">.</span>status <span class="token operator">==</span> <span class="token number">0</span> <span class="token punctuation">&#123;</span>
+				fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span><span class="token string">"Found a unstarted file, deploying..."</span><span class="token punctuation">)</span>
+				reply<span class="token punctuation">.</span>Filename <span class="token operator">=</span> f<span class="token punctuation">.</span>filename
+				<span class="token keyword">break</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+
+	<span class="token keyword">return</span> <span class="token boolean">nil</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>接着，我们在终端重新build一下插件，并且开启服务器和客户端</p>
+<pre class="line-numbers language-go" data-language="go"><code class="language-go"><span class="token comment">// server</span>
+<span class="token keyword">go</span> build <span class="token operator">-</span>buildmode<span class="token operator">=</span>plugin <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token operator">/</span>mrapps<span class="token operator">/</span>wc<span class="token punctuation">.</span><span class="token keyword">go</span>
+<span class="token keyword">go</span> run mrcoordinator<span class="token punctuation">.</span><span class="token keyword">go</span> pg<span class="token operator">-</span><span class="token operator">*</span><span class="token punctuation">.</span>txt
+
+<span class="token comment">// client</span>
+<span class="token keyword">go</span> run mrworker<span class="token punctuation">.</span><span class="token keyword">go</span> wc<span class="token punctuation">.</span>so<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>接下来我粗略的根据一些实验结果和手册上的指导，考虑了一下整体思路（忽略Fault
+tolerance和crash safety等不谈）：</p>
+<p align="center">
+<img src="mp7.png" width="850">
+</p>
+<p>首先我把Worker和Master抽象成两个个体，并且做出明确的规定：</p>
+<p>Worker的工作</p>
+<ul>
+<li>RPC申请任务</li>
+<li>RPC告知任务结束</li>
+<li>RPC告知工作状态</li>
+</ul>
+<p>除此之外什么权力都没有。</p>
+<p>至于Master，则负责任务的调度、分发以及workers状态的更换和记录。这里的框架考虑了多个worker的并发。</p>
+<p>对于一个Worker来说，首先要执行的就是申请一个Map任务。Master收到RPC请求后，去input
+file
+list里搜寻还没有被分配的文件（allocate标志位）。如果找到，就返回文件名字，如果没有，返回一个特殊的字符串。通过RPC调用返回。</p>
+<p>下一步，Worker对返回的结果做出判断。如果返回结果不是文件，那么说明当前已经没有文件可以作为输入了，Worker不能退出，进入IDLE状态（调用RPC
+<code>ToIDLE</code>）。如果存在文件，那么就对相应文件进行处理，然后调用RPC
+<code>MapDone</code>，增加一个Master端的全局变量（用于统计Map任务完成的数量）。MapDone还有一个任务是通知DeployTask的一个协程，表示完成了对应任务。</p>
+<p>调用<code>ToIDLE</code>的Worker，Master会把对应Worker的状态变为idle，可以被继续调用。<code>ToIDLE</code>被唤醒有两种情况，一种是当所有任务执行完，广播式唤醒，唤醒之后由于for
+loop的存在，会判断一下所有的map任务是否完成，如果全部完成，就会break当前的loop，跳到Reduce
+part的代码。如果<code>ToIDLE</code>被单个进程唤醒，说明产生了一个Fault
+tolerance情况，意味着某部分产生异常，需要借助此worker重新执行一下，这部分先不考虑。</p>
+<p>由于Map part的for loop结束，代码进入了Reduce part。首先申请一个Reduce
+Task。Master会根据相应的分配规则，把n个文件名分配并返回。接着，Reduce
+part代码完成对应工作，产生输出文件。每一个流程完成后，调用ReduceDone，告知Master这个RPC协程完成了（为了Fault
+tolerance）。再调用ToCOMPELET，更改一个Master端的全局变量（记录Reduce任务的进度），如果Reduce任务全部完成，因为Master会周期性检查Done函数，就可以直接结束任务。</p>
+<p>以上是单机情况下，通过不同协程模拟不同的worker。但是实际上，每一个worker都需要独立运行在一个机器上。因此想要真正模拟这个过程，就需要实现一个多机情况下的MapReduce。</p>
+<p align="center">
+<img src="mp8.png" width="750">
+</p>
+<p align="center">
+<img src="mp9.png" width="850">
+</p>
+<p>经过调试，成功实现了Mapreduce，下面是通过所有测试的截图。</p>
+<p align="center">
+<img src="mp10.png" width="400">
+</p>
+<p><br></p>
+<h3 id="mapreduce-optimize">MapReduce Optimize</h3>
+<h4 id="当前系统代码实现的问题">当前系统代码实现的问题</h4>
+<ul>
+<li>状态标识位太多太杂，且不成体系，全部用int表示，代码可读性不高</li>
+<li>当前实现的任务调度策略是线性遍历task
+table，找到任务标识位为unstarted的任务执行。但当任务很多的时候，每次分配任务都要遍历一次table，并不高效。需要重新设计任务调度结构</li>
+<li>当前的实现在解决worker
+crash问题上，采用的是把内存当作temporary文件的方式，也就是说所有的中间数据是放在内存中的。还好测试的文件数据量不大，如果数据量过大，内存会爆。所以需要实现tempfile</li>
+<li>另外，mapreduce论文中的fault
+tolerance，refienments，performence的大部分内容都没有阅读以及理解透彻，可以具体实现或者测试一下，做一些实验和记录</li>
+</ul>
+<h4 id="fault-tolerance">Fault Tolerance</h4>
+<p>Worker failure的情况：当一个worker
+failure时，已经完成的任务需要重新执行（标记为idle，因为这个worker以及failure了，而且map生成的文件存储在machine本地，所以这部分中间文件不能再被访问，因此master需要把这些任务重置，给其他可以工作的worker执行），未完成的任务则直接终止，并master将其标记为idle。</p>
+<p>Master failure的情况：可以周期性做checkpoint备份。</p>
+<p>因为mapreduce是一个分布式系统，为了确保分布式执行的结果与顺序执行的结果完全一致，作者采用原子提交的方式保证。每一个在执行中的任务都仅仅在临时文件中写。</p>
+<p>如果一个map完成，这个worker会把自己的R个临时文件名发送给master。如果master接收的这个完成的任务已经被其他worker完成，直接忽略该消息。否则，master将这R个文件名记录下来。</p>
+<p>如果一个reduce任务完成，reduce的worker自动将临时文件命名为最后的文件。如果相同的reduce任务在不同的worker上同时执行，底层的文件系统会确保只有一个文件会被命名，也只允许一个文件存在。</p>
+<h4 id="locality">Locality</h4>
+<p>因为网络带宽是一个稀缺资源，大部分的数据会从附近的节点或者server中读取（GFS做保证）。</p>
+<h4 id="backup-tasks">Backup Tasks</h4>
+<p>Straggler：一台机器会在完成最后几个map或者reduce任务的时候变的很慢。</p>
+<p>原因：</p>
+<ul>
+<li>磁盘出现问题，读写性能急剧下降</li>
+<li>CPU不停的在切换context</li>
+<li>其他系统的bug发病</li>
+</ul>
+<p>解决方法：当mapreduce操作接近完成时，会把剩余的任务复制一个backup，执行。与当前的任务并行执行。不管是backup任务还是当前的执行的任务，只要有一个先执行完，就标志该任务执行结束。相当于是让多匹马同时赛跑，选最快的那个作为结果。</p>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2025</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>
