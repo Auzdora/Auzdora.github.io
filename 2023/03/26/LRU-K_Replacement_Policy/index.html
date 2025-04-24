@@ -24,7 +24,119 @@
 
   
   <title>CMU 15-445 LRU-K Replacement Policy - Auzdora&#39;s Blog</title>
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 
 <body>
@@ -112,7 +224,7 @@ Table那样一知半解。所以实现起来也很清晰。但由于用的是自
 <p>这样的缓存空间一定是有大小的，有大小就会涉及到缓存存满的问题。如果想要再存放新读入的数据到缓存空间中，必须选择一个内存块将其驱逐出去。把空间给腾出来。选择哪一块驱逐，就是替换算法（replacement
 policy）所做的事情。一般常见的替换策略有FIFO，LRU以及LFU等等。</p>
 <p>下图展现了硬盘数据和内存之间提取（Fetch）和驱逐（Evict）的关系。</p>
-<p><img src="lruk1.png" /></p>
+<p><img src="lruk1.png"></p>
 <p>上面图片中，Buffer
 Pool就是缓存数据的池子，最大容量为3个page。Disk上面的Data数不胜数，当需要数据时系统会从Buffer
 Pool检索，如果检索到了，则直接从内存中提出数据，并且通知<strong>LRU-K
@@ -129,85 +241,85 @@ pair。题目要求两个操作的时间复杂度为O(1)。</p>
 <p>用例子来理解一下LRU的算法。假设LRU最大存储量为3，接下来对算法进行put(1,
 1), put(2, 2), put(3, 3), get(2, 2), put(1,
 2)的操作。看下图的操作顺序（<strong>我实现的方式是，链表头是要驱逐的元素，链表尾部是最新使用过的元素</strong>）。</p>
-<p><img src="lruk2.png" /></p>
+<p><img src="lruk2.png"></p>
 <p>当然这只是双向链表的视角，别忘了，为了实现O(1)的get操作，我们还有一个哈希结构。下面是一个哈希链表结构的示意图。</p>
-<p><img src="lruk3.png" /></p>
+<p><img src="lruk3.png"></p>
 <p>新增的头节点L和尾节点R可以用来直接对头部和尾部进行操作，头部要移除，尾部要插入，就不必去寻找头尾节点了。这两个头尾节点在之后的LRU-K算法实现中会扩展成头部、中间和尾部节点，关于这部分之后在叙述我的想法。</p>
 <p>Leetcode的代码实现如下：</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map></span></span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unordered_map&gt;</span></span>
 
-<span class="token keyword">class</span> <span class="token class-name">LRUCache</span> <span class="token punctuation">&#123;</span>
+<span class="token keyword">class</span> <span class="token class-name">LRUCache</span> <span class="token punctuation">{</span>
 <span class="token keyword">private</span><span class="token operator">:</span>
-    <span class="token keyword">struct</span> <span class="token class-name">Node</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">Node</span> <span class="token punctuation">{</span>
         <span class="token keyword">int</span> key_<span class="token punctuation">;</span>
         <span class="token keyword">int</span> val_<span class="token punctuation">;</span>
         Node<span class="token operator">*</span> left <span class="token operator">=</span> <span class="token keyword">nullptr</span><span class="token punctuation">;</span>
         Node<span class="token operator">*</span> right <span class="token operator">=</span> <span class="token keyword">nullptr</span><span class="token punctuation">;</span>
-        <span class="token function">Node</span><span class="token punctuation">(</span><span class="token keyword">int</span> k<span class="token punctuation">,</span> <span class="token keyword">int</span> v<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">key_</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">val_</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">left</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">right</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
-    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+        <span class="token function">Node</span><span class="token punctuation">(</span><span class="token keyword">int</span> k<span class="token punctuation">,</span> <span class="token keyword">int</span> v<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">key_</span><span class="token punctuation">(</span>k<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">val_</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">left</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">right</span><span class="token punctuation">(</span><span class="token keyword">nullptr</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
     <span class="token keyword">int</span> size<span class="token punctuation">;</span>
     <span class="token keyword">int</span> capacity_<span class="token punctuation">;</span>
-    std<span class="token double-colon punctuation">::</span>unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> Node<span class="token operator">*</span><span class="token operator">></span> cache_map_<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> Node<span class="token operator">*</span><span class="token operator">&gt;</span> cache_map_<span class="token punctuation">;</span>
     Node <span class="token operator">*</span>R<span class="token punctuation">;</span>
     Node <span class="token operator">*</span>L<span class="token punctuation">;</span>
 <span class="token keyword">public</span><span class="token operator">:</span>
-    <span class="token function">LRUCache</span><span class="token punctuation">(</span><span class="token keyword">int</span> capacity<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">capacity_</span><span class="token punctuation">(</span>capacity<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">LRUCache</span><span class="token punctuation">(</span><span class="token keyword">int</span> capacity<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">capacity_</span><span class="token punctuation">(</span>capacity<span class="token punctuation">)</span> <span class="token punctuation">{</span>
         R <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">Node</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
         L <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">Node</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-        R<span class="token operator">-></span>right <span class="token operator">=</span> L<span class="token punctuation">;</span>
-        R<span class="token operator">-></span>left <span class="token operator">=</span> L<span class="token punctuation">;</span>
-        L<span class="token operator">-></span>right <span class="token operator">=</span> R<span class="token punctuation">;</span>
-        L<span class="token operator">-></span>left <span class="token operator">=</span> R<span class="token punctuation">;</span>
+        R<span class="token operator">-&gt;</span>right <span class="token operator">=</span> L<span class="token punctuation">;</span>
+        R<span class="token operator">-&gt;</span>left <span class="token operator">=</span> L<span class="token punctuation">;</span>
+        L<span class="token operator">-&gt;</span>right <span class="token operator">=</span> R<span class="token punctuation">;</span>
+        L<span class="token operator">-&gt;</span>left <span class="token operator">=</span> R<span class="token punctuation">;</span>
         size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="token keyword">void</span> <span class="token function">insertNode</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token function">insertNode</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">{</span>
         <span class="token comment">// insert to back of list</span>
-        node<span class="token operator">-></span>left <span class="token operator">=</span> R<span class="token operator">-></span>left<span class="token punctuation">;</span>
-        node<span class="token operator">-></span>right <span class="token operator">=</span> R<span class="token punctuation">;</span>
-        R<span class="token operator">-></span>left<span class="token operator">-></span>right <span class="token operator">=</span> node<span class="token punctuation">;</span>
-        R<span class="token operator">-></span>left <span class="token operator">=</span> node<span class="token punctuation">;</span>
+        node<span class="token operator">-&gt;</span>left <span class="token operator">=</span> R<span class="token operator">-&gt;</span>left<span class="token punctuation">;</span>
+        node<span class="token operator">-&gt;</span>right <span class="token operator">=</span> R<span class="token punctuation">;</span>
+        R<span class="token operator">-&gt;</span>left<span class="token operator">-&gt;</span>right <span class="token operator">=</span> node<span class="token punctuation">;</span>
+        R<span class="token operator">-&gt;</span>left <span class="token operator">=</span> node<span class="token punctuation">;</span>
         size<span class="token operator">++</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="token keyword">void</span> <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">{</span>
         <span class="token function">eraseNode</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
         <span class="token function">insertNode</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
 
-    <span class="token keyword">void</span> <span class="token function">eraseNode</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-        node<span class="token operator">-></span>left<span class="token operator">-></span>right <span class="token operator">=</span> node<span class="token operator">-></span>right<span class="token punctuation">;</span>
-        node<span class="token operator">-></span>right<span class="token operator">-></span>left <span class="token operator">=</span> node<span class="token operator">-></span>left<span class="token punctuation">;</span>
+    <span class="token keyword">void</span> <span class="token function">eraseNode</span><span class="token punctuation">(</span>Node <span class="token operator">*</span>node<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        node<span class="token operator">-&gt;</span>left<span class="token operator">-&gt;</span>right <span class="token operator">=</span> node<span class="token operator">-&gt;</span>right<span class="token punctuation">;</span>
+        node<span class="token operator">-&gt;</span>right<span class="token operator">-&gt;</span>left <span class="token operator">=</span> node<span class="token operator">-&gt;</span>left<span class="token punctuation">;</span>
         size<span class="token operator">--</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
     
-    <span class="token keyword">int</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token keyword">int</span> key<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> <span class="token function">get</span><span class="token punctuation">(</span><span class="token keyword">int</span> key<span class="token punctuation">)</span> <span class="token punctuation">{</span>
         <span class="token keyword">auto</span> it <span class="token operator">=</span> cache_map_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> cache_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-            <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>it<span class="token operator">-></span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token keyword">return</span> it<span class="token operator">-></span>second<span class="token operator">-></span>val_<span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> cache_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> it<span class="token operator">-&gt;</span>second<span class="token operator">-&gt;</span>val_<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
         <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
     
-    <span class="token keyword">void</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">int</span> key<span class="token punctuation">,</span> <span class="token keyword">int</span> value<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token function">put</span><span class="token punctuation">(</span><span class="token keyword">int</span> key<span class="token punctuation">,</span> <span class="token keyword">int</span> value<span class="token punctuation">)</span> <span class="token punctuation">{</span>
         <span class="token keyword">auto</span> it <span class="token operator">=</span> cache_map_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>key<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> cache_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-            it<span class="token operator">-></span>second<span class="token operator">-></span>val_ <span class="token operator">=</span> value<span class="token punctuation">;</span>
-            <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>it<span class="token operator">-></span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> cache_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            it<span class="token operator">-&gt;</span>second<span class="token operator">-&gt;</span>val_ <span class="token operator">=</span> value<span class="token punctuation">;</span>
+            <span class="token function">moveNodeToBack</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
             <span class="token keyword">return</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">}</span>
         
-        <span class="token keyword">if</span> <span class="token punctuation">(</span>size <span class="token operator">==</span> capacity_<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-            cache_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>L<span class="token operator">-></span>right<span class="token operator">-></span>key_<span class="token punctuation">)</span><span class="token punctuation">;</span>
-            <span class="token function">eraseNode</span><span class="token punctuation">(</span>L<span class="token operator">-></span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
-        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>size <span class="token operator">==</span> capacity_<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            cache_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>L<span class="token operator">-&gt;</span>right<span class="token operator">-&gt;</span>key_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">eraseNode</span><span class="token punctuation">(</span>L<span class="token operator">-&gt;</span>right<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
         <span class="token keyword">auto</span> node <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">Node</span><span class="token punctuation">(</span>key<span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>
         <span class="token function">insertNode</span><span class="token punctuation">(</span>node<span class="token punctuation">)</span><span class="token punctuation">;</span>
         cache_map_<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> node<span class="token punctuation">;</span>
 
-    <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>LRU-K算法是LRU算法的改进版。LRU算法存在的问题是，当存在大量的一次性操作时，会把历史的缓存冲刷掉，而新进入buffer
 pool的page有可能之后不会再访问了，被冲刷掉的page是之前保留下来的比较“有用”的page，这就是<strong>缓存污染</strong>问题。</p>
 <p>LRU-K的思路是，永远最先驱逐访问次数小于K次的page。网上的很多讲解是直接维护两个链表，一个叫做history
@@ -219,9 +331,9 @@ list的尾部（<strong>这里还是假设尾部的page是最新使用的，头�
 list和buffer list最多存储三个page，就是buffer
 pool的大小，且K=2。首先我们访问key=1的page，那么对应的node的value就会变为2，一旦等于了K的值，说明这个page是可能被经常访问的，就把它移入buffer
 list。</p>
-<p><img src="lruk4.png" /></p>
+<p><img src="lruk4.png"></p>
 <p>接着我们再访问key=2的page。</p>
-<p><img src="lruk5.png" /></p>
+<p><img src="lruk5.png"></p>
 <p>Buffer list服从LRU算法，History
 List可以服从任意替换算法，在实验手册中，要求驱逐最早进入history
 list的page，采用的是FIFO策略（<strong>刚开始我实现的history
@@ -230,7 +342,7 @@ Test无法通过，一定要注意history和buffer的策略不一样</strong>）
 <p>接着我们尝试插入key=4的page，结果发现buffer
 pool满了（总共的空间为3，history占1，buffer占2），那么就需要对某一个page进行缓存驱逐，根据原则：<strong>永远最先驱逐访问次数小于K的page</strong>。所以先驱逐掉3，再加4到history
 list中。</p>
-<p><img src="lruk6.png" /></p>
+<p><img src="lruk6.png"></p>
 <p>History list采用FIFO，由于History
 list只剩下3了，那么只能驱逐3。如果继续访问4，那么4会被移入Buffer
 list中，此时buffer
@@ -245,7 +357,7 @@ LRU-K任务的时候，我采用的还是使用自己定义的结构体Node和ST
 list和buffer list的分割节点。两种list连接在一条双向链表上，再用unordered
 map索引。</p>
 <p>具体的效果如下图：</p>
-<p><img src="lruk7.png" /></p>
+<p><img src="lruk7.png"></p>
 <p>然后对history list和buffer
 list分别维护一个计数器，计算当前包含的节点数量，可用来判断是否需要驱逐缓存（注意需要迭代判断，并不能直接取L节点或M节点的下一个，因为下一个节点很有可能是non-evictable的）。</p>
 <p>线程安全方面是直接一把大锁锁住所有操作。并没有细致的对每一个结构进行优化。</p>
@@ -254,13 +366,13 @@ list分别维护一个计数器，计算当前包含的节点数量，可用来�
 <li><p>最主要的问题就是内存泄漏问题，真的是种种内存泄漏。最大的原因就是，程序结束之后，有一些内存中的节点，没有被人为的Remove或者Evict，导致结束程序后将这些节点遗留下来，造成的内存泄漏。解决方案就是在Replacer的析构函数里实现一个强制去除当前链表所有节点的程序（包括non-evictable，因为之前实现的是直接循环Evict，再删除L，M和R，但总还是有内存泄漏问题，原因在于Evict仅仅驱逐evictable数据，析构函数调用它会删不干净）。还有的内存泄漏问题就是use
 after
 free问题。这个问题值得是在释放内存空间后还尝试使用这个内存空间。经典出现的地方在于，删除节点的时候要伴随哈希表对应数据的删除。需要注意的是哈希表的<code>erase</code>方法：如果用key删除，且value存储的是指针，那么仅仅会删掉哈希表中的数据，指针所指向的内存是不会被删除的；如果用迭代器删除，我们首先应当删除迭代器的second所指向的内存空间，然后再删除迭代器的first对应的key。</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// hash_map_&lt;int, Node*></span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// hash_map_&lt;int, Node*&gt;</span>
 <span class="token keyword">auto</span> it <span class="token operator">=</span> hash_map_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>frame_id<span class="token punctuation">)</span>；
-hash_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>it<span class="token operator">-></span>first<span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token function">EraseNode</span><span class="token punctuation">(</span>it<span class="token operator">-></span>second<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 报错use after free，因为已经删除了对应的数据，迭代器不可用，it无法索引到</span>
+hash_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>first<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">EraseNode</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 报错use after free，因为已经删除了对应的数据，迭代器不可用，it无法索引到</span>
 
-Node <span class="token operator">*</span>p <span class="token operator">=</span> L<span class="token operator">-></span>right<span class="token punctuation">;</span> <span class="token comment">// 取出头节点</span>
-hash_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>p<span class="token operator">-></span>key<span class="token punctuation">)</span>；
+Node <span class="token operator">*</span>p <span class="token operator">=</span> L<span class="token operator">-&gt;</span>right<span class="token punctuation">;</span> <span class="token comment">// 取出头节点</span>
+hash_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>p<span class="token operator">-&gt;</span>key<span class="token punctuation">)</span>；
 <span class="token function">EraseNode</span><span class="token punctuation">(</span>p<span class="token punctuation">)</span>； <span class="token comment">// 成功，因为hash map只删除了表中存储的数据，原Node内存还存在</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
 <li><p>History list用的是FIFO，Buffer
 list采用LRU。我开始都用的LRU，导致EvictTest报错。</p></li>
