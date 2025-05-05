@@ -24,7 +24,119 @@
 
   
   <title>Networking Reassembler - Auzdora&#39;s Blog</title>
-<meta name="generator" content="Hexo 6.3.0"></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
 
 
 <body>
@@ -117,9 +229,9 @@ side作为消费者，从stream中读取数据。</p>
 <p align="center">
 <img src="tcp1.png" width="550">
 </p>
-<blockquote>
-<p>Why am I doing
-this？TCP对重排序和重复的鲁棒性来源于其将字节流的任意片段重新拼接回原始流的能力。将此功能实现为一个离散的可测试模块，将使处理接收的数据段更加容易。</p>
+<blockquote class="callout yellow">
+Why am I doing
+this？TCP对重排序和重复的鲁棒性来源于其将字节流的任意片段重新拼接回原始流的能力。将此功能实现为一个离散的可测试模块，将使处理接收的数据段更加容易。
 </blockquote>
 <h4 id="what-should-the-reassembler-store-internally">What should the
 Reassembler store internally?</h4>
@@ -152,43 +264,42 @@ len，会产生以下几种情况：</p>
 <li>len&lt;l：完全重复，抛弃</li>
 </ul>
 <p>如果新插入的bytes增加了curr_idx，而且当前的curr_idx覆盖了Reassembler内部哈希表中的一些entry，也需要上述操作，因此可以抽象一个方法：</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-	<span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">{</span>
 		<span class="token comment">// store into hash map or if it already exist, skip</span>
 		<span class="token comment">// update minimum_index</span>
 		<span class="token keyword">return</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>curr_index <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">{</span>
 		<span class="token comment">// call writer to write into bytestream</span>
 		<span class="token keyword">return</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">}</span>
 	
-	<span class="token comment">// curr_index > first_index</span>
+	<span class="token comment">// curr_index &gt; first_index</span>
 	<span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> curr_index <span class="token operator">-</span> first_index<span class="token punctuation">;</span>
 	<span class="token keyword">uint64_t</span> byte_len <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 	
-	<span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">{</span>
 		<span class="token comment">// discard</span>
 		<span class="token keyword">return</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
-	<span class="token comment">// byte_len > overlap_len</span>
+	<span class="token punctuation">}</span>
+	<span class="token comment">// byte_len &gt; overlap_len</span>
 	<span class="token comment">// get un overlap part of data and write to writer</span>
 	<span class="token keyword">return</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h4
-id="如何自动检测当前的un-assemble的数据是否该push到writer">如何自动检测当前的un-assemble的数据是否该push到writer？</h4>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h4 id="如何自动检测当前的un-assemble的数据是否该push到writer">如何自动检测当前的un-assemble的数据是否该push到writer？</h4>
 <p>这本质上是在解决insert的算法流程，下面用伪代码的形式说明</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">,</span> <span class="token keyword">bool</span> is_last_substring<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token function">insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">,</span> <span class="token keyword">bool</span> is_last_substring<span class="token punctuation">)</span> <span class="token punctuation">{</span>
 	<span class="token comment">// fisrt push</span>
 	<span class="token function">push</span><span class="token punctuation">(</span>first_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
 	
 	<span class="token comment">// checking hash map</span>
 	<span class="token comment">// we need maintain a variable that indicates current minimum index of hash map</span>
-	<span class="token keyword">while</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;=</span> minimum_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">while</span> <span class="token punctuation">(</span>curr_index <span class="token operator">&lt;=</span> minimum_index<span class="token punctuation">)</span> <span class="token punctuation">{</span>
 		<span class="token comment">// there are still entries need to be pushed to writer</span>
 		<span class="token function">push</span><span class="token punctuation">(</span>minimum_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
-	<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">}</span>
 	<span class="token keyword">return</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>每次插入新的数据时，都需要先尝试去插入，然后检测当前内部的hash
 map中是否存在可以继续插入的元素。还需要在插入hash
 map时，始终维护一个minimum index，方便后续插入操作进行判别。</p>
@@ -242,90 +353,89 @@ index是56，available
 capacity是3，也就是当前最多能接受数据的索引应当在56-58之内，59之后不能被接受。</p>
 <p>但这种只是正常情况，还有很多极限的情况，比如数据长度比capacity还要长，这时候就只能保留可以放入缓存区的数据。</p>
 <p>根据上面的分类讨论，可以抽象出一个push操作，涵盖所有情况。</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">push</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> string data<span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token comment">// check if its beyond capacity</span>
   <span class="token keyword">uint64_t</span> cap <span class="token operator">=</span> output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">available_capacity</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span>cap <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> first_index <span class="token operator">>=</span> current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>cap <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> first_index <span class="token operator">&gt;=</span> current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">return</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">}</span>
 	
 	<span class="token comment">// truncate data beyond the capacity, so the data below will always fit in available capacity</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>first_index <span class="token operator">+</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token punctuation">(</span>current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>first_index <span class="token operator">+</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">+</span> cap<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">uint64_t</span> end_index <span class="token operator">=</span> current_index_ <span class="token operator">+</span> cap<span class="token punctuation">;</span>
     data <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> end_index <span class="token operator">-</span> first_index<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">}</span>
 	
 	<span class="token comment">// insert into unassembled map</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">&lt;</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token function">merge_and_insert</span><span class="token punctuation">(</span>first_index<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">return</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">}</span>
 	
 	<span class="token comment">// can directly input into bytestream</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>current_index_ <span class="token operator">==</span> first_index<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
     current_index_ <span class="token operator">+=</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">return</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">}</span>
 
-  <span class="token comment">// current_index > first_index</span>
+  <span class="token comment">// current_index &gt; first_index</span>
   <span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> current_index_ <span class="token operator">-</span> first_index<span class="token punctuation">;</span>
   <span class="token keyword">uint64_t</span> byte_len <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-  <span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>byte_len <span class="token operator">&lt;=</span> overlap_len<span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token comment">// discard this data, already input into bytestream</span>
     <span class="token keyword">return</span><span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">}</span>
 
-  <span class="token comment">// byte_len > overlap_len</span>
+  <span class="token comment">// byte_len &gt; overlap_len</span>
   std<span class="token double-colon punctuation">::</span>string rest <span class="token operator">=</span> data<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>overlap_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
   output_<span class="token punctuation">.</span><span class="token function">writer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>rest<span class="token punctuation">)</span><span class="token punctuation">;</span>
   current_index_<span class="token operator">+=</span> rest<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
   <span class="token keyword">return</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p><br></p>
-<h3
-id="q2缓存区中的数据如何自动校准">Q2：缓存区中的数据如何自动校准</h3>
+<h3 id="q2缓存区中的数据如何自动校准">Q2：缓存区中的数据如何自动校准</h3>
 <p>Reassembler的缓存数据结构选择std::map。原因是因为每一个需要缓存的数据都包含index和data两种数据，为了在需要数据时更快的查找到相关的数据，采用哈希表。不采用unordered
 map的原因是，unordered
 map是无序的，在每次插入数据之后，如果新插入的数据与前后两个相邻数据有重叠，那么就需要从哈希表访问相邻两个index的数据，合并之后还需要再检查有无重复，实现比较复杂。如果采用有序的map，直接按顺序遍历一边哈希表，把相邻两个有重叠的数据处理一下即可，实现较为简单。</p>
-<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">merge_and_insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">Reassembler</span><span class="token double-colon punctuation">::</span><span class="token function">merge_and_insert</span><span class="token punctuation">(</span><span class="token keyword">uint64_t</span> first_index<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string data<span class="token punctuation">)</span> <span class="token punctuation">{</span>
   <span class="token comment">// insert first</span>
   <span class="token keyword">auto</span> entry <span class="token operator">=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>first_index<span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">if</span> <span class="token punctuation">(</span>entry <span class="token operator">==</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>entry <span class="token operator">==</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     unassemble_map_<span class="token punctuation">[</span>first_index<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">;</span>
-  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
-    <span class="token keyword">if</span> <span class="token punctuation">(</span>data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">></span> entry<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&gt;</span> entry<span class="token operator">-&gt;</span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
       unassemble_map_<span class="token punctuation">[</span>first_index<span class="token punctuation">]</span> <span class="token operator">=</span> data<span class="token punctuation">;</span>  
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
 
   <span class="token keyword">auto</span> it <span class="token operator">=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-  <span class="token keyword">while</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>it <span class="token operator">!=</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
     <span class="token keyword">auto</span> next_it <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span><span class="token function">next</span><span class="token punctuation">(</span>it<span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">if</span> <span class="token punctuation">(</span>next_it <span class="token operator">==</span> unassemble_map_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
 
-    <span class="token keyword">uint64_t</span> data_len <span class="token operator">=</span> it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-    <span class="token keyword">uint64_t</span> idx <span class="token operator">=</span> it<span class="token operator">-></span>first<span class="token punctuation">;</span>
+    <span class="token keyword">uint64_t</span> data_len <span class="token operator">=</span> it<span class="token operator">-&gt;</span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">uint64_t</span> idx <span class="token operator">=</span> it<span class="token operator">-&gt;</span>first<span class="token punctuation">;</span>
 
-    <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">==</span> next_it<span class="token operator">-></span>first<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-      unassemble_map_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>next_it<span class="token operator">-></span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">==</span> next_it<span class="token operator">-&gt;</span>first<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      unassemble_map_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>next_it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
       unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">>=</span> next_it<span class="token operator">-></span>first <span class="token operator">+</span> next_it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">&gt;=</span> next_it<span class="token operator">-&gt;</span>first <span class="token operator">+</span> next_it<span class="token operator">-&gt;</span>second<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
       unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">></span> next_it<span class="token operator">-></span>first<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
-      <span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> data_len <span class="token operator">+</span> idx <span class="token operator">-</span> next_it<span class="token operator">-></span>first<span class="token punctuation">;</span>
-      std<span class="token double-colon punctuation">::</span>string surpass_str <span class="token operator">=</span> next_it<span class="token operator">-></span>second<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>overlap_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>data_len <span class="token operator">+</span> idx <span class="token operator">&gt;</span> next_it<span class="token operator">-&gt;</span>first<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token keyword">uint64_t</span> overlap_len <span class="token operator">=</span> data_len <span class="token operator">+</span> idx <span class="token operator">-</span> next_it<span class="token operator">-&gt;</span>first<span class="token punctuation">;</span>
+      std<span class="token double-colon punctuation">::</span>string surpass_str <span class="token operator">=</span> next_it<span class="token operator">-&gt;</span>second<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>overlap_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
       unassemble_map_<span class="token punctuation">[</span>idx<span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">append</span><span class="token punctuation">(</span>surpass_str<span class="token punctuation">)</span><span class="token punctuation">;</span>
       unassemble_map_<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>next_it<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
       <span class="token operator">++</span>it<span class="token punctuation">;</span>
-    <span class="token punctuation">&#125;</span>
-  <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
   </div>
 
