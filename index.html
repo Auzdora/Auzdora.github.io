@@ -199,6 +199,14 @@ mjx-container[display="true"] + br {
     
   
     
+  
+    
+  
+    
+  
+    
+  
+    
       
 
 <div class="about-wrapper">
@@ -243,14 +251,6 @@ mjx-container[display="true"] + br {
 
     
   
-    
-  
-    
-  
-    
-  
-    
-  
   <br>
   <br>
   <br>
@@ -263,6 +263,69 @@ mjx-container[display="true"] + br {
   <br>
   <br>
   
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2025/05/05/gpu-learning-notes-1/" target="_self">
+            <h3>CUDA Basics</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+最近打算实现一个支持CPU/GPU后端计算的大模型推理框架，写GPU的算子需要一些CUDA编程的基础。虽然之前自己写过一个简单的类似Pytorch的基于Python前端，CUDA后端的AI训练框架，在当时学过一点CUDA，同时硕士期间也上过有关CUDA的课程，但由于都是几年前的知识，而且当时也没有即使做笔记记录，导致现在已经全部忘光了。这篇博客的主要目的就是记录一下有关GPU/CUDA的基础知识...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2025-05-05 23:26" pubdate>
+            2025-05-05
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/CUDA/">CUDA</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2025/03/10/tokenizer/" target="_self">
+            <h3>Build your own tokenizer in LLM</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+Tokenization对于基于Transformer的大语言模型来说至关重要。由于物理硬件的限制，大语言模型只能理解binary类型的数据，所以tokenizer充当着字符串string到integer的翻译工具。但是tokenizer并非只是保存着字符与数字的映射这么简单。这篇文章是对自己学习tokenizer过程的一个总结，参考Andrej
+Karpathy的视频"Let's build ...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2025-03-10 15:19" pubdate>
+            2025-03-10
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/LLM/">LLM</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
   
     <article class="row index-post-wrapper">
       
@@ -360,74 +423,6 @@ Google的研发人员在过去处理大数据任务时，经常需要手写实�
             
                
                 <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/05/10/leveldb-memory/" target="_self">
-            <h3>Understanding LevelDB Memory Management</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Intro
-这篇文章是我自己通过阅读LevelDB的源代码，有关LevelDB内存管理方案的总结。分为主要的三个部分。第一部分是LevelDB的内存池的实现；第二部分是内存数据库—跳表的实现；第三部分是缓存系统的实现。
-
-Memory pool
-LevelDB的内存池实现在arena.cc以及arena.h中。内存池是池化技术的一种，池化技术的核心内涵是：将程序中需要经常使用的资源预先申请出来，放...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-05-10 14:44" pubdate>
-            2024-05-10
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/04/22/leveldb-iterator/" target="_self">
-            <h3>Understanding LevelDB Iterator</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Intro
-Understanding Iterators
-Before diving into the specifics of LevelDB, let's clarify what an
-iterator is in the context of programming. An iterator is an object that
-enables users to traverse a co...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-04-22 11:15" pubdate>
-            2024-04-22
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
                
             
           </div>

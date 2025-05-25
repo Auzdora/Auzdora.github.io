@@ -227,7 +227,7 @@ number或ackno。这是reciver迫切希望sender发送的第一个字节。</li>
 <p>Ackno和window
 size描述了reciver的窗口大小：这个窗口表示允许sender发送的范围。使用这个窗口，recevier就可以控制到来数据的数据流，可以让sender知道限制在哪里（也就是数据流控制）。</p>
 <p>TCP是一个在不可靠的datagram上构建的可以可靠传递数据的协议（并且是双向可靠传输，也就是说通信两端的实体，可以是sender也可以是reciever）。</p>
-<blockquote class="callout yellow">
+<blockquote class="callout yellow" style="padding: 10px;">
 Why am I doing
 this？流控制的信息对于TCP来说非常重要，在TCP中，acknowledgment意味着“为了尽快组成bytestream，receiver迫切需要的下一个字节的index是什么”。这会通知sender什么是需要send或者resend的。Flow
 control意味着“receiver愿意接受那些范围内的数据”，也就是不会让sender随意发送数据流，而是需要发送receiver感兴趣和允许发送的数据。

@@ -2,9 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://auzdora.github.io/2024/05/10/leveldb-memory/</loc>
+    <loc>https://auzdora.github.io/2025/03/10/tokenizer/</loc>
     
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2025/05/05/gpu-learning-notes-1/</loc>
+    
+    <lastmod>2025-05-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -13,7 +22,7 @@
   <url>
     <loc>https://auzdora.github.io/2024/11/20/TCP1/</loc>
     
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-08</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -22,7 +31,16 @@
   <url>
     <loc>https://auzdora.github.io/2025/01/02/TCP2/</loc>
     
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/2024/05/10/leveldb-memory/</loc>
+    
+    <lastmod>2025-05-08</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -310,7 +328,7 @@
 
   <url>
     <loc>https://auzdora.github.io/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -318,77 +336,91 @@
   
   <url>
     <loc>https://auzdora.github.io/tags/Deep-Learning-Optimization/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
-    <lastmod>2025-05-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
-    <lastmod>2025-05-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/tags/Study/</loc>
-    <lastmod>2025-05-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Distributed-Systems/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Study/</loc>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/OS/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/C/</loc>
-    <lastmod>2025-05-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/tags/Distributed-System/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/Computer-Network/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/Distributed-System/</loc>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/CUDA/</loc>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://auzdora.github.io/tags/LevelDB/</loc>
-    <lastmod>2025-05-05</lastmod>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://auzdora.github.io/tags/LLM/</loc>
+    <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

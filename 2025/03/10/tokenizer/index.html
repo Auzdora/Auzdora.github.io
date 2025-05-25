@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/img/AAA.png">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">
+
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+  <title>Build your own tokenizer in LLM - Auzdora&#39;s Blog</title>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+
+<body>
+  <header>
+    <nav id="navbar" class="navbar fixed-nav scrolling-navbar">
+  <div class="container">
+    <div class="mark-wrapper">
+       
+      <div class="title-mark">Auzdora</div>
+    </div>
+  
+    <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
+      <div class="menu-icon"><span></span><span></span><span></span></div>
+    </button>
+  
+    <div id="nav-menu" class="collapse menu-wrapper">
+      <ul>
+        
+          <li>
+            <a href="/">Home </a>
+          </li>
+        
+          <li>
+            <a href="/archives">Archives </a>
+          </li>
+        
+          <li>
+            <a href="/Life">Life </a>
+          </li>
+        
+          <li>
+            <a href="/tag">Tag </a>
+          </li>
+        
+          <li>
+            <a href="/about2">About </a>
+          </li>
+        
+        <li class="search-icon">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="main">
+        <div class="row py-5">
+          <div class="col">
+            <div class="row">
+  <div class="left-content">
+    <article class="post-wrapper markdown-body">
+  <h2 class="post-title">
+    Build your own tokenizer in LLM
+  </h2>
+  <div class="post-meta">
+    <time datetime="Invalid date Invalid date ">2025-03-10</time>
+    
+    
+       
+    
+    
+      
+        <a class="tag" href="/tags/LLM/">LLM</a> 
+       
+    
+    
+  </div>
+  
+  <div id="content">
+    <blockquote>
+<p>Tokenization对于基于Transformer的大语言模型来说至关重要。由于物理硬件的限制，大语言模型只能理解binary类型的数据，所以tokenizer充当着字符串string到integer的翻译工具。但是tokenizer并非只是保存着字符与数字的映射这么简单。这篇文章是对自己学习tokenizer过程的一个总结，参考Andrej
+Karpathy的视频"Let's build the GPT tokenizer", but in c++ version。</p>
+</blockquote>
+<h3 style="color: #8a6c51;">
+What is Tokenizer?
+</h3>
+<p>第一个问题就是什么是Tokenizer？Token在英文中表达的是标记、代币、记号等等意思，我们在这里可以简单的理解为一个符号的表示。在自然语言处理的领域中，token即符号转化成的那个整数。Tokenizer以及Tokenization就很好理解了：Tokenization表达的就是将符号转化成整数的过程，而Tokenizer就是执行这一转化的工具，可以翻译为分词器。</p>
+<p>下图是来自<a target="_blank" rel="noopener" href="https://tiktokenizer.vercel.app/?model=gpt2">Tiktokenizer</a>网站的一个截图，可以直观感受一下Tokenizer的作用。</p>
+<p align="center">
+<img src="token.png" width="800">
+</p>
+<p>图中同一个颜色的长方形框出的字符属于一个token，对应下方的一个整数。从图中可以获取很多信息：</p>
+<ul>
+<li>Tokenizer不是简单的将单词转化为数字，也不是一个单词会对应一个数字，会出现一个单词拆分为多个token的情况</li>
+<li>对于意义相同的单词，撰写形式不同，会被解析成不同的若干token，比如Egg解析为一个token，EGG解析为两个token。这就意味着，在LLM的视角里，Egg和EGG其实是两个东西</li>
+<li>中文和英文，意义相同的两句话，中文被解析的token数量更多。这就说明，在同一个模型下，由于模型上下文token长度的限制，在英文的表现会更好，因为英文token会有更多的上下文语境</li>
+<li>对于gpt2的tokenizer来说，由于代码中包含有大量空格，且空格均被分解成一个个token，这就会导致模型接受很多无意义的输入。由于模型上下文token长度的限制，这个解析方式势必会影响模型在写代码方面的性能，这也是gpt4的tokenizer之后的优化方向，目的是把空格琐碎的多token用更少的token表示</li>
+</ul>
+<p>从上面的分析可知，tokenization是transformer大语言模型中非常重要的一个组成部分。Token是LLM计算的最小单元，也是LLM看待自然语言的一种视角。下图简单描述了字符串到transformer的输入转换的流程。首先字符串"Nice
+to meet
+you！"经过tokenizer得到对应的token，这里的整数实际上代表的就是embedding
+table的索引。根据此索引，每一个token就会得到对应的蓝色的向量表示，之后会作为vector输入transformer中。</p>
+<p align="center">
+<img src="embed.png" width="650">
+</p>
+<h3 style="color: #8a6c51;">
+Unicode
+</h3>
+<p>Unicode是一种全球通用的字符编号系统，每一个字符（文字、符号、emoji）都对应一个唯一的编号。这天然的符合我们对tokenizer的需求，那我们为什么不直接用Unicode作为编码的结果，反而还要再想办法研究新的算法呢？这是因为它有两个主要的弊端：</p>
+<ul>
+<li>从官方数据来看，目前Unicode统计了大约15w个字符，这就意味着转化后的token
+id的数量为15w，对应embedding
+table也需要有15w个vector，非常巨大。同时，Unicode只是对单个字符做tokenize，这样一个"Nice
+to meet
+you！"就会包含17个token，和之前的gpt2的5个token来比，会耗费大量语言模型的上下文长度，导致模型不能关注到更大范围的文本，进而使模型的成本升高，性能下降。</li>
+<li>由于Unicode的标准一直在变，采用此方式不是很稳定</li>
+</ul>
+<p>这里标记一个讲解Unicode和utf编码的博客<a target="_blank" rel="noopener" href="https://www.reedbeta.com/blog/programmers-intro-to-unicode/">A
+programmer's Introduction to Unicode</a>。</p>
+<h3 style="color: #8a6c51;">
+Training a Tokenizer
+</h3>
+<p>前面提到Unicode的弊端之一，就是15w个vector的数量过于庞大了。因此Tokenizer算法的一个目标就是优化token表示的数量，即尽可能的压缩信息。体现在算法上就是会有很多字符组合在一起表示一个token。那么问题就是这个多个字符组合在一起表示的token集合怎么来呢？这里很容易想到一个思想，<strong>统计</strong>。比如，给定一个词集，里面包含了若干词，我们对词频进行统计，频率超过一定阈值则纳入token集合。这一过程实际上就指得是training
+a tokenizer。</p>
+<p>第一次听到training这个词，我的第一反应是：Tokenizer 不就是一个用
+Python 写的函数嘛，怎么还能“训练”？这是网络模型还是什么？</p>
+<p align="center">
+<img src="net.png" width="650">
+</p>
+<p><strong>答案是：不是。</strong></p>
+<p>实际上，“训练
+tokenizer”只是一个说法，人们称之为“训练”是因为听起来比较高大上。但
+tokenizer
+的“训练”方式取决于所用的分词算法。举个例子：以子词（subword）分词算法为例，为了识别哪些子词最常出现、最有意义，tokenizer
+需要通读整个语料库。这一分析过程就被称作“训练”。</p>
+<blockquote class="callout red" style="padding: 10px;">
+模型训练使用的是随机梯度下降（SGD），通过每个 batch 减少
+loss，这个过程是随机的（因此需要设置随机种子才能复现结果）。而 tokenizer
+的训练是一个<strong>统计过程</strong>，它尝试找出最优的子词组合，选择规则依赖于算法。这是一个<strong>确定性过程</strong>：只要算法和语料相同，每次训练结果都一样。
+</blockquote>
+<h3 style="color: #8a6c51;">
+Byte-Pair Encoding tokenization - BPE
+</h3>
+<p>BPE 最初是数据压缩算法（1994 年 Philip
+Gage），后来被用于神经网络中作为 tokenizer。它的核心思想很直接：</p>
+<blockquote>
+<p><strong>不断把“最常出现的相邻符号对”合并成一个新符号，直到词表大小达到设定阈值。</strong></p>
+</blockquote>
+<p>Byte-Pair
+Encoding一般分为两个比较重要的阶段，训练阶段以及推理阶段。对于训练阶段主要做的任务就是遍历词表，根据BPE的算法总结出若干条规则。推理阶段就可以读取对应训练好的文件，然后去文件中查询符合的规则，将其替代为对应的token
+id。上面说的还是过于抽象，下面可以通过一个具体的例子来了解BPE算法的主要思想。</p>
+<p>把整个流程拆开来看，能分成 <strong>训练 tokenizer → encode →
+decode</strong> 三步。</p>
+<h4 id="训练-tokenizer">训练 Tokenizer</h4>
+<p>Tokenizer 在开始训练 BPE 规则前要先做两件事：</p>
+<ol type="1">
+<li><strong>文本归一化</strong>：统一大小写、全角半角、去掉不可见符号等</li>
+<li><strong>预分词</strong>：按空格、标点或字节把文本先切一刀，避免跨词合并</li>
+</ol>
+<p>接下来我们开始建立初始频次词典和字符表，假设<strong>语料只有两句</strong>（为了演示简洁）：
+<pre class="line-numbers language-none"><code class="language-none">This is insane!
+This is impossible<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre> Tokenizer 先扫描整份语料，得到： <pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 词频字典（以空格分词）</span>
+<span class="token punctuation">{</span><span class="token string">"This"</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"is"</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"insane"</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"impossible"</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">}</span>
+
+<span class="token comment"># 字符级词表（Vocabulary）——所有出现过的单字符</span>
+<span class="token punctuation">{</span><span class="token string">'T'</span><span class="token punctuation">,</span> <span class="token string">'h'</span><span class="token punctuation">,</span> <span class="token string">'i'</span><span class="token punctuation">,</span> <span class="token string">'s'</span><span class="token punctuation">,</span> <span class="token string">'n'</span><span class="token punctuation">,</span> <span class="token string">'a'</span><span class="token punctuation">,</span> <span class="token string">'e'</span><span class="token punctuation">,</span> <span class="token string">'m'</span><span class="token punctuation">,</span> <span class="token string">'p'</span><span class="token punctuation">,</span> <span class="token string">'o'</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">,</span> <span class="token string">'l'</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<blockquote>
+<p>注意：字符表里没有感叹号
+<code>!</code>，因为我们在预分词里把标点单独拆出并忽略了。</p>
+</blockquote>
+<p>接下来我们把单词离散成
+<strong>字符序列</strong>，为了后续“找相邻字符对”，需要把每个词拆成单字符并在词尾加
+<strong>终止符 <code>&lt;/w&gt;</code></strong>（或 GPT-2 的
+<code>Ġ</code>、SentencePiece 的 <code>▁</code>）。</p>
+<pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token punctuation">{</span><span class="token string">'T'</span> <span class="token string">'h'</span> <span class="token string">'i'</span> <span class="token string">'s'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+ <span class="token string">'i'</span> <span class="token string">'s'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+ <span class="token string">'i'</span> <span class="token string">'n'</span> <span class="token string">'s'</span> <span class="token string">'a'</span> <span class="token string">'n'</span> <span class="token string">'e'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+ <span class="token string">'i'</span> <span class="token string">'m'</span> <span class="token string">'p'</span> <span class="token string">'o'</span> <span class="token string">'s'</span> <span class="token string">'s'</span> <span class="token string">'i'</span> <span class="token string">'b'</span> <span class="token string">'l'</span> <span class="token string">'e'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>进一步，我们需要迭代寻找<strong>最高频相邻对</strong>并合并。</p>
+<blockquote>
+<p>BPE 的核心： <strong>重复找到出现次数最多的相邻符号对 (a,
+b)，新建合成符号 “ab”，再把语料里所有 (a, b) 替换为 “ab”。</strong></p>
+</blockquote>
+<p>第 1 次合并： 首先统计所有相邻字符对出现次数
+，其中<strong><code>i s</code></strong> 出现 4 次，是最高频 的组合；将
+<code>i s</code> 合并为新符号 <strong><code>is</code></strong>
+，然后更新字符表与语料，得到如下字符集合： <pre class="line-numbers language-python" data-language="python"><code class="language-python"><span class="token comment"># 新增符号</span>
+token_set <span class="token operator">+=</span> <span class="token punctuation">{</span><span class="token string">'is'</span><span class="token punctuation">}</span>
+
+<span class="token comment"># 更新后的离散表示（只展示变化部分）</span>
+<span class="token punctuation">{</span><span class="token string">'T'</span> <span class="token string">'h'</span> <span class="token string">'is'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+ <span class="token string">'is'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+ <span class="token string">'is'</span> <span class="token string">'a'</span> <span class="token string">'n'</span> <span class="token string">'e'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+ <span class="token string">'is'</span> <span class="token string">'p'</span> <span class="token string">'o'</span> <span class="token string">'s'</span> <span class="token string">'s'</span> <span class="token string">'i'</span> <span class="token string">'b'</span> <span class="token string">'l'</span> <span class="token string">'e'</span> <span class="token operator">&lt;</span><span class="token operator">/</span>w<span class="token operator">&gt;</span><span class="token punctuation">:</span> <span class="token number">1</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>并把本次“合并规则”记录下来，Tokenizer
+训练到最后会保存一张<strong>有序合并表</strong>（merge
+list）。推理阶段就是反复按它的顺序去匹配文本。接着我们继续重复合并动作：再次扫描，找下一高频对（也许是
+<code>Th</code>、<code>is&lt;/w&gt;</code>、<code>im</code>……）
+，不断循环，直到 ：</p>
+<blockquote class="callout red" style="padding: 10px;">
+<ul>
+<li>达到设定的词表大小上限（例如 30 000）</li>
+<li>或者下一个最高频对出现次数已低于阈值，继续合并收益不大</li>
+</ul>
+</blockquote>
+<p>训练结束时我们拥有：</p>
+<ol type="1">
+<li><strong>最终词表</strong>：包括 所有初始单字符
+，所有通过合并学到的多字符子词</li>
+<li><strong>合并规则列表</strong>：有序，推理时必须自上而下照此尝试匹配，否则可能切出不同结果。</li>
+</ol>
+<h4 id="encode"><strong>Encode</strong></h4>
+<p>在预训练阶段，BPE（Byte‑Pair
+Encoding）通过不断合并出现频次最高的相邻子串，生成一张有序的合并规则表（merge
+table）和一份 token 词表（vocabulary）。推理或部署时，Encode
+阶段的任务就是按照这两张“经验表”把原始文本映射成模型可读的 token ID
+序列。</p>
+<p>首先对输入进行 Unicode
+归一化，顺便统一大小写、去掉零宽字符、处理全角半角差异等。这样可以保证同义字符被视为同一个
+code point，从源头消除歧义。规范化后的字符串按字符拆分得到一串 Unicode
+code point。此时每个字符都可以看作“最细粒度的 token”。</p>
+<p>接着对每个 code point 查询「字符 → token ID」哈希表：</p>
+<ul>
+<li>若命中，直接把对应 token ID 加入序列；</li>
+<li>若未命中，则按回退策略降级到字节级拆分（UTF‑8
+字节对照表），确保所有字符都有落点。</li>
+</ul>
+<p>接下来进入核心循环：</p>
+<ol type="1">
+<li>读取已排序的 merge table；</li>
+<li>扫描当前 token 序列，记录所有相邻 token 对及其在 merge table
+中的优先级索引；</li>
+<li>选择优先级最高（索引最小）的可合并对，若不存在则退出循环；</li>
+<li>把该对替换为新 token
+ID，并只在合并点附近更新相邻对，避免全量重扫；</li>
+<li>重复步骤 2‑4，直到再也找不到可合并项。</li>
+</ol>
+<p>在工程实现里，常见优化包括：用链表存
+token、用最小堆维护「当前最小优先级对」，或采用双端队列减少指针更新；HuggingFace
+的 Tokenizers
+库就采纳了这种思路。优化对于BPE算法的效率至关重要，这在我们之后的实现中会有所体现。</p>
+<p>循环结束后得到最终 token ID
+序列，直接送入模型即可。如果需要解码，只需按「token ID →
+子串」的逆映射顺序拼回字符，再做一次反规范化。</p>
+<h4 id="decode">Decode</h4>
+<p>解码的过程就相对简单，只需要维护一个token到字符的映射哈希表，遍历输入的token序列，在哈希表中找到对应的字符之后拼接到最终的字符串中返回即可。</p>
+<h3 style="color: #8a6c51;">
+Implement BPE
+</h3>
+<p>为了彻底了解整个编码解码的流程，以及为自己之后写一个简单的大模型推理框架做铺垫，参考Karapthy的实现，用C++和google
+test重新实现了一次BPE
+Tokenizer，同时采用上述的工程优化方法优化原始的encode流程。</p>
+<p>首先我们需要关注的就是如何抽象一个tokenizer。因为推理框架无需考虑训练，因此对于tokenizer来说，核心的方法只需要包含三个操作：<code>load</code>、<code>encode</code>以及<code>decode</code>。考虑到代码的可扩展性，我们可以开辟一个简单的基类：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">Tokenizer</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+
+    <span class="token keyword">virtual</span> <span class="token keyword">auto</span> <span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token keyword">bool</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">virtual</span> <span class="token keyword">void</span> <span class="token function">encode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span> ids<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">virtual</span> <span class="token keyword">void</span> <span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>为了能够验证自己算法的正确性，我这里在<code>Tokenizer</code>的基础上封装了sentencepiece的实现，方便后续的对比，统一Tokenizer的使用流程。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">SentencePieceTokenizer</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">Tokenizer</span></span> <span class="token punctuation">{</span>
+<span class="token keyword">private</span><span class="token operator">:</span>
+    sentencepiece<span class="token double-colon punctuation">::</span>SentencePieceProcessor processor_<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>string model_path_<span class="token punctuation">;</span>
+
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token function">SentencePieceTokenizer</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> model_path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">virtual</span> <span class="token operator">~</span><span class="token function">SentencePieceTokenizer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">auto</span> <span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span><span class="token keyword">bool</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">encode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span> ids<span class="token punctuation">)</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>具体的实现也非常简单，根据sentencepiece的官方文档做一个简单调用即可：
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token class-name">SentencePieceTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">SentencePieceTokenizer</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> model_path<span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token function">model_path_</span><span class="token punctuation">(</span>model_path<span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+<span class="token class-name">SentencePieceTokenizer</span><span class="token double-colon punctuation">::</span><span class="token operator">~</span><span class="token function">SentencePieceTokenizer</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+<span class="token keyword">auto</span> <span class="token class-name">SentencePieceTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token keyword">bool</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> <span class="token keyword">auto</span> status <span class="token operator">=</span> processor_<span class="token punctuation">.</span><span class="token function">Load</span><span class="token punctuation">(</span>model_path_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>status<span class="token punctuation">.</span><span class="token function">ok</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        std<span class="token double-colon punctuation">::</span>cerr <span class="token operator">&lt;&lt;</span> status<span class="token punctuation">.</span><span class="token function">ToString</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">void</span> <span class="token class-name">SentencePieceTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">encode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>ids<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    processor_<span class="token punctuation">.</span><span class="token function">Encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> <span class="token operator">&amp;</span>ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">void</span> <span class="token class-name">SentencePieceTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    processor_<span class="token punctuation">.</span><span class="token function">Decode</span><span class="token punctuation">(</span>ids<span class="token punctuation">,</span> <span class="token operator">&amp;</span>text<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>接下来，我们就可以真正开始实现自己的tokenizer了。我们还是继承基础类Tokenizer的抽象，实现其最核心的三个方法，我们先来关注最naive的实现，这种实现的性能比较低，后续会在此基础上进行优化。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">class</span> <span class="token class-name">LlamaTokenizer</span> <span class="token operator">:</span> <span class="token base-clause"><span class="token keyword">public</span> <span class="token class-name">Tokenizer</span></span> <span class="token punctuation">{</span>
+<span class="token keyword">private</span><span class="token operator">:</span>
+    std<span class="token double-colon punctuation">::</span>string model_path_<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> vocab_size_<span class="token punctuation">{</span><span class="token number">0</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">int</span> max_token_length_<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">float</span><span class="token operator">&gt;</span> scores_<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>unordered_map<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&gt;</span> vocab_decoder_<span class="token punctuation">;</span> <span class="token comment">// token id to string</span>
+    std<span class="token double-colon punctuation">::</span>unordered_map<span class="token operator">&lt;</span>std<span class="token double-colon punctuation">::</span>string<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token operator">&gt;</span> vocab_encoder_<span class="token punctuation">;</span> <span class="token comment">// string to token id</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> byte_pieces_<span class="token punctuation">[</span><span class="token number">512</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// for reverse byte fallback case</span>
+
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token function">LlamaTokenizer</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> model_path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">LlamaTokenizer</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> model_path<span class="token punctuation">,</span> <span class="token keyword">int</span> vocab_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">virtual</span> <span class="token operator">~</span><span class="token function">LlamaTokenizer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">auto</span> <span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span><span class="token keyword">bool</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">encode_naive</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">encode_opt</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">encode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span> ids<span class="token punctuation">)</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">void</span> <span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token keyword">override</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>第一个参数<code>model_path</code>存储的是<code>tokenizer.bin</code>的路径（注意这里的<code>tokenizer.bin</code>是由<code>tokenizer.model</code>转化而来，使用的是karpathy的llama2.c项目中的<a target="_blank" rel="noopener" href="https://github.com/karpathy/llama2.c/blob/master/tokenizer.py">tokenizer.py</a>进行导出。这个文件重新组织了一个<code>tokenizer.model</code>文件的信息)。<code>tokenizer.bin</code>文件的存储格式如下：</p>
+<blockquote class="callout green" style="padding: 10px;">
+首先文件开头存储了这个词表中token最大的长度。
+接下来所有的token都按照&lt;float:score|int:len|token&gt;的格式存储。开头的前三个存储了特殊的token:
+unk
+s以及/s，接下来的256个token存储的是&lt;0x00&gt;到&lt;0xFF&gt;的原始数据，这是为了处理byte
+fallback情况而预留的token。
+</blockquote>
+<blockquote class="callout red" style="padding: 10px;">
+<p>Byte fallback：</p>
+<p>以llama的tokenizer举例，去tokenize”独“的时候，它是没有直接对应的词表的。同时因为汉子基本以三个字节编码，这里就直接把三个字节对应到数字，把数字作为其编码即可。</p>
+<p>raw text: 独</p>
+<p>encoded text: [ 29871 234 142 175 ]
+(29871代表的是句子开头编码阶段加入的空格)</p>
+</blockquote>
+<p>第二个参数是用户输入时指定的，在加载tokenizer时会根据这个参数限制加载token的数量。</p>
+<p>两个哈希表分别存储了从token id到字符以及字符到token
+id的对应关系。</p>
+<p>最后一个<code>byte_pieces</code>处理的是解码阶段，具体在实现<code>decode</code>函数时详细说明。</p>
+<p>基于以上的基础知识，我们已经可以实现tokenizer的<code>load</code>函数了:</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">auto</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-&gt;</span> <span class="token keyword">bool</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>ifstream <span class="token function">file</span><span class="token punctuation">(</span>model_path_<span class="token punctuation">,</span>std<span class="token double-colon punctuation">::</span>ios<span class="token double-colon punctuation">::</span>binary<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>file<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        std<span class="token double-colon punctuation">::</span>cerr <span class="token operator">&lt;&lt;</span> <span class="token string">"Couldn't open file "</span> <span class="token operator">&lt;&lt;</span> model_path_ <span class="token operator">&lt;&lt;</span> <span class="token char">'\n'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// for reverse byte fallback cases like "&lt;0x9F&gt;" is just a string</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">256</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        byte_pieces_<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        byte_pieces_<span class="token punctuation">[</span>i <span class="token operator">*</span> <span class="token number">2</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    file<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span><span class="token operator">&amp;</span>max_token_length_<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    scores_<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span>vocab_size_<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> len <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> vocab_size_<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        file<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span><span class="token operator">&amp;</span>scores_<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        file<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span><span class="token generic-function"><span class="token function">reinterpret_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span><span class="token operator">&amp;</span>len<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        std<span class="token double-colon punctuation">::</span>unique_ptr<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span> token <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">make_unique</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>len<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        file<span class="token punctuation">.</span><span class="token function">read</span><span class="token punctuation">(</span>token<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        token<span class="token punctuation">[</span>len<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+
+        vocab_decoder_<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span><span class="token function">string</span><span class="token punctuation">(</span>token<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        vocab_encoder_<span class="token punctuation">[</span>std<span class="token double-colon punctuation">::</span><span class="token function">string</span><span class="token punctuation">(</span>token<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> len<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    file<span class="token punctuation">.</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>进一步，我们可以根据之前的对编码部分的流程，实现<code>encode</code>方法。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">encode_naive</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>ids<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// we have vocab_encoder_ and vocab_decoder_ now</span>
+    <span class="token comment">// given the input text, we need first split every text into single string and try to find the first round of token ids</span>
+
+    <span class="token comment">// character like '汉' need use at least three bytes to encode, follow the UTF8 coding rule</span>
+    <span class="token comment">// Code point ↔ UTF-8 conversion</span>
+    <span class="token comment">// First code point	Last code point	Byte 1	Byte 2	Byte 3	Byte 4</span>
+    <span class="token comment">// U+0000	U+007F	    0xxxxxxx</span>
+    <span class="token comment">// U+0080	U+07FF	    110xxxxx	10xxxxxx</span>
+    <span class="token comment">// U+0800	U+FFFF	    1110xxxx	10xxxxxx	10xxxxxx</span>
+    <span class="token comment">// U+10000	U+10FFFF    11110xxx	10xxxxxx	10xxxxxx	10xxxxxx</span>
+    <span class="token comment">// so here we actually perform a simple aggregation of bytes into UTF8, and then query the encoder to get token id</span>
+    <span class="token comment">// 0x80 -&gt; 1000 0000</span>
+    <span class="token comment">// 0xC0 -&gt; 1100 0000</span>
+    std<span class="token double-colon punctuation">::</span>string buf<span class="token punctuation">;</span>
+    buf<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    size_t ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    
+    <span class="token comment">// add_dummy_prefix is true by default</span>
+    <span class="token comment">// so prepend a dummy prefix token to the input string, but only if text != ""</span>
+    <span class="token comment">// TODO: pretty sure this isn't correct in the general case but I don't have the</span>
+    <span class="token comment">// energy to read more of the sentencepiece code to figure out what it's doing</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> c <span class="token operator">=</span> text<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">*</span>c <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> c<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// as can be seen in UTF-8 table, a byte start with 10..... means coninuation byte of the code points</span>
+        <span class="token comment">// a byte start with 0..... is ASCII</span>
+        <span class="token comment">// a byte start with 11..... is begining byte of the code points</span>
+        <span class="token comment">// so we can perform &amp; to filter</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">*</span>c <span class="token operator">&amp;</span> <span class="token number">0xC0</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0x80</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">// this means *c contains a byte that is none coninuation byte</span>
+            <span class="token comment">// so we reset ptr to 0</span>
+            ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        buf<span class="token punctuation">[</span>ptr<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">*</span>c<span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span>c<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">0xC0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0x80</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        std<span class="token double-colon punctuation">::</span>string <span class="token function">codepoint</span><span class="token punctuation">(</span>buf<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ptr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// now we get the codepoint data</span>
+
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>codepoint<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">==</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">// can find, byte fall back</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ptr<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span><span class="token punctuation">)</span>buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">+</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+            ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// compact surviving tokens</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">float</span> max_score <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1e10</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> max_index <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> max_token_id <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">auto</span> first_it <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">auto</span> second_it <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>first_it <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> second_it <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                std<span class="token double-colon punctuation">::</span>cerr <span class="token operator">&lt;&lt;</span> <span class="token string">"cannot find token "</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+                <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+            std<span class="token double-colon punctuation">::</span>string str <span class="token operator">=</span> first_it<span class="token operator">-&gt;</span>second <span class="token operator">+</span> second_it<span class="token operator">-&gt;</span>second<span class="token punctuation">;</span>
+            <span class="token keyword">auto</span> merge_it <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>str<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>merge_it <span class="token operator">!=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> scores_<span class="token punctuation">[</span>merge_it<span class="token operator">-&gt;</span>second<span class="token punctuation">]</span> <span class="token operator">&gt;</span> max_score<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                max_score <span class="token operator">=</span> scores_<span class="token punctuation">[</span>merge_it<span class="token operator">-&gt;</span>second<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                max_index <span class="token operator">=</span> i<span class="token punctuation">;</span>
+                max_token_id <span class="token operator">=</span> merge_it<span class="token operator">-&gt;</span>second<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>max_index <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        ids<span class="token punctuation">[</span>max_index<span class="token punctuation">]</span> <span class="token operator">=</span> max_token_id<span class="token punctuation">;</span>
+        ids<span class="token punctuation">.</span><span class="token function">erase</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">+</span>max_index<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>代码分为两个主要部分，首先我们需要把输入的text转化为字符粒度的UTF-8编码。代码注释中标注了UTF-8编码的code
+point对应关系。可以看到不同的符号对应的长度是不一样的，因此我们需要根据其编码特性，正确的区分当前字符是1个字节的code
+point还是n个字节的code
+point。具体的方式就是通过位运算来过滤，可以仔细阅读注释部分好好体会一下。读取到一个完整的code
+point之后，我们就可以查询其是否存在对应的token，如果存在，则存储对应的token
+id到全局的token序列中，如果不存在，执行byte
+fallback，存储原始的UTF-8序列。</p>
+<p>在得到初始的token序列之后，就可以根据BPE算法的逻辑，遍历词表，找到score最高的组合进行合并。代码的实现是一个最朴素的遍历版本。</p>
+<p>在实现的过程中，其实是有很多corner
+case的，这里我才用的方法就是使用google
+test写一些测试，与之前实现的标准的sentencepiece
+tokenizer执行结果进行比对。在调试中逐步完善实现以及加深自己的理解：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token function">TEST</span><span class="token punctuation">(</span>ENCODE_TEST<span class="token punctuation">,</span> space_token_test<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.bin"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>LlamaTokenizer <span class="token function">tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PAHT<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// load sentencepiece tokenizer as ground truth</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.model"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PAHT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token string">"     "</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> gt_ids<span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> gt_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">TEST</span><span class="token punctuation">(</span>ENCODE_TEST<span class="token punctuation">,</span> chinese_token_test<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.bin"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>LlamaTokenizer <span class="token function">tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PAHT<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// load sentencepiece tokenizer as ground truth</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.model"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PAHT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token string">"汉武帝飞向了浩瀚无穷的宇宙！"</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> gt_ids<span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> gt_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">TEST</span><span class="token punctuation">(</span>ENCODE_TEST<span class="token punctuation">,</span> emoji_token_test<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.bin"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>LlamaTokenizer <span class="token function">tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PAHT<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// load sentencepiece tokenizer as ground truth</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.model"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PAHT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token string">"😀 😃 😂 🤔 😍 🦄 🐉 🦾 🚀 🧠"</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> gt_ids<span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> gt_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">TEST</span><span class="token punctuation">(</span>ENCODE_TEST<span class="token punctuation">,</span> chinese_emoji_token_test<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.bin"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>LlamaTokenizer <span class="token function">tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PAHT<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// load sentencepiece tokenizer as ground truth</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"./tokenizer.model"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PAHT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token string">"汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   "</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> gt_ids<span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> gt_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p><code>decode</code>的代码就很直观，直接查询vocab
+decoder然后输出对应的text拼接起来即可。</p>
+<pre class="line-numbers language-none"><code class="language-none">void LlamaTokenizer::decode(const std::vector&lt;int&gt;&amp; ids, std::string&amp; text) {
+// decoding is a reverse process compared with encoding
+	for (size_t i = 0; i &lt; ids.size(); i++) {
+		auto it = vocab_decoder_.find(ids[i]);
+		if (it == vocab_decoder_.end()) {
+			std::cerr &lt;&lt; "cannot find token " &lt;&lt; std::endl;
+			continue;
+		}
+		if (it-&gt;second[0] == ' ') {
+			text += it-&gt;second.substr(1);
+		} else {
+			text += it-&gt;second;
+		}
+   }
+}<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>但是这个代码会有一个问题，比如如下的测试中：</p>
+<pre class="line-numbers language-none"><code class="language-none">TEST(DECODE_TEST, chinese_emoji_token_test) {
+    std::string TOKENIZER_MODEL_PAHT = "/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.bin";
+    llama::LlamaTokenizer tokenizer(TOKENIZER_MODEL_PAHT, 32000);
+    EXPECT_EQ(tokenizer.load(), true);
+
+    // load sentencepiece tokenizer as ground truth
+    std::string SPM_TOKENIZER_MODEL_PAHT = "/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.model";
+    llama::SentencePieceTokenizer spm_tokenizer(SPM_TOKENIZER_MODEL_PAHT);
+    EXPECT_EQ(spm_tokenizer.load(), true);
+
+    std::string text = "汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   ";
+    std::vector&lt;int&gt; ids;
+    tokenizer.encode(text, ids);
+
+    std::vector&lt;int&gt; gt_ids;
+    spm_tokenizer.encode(text, gt_ids);
+
+    EXPECT_EQ(ids.size(), gt_ids.size());
+    for (size_t i = 0; i &lt; ids.size(); i++) {
+        EXPECT_EQ(ids[i], gt_ids[i]);
+    }
+
+    std::string out_text;
+    std::string gt_out_text;
+    tokenizer.decode(ids, out_text);
+    spm_tokenizer.decode(gt_ids, gt_out_text);
+
+    EXPECT_EQ(out_text, gt_out_text);
+}<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>此时我们自己写好的解析器是有问题的，问题的根源就在当我们build
+tokenizer时，1-255的ASCII码的编码是以&lt;0x9F&gt;这种格式作为字符串处理的，输出就会导致：</p>
+<pre class="line-numbers language-none"><code class="language-none">Expected equality of these values:
+  out_text
+    Which is: "\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;\xE5\x90\x91\xE4\xBA\x86&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;\xE6\x97\xA0&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;\xE7\x9A\x84\xE5\xAE\x87&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "
+    As Text: "汉武帝&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;向了&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;无&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;的宇&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "
+  gt_out_text
+    Which is: "\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D\xE9\xA3\x9E\xF0\x9F\x9A\x80\xE5\x90\x91\xE4\xBA\x86\xE6\xB5\xA9\xE7\x80\x9A\xE6\x97\xA0\xE7\xA9\xB7\xE7\x9A\x84\xE5\xAE\x87\xE5\xAE\x99 \xF0\x9F\x98\x8D \xF0\x9F\xA6\x84 \xF0\x9F\x90\x89   "
+    As Text: "汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   "<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>为了解决这个问题，我们需要将字符串&lt;0x9F&gt;做一个转换。这就用到了我们之前提到的<code>byte_pieces</code>。这里其实做的就是把&lt;0x9F&gt;转化为0x9F。</p>
+<p>因此修正后的实现如下：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// decoding is a reverse process compared with encoding</span>
+    <span class="token keyword">bool</span> first_token <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            std<span class="token double-colon punctuation">::</span>cerr <span class="token operator">&lt;&lt;</span> <span class="token string">"cannot find token "</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        std<span class="token double-colon punctuation">::</span>string piece <span class="token operator">=</span> it<span class="token operator">-&gt;</span>second<span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>first_token <span class="token operator">&amp;&amp;</span> piece<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">' '</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            piece <span class="token operator">=</span> piece<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        first_token <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">unsigned</span> <span class="token keyword">char</span> byte_val<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">sscanf</span><span class="token punctuation">(</span>piece<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">"&lt;0x%02hhX&gt;"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_val<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            piece <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span>byte_pieces_ <span class="token operator">+</span> byte_val <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        text <span class="token operator">+=</span> piece<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 style="color: #8a6c51;">
+Optimization
+</h3>
+<p>至此，naive版本的Tokenizer实现完成。很自然的，相比较一下自己实现的算法效率和sentencepiece实现的效率有多少差距。因此我们可以模拟生成一个很长的text，输入给不同的tokenizer实现中，测试执行的时间。</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token comment">// performance test</span>
+std<span class="token double-colon punctuation">::</span>string <span class="token function">make_long_text</span><span class="token punctuation">(</span>size_t repeat <span class="token operator">=</span> <span class="token number">1024</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string sample <span class="token operator">=</span> <span class="token string">"汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   [INST] Hello, 世界！🤔\r\n"</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>string out<span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> repeat<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> out <span class="token operator">+=</span> sample<span class="token punctuation">;</span>
+    <span class="token keyword">return</span> out<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">template</span><span class="token operator">&lt;</span><span class="token keyword">typename</span> <span class="token class-name">F</span><span class="token operator">&gt;</span>
+<span class="token keyword">double</span> <span class="token function">bench</span><span class="token punctuation">(</span>F func<span class="token punctuation">,</span> <span class="token keyword">int</span> rounds <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">double</span> best <span class="token operator">=</span> <span class="token number">1e30</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> rounds<span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> t0 <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span>chrono<span class="token double-colon punctuation">::</span>high_resolution_clock<span class="token double-colon punctuation">::</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> t1 <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span>chrono<span class="token double-colon punctuation">::</span>high_resolution_clock<span class="token double-colon punctuation">::</span><span class="token function">now</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">double</span> ms <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span>chrono<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">duration</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">double</span><span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>milli<span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>t1 <span class="token operator">-</span> t0<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">count</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>ms <span class="token operator">&lt;</span> best<span class="token punctuation">)</span> best <span class="token operator">=</span> ms<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">return</span> best<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token function">TEST</span><span class="token punctuation">(</span>BENCHMARK_TOKENIZER<span class="token punctuation">,</span> encode_decode_throughput<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PATH <span class="token operator">=</span> <span class="token string">"/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.bin"</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PATH <span class="token operator">=</span> <span class="token string">"/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.model"</span><span class="token punctuation">;</span>
+
+    LlamaTokenizer <span class="token function">llama_tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PATH<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ASSERT_TRUE</span><span class="token punctuation">(</span>llama_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PATH<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ASSERT_TRUE</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token function">make_long_text</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">,</span> spm_ids<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>string decoded<span class="token punctuation">,</span> spm_decoded<span class="token punctuation">;</span>
+
+    <span class="token comment">// Llama encode benchmark</span>
+    <span class="token keyword">double</span> llama_encode_times <span class="token operator">=</span> <span class="token function">bench</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        ids<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        llama_tokenizer<span class="token punctuation">.</span><span class="token function">encode_naive</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"llama encode naive best: "</span> <span class="token operator">&lt;&lt;</span> llama_encode_times <span class="token operator">&lt;&lt;</span> <span class="token string">" ms"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token comment">// SPM encode benchmark</span>
+    <span class="token keyword">double</span> spm_encode_time <span class="token operator">=</span> <span class="token function">bench</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        spm_ids<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> spm_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"spm encode best:   "</span> <span class="token operator">&lt;&lt;</span> spm_encode_time <span class="token operator">&lt;&lt;</span> <span class="token string">" ms"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token comment">// Decode</span>
+    <span class="token keyword">double</span> llama_decode_time <span class="token operator">=</span> <span class="token function">bench</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        decoded<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        llama_tokenizer<span class="token punctuation">.</span><span class="token function">decode</span><span class="token punctuation">(</span>ids<span class="token punctuation">,</span> decoded<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"llama decode best: "</span> <span class="token operator">&lt;&lt;</span> llama_decode_time <span class="token operator">&lt;&lt;</span> <span class="token string">" ms"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token keyword">double</span> spm_decode_time <span class="token operator">=</span> <span class="token function">bench</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        spm_decoded<span class="token punctuation">.</span><span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        spm_tokenizer<span class="token punctuation">.</span><span class="token function">decode</span><span class="token punctuation">(</span>spm_ids<span class="token punctuation">,</span> spm_decoded<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"spm decode best:   "</span> <span class="token operator">&lt;&lt;</span> spm_decode_time <span class="token operator">&lt;&lt;</span> <span class="token string">" ms"</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+
+    <span class="token comment">// 校验一致性</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> spm_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>decoded<span class="token punctuation">,</span> spm_decoded<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>测试结果：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">llama encode naive best<span class="token operator">:</span> <span class="token number">5387.24</span> ms
+spm encode best<span class="token operator">:</span>   <span class="token number">2.93758</span> ms
+llama decode best<span class="token operator">:</span> <span class="token number">1.091</span> ms
+spm decode best<span class="token operator">:</span>   <span class="token number">2.82479</span> ms<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>解码得益于提前构建好的哈希表，比sentencepiece的实现要快一倍。但是编码部分一言难尽，慢了2500倍。可见这里的优化还是有很大空间的。</p>
+<p>那我们实现的代码慢在哪里呢？我最先想到的是代码中涉及到大量string的创建和销毁，相比于采用char字节的方式，对象的构建还是比较耗时的，为此我修改了string的逻辑，但发现收效甚微，编码仍然维持在5300ms左右。可见这不是主要的瓶颈。</p>
+<p>分析代码，encode包含主要两个部分，UTF-8编码部分和BPE合并部分。我分别对这两部分的代码做了时间统计，发现BPE合并部分的代码耗时占据总体编码耗时的98%。所以问题显而易见，我们实现的合并代码时间复杂度太高了。引用<a target="_blank" rel="noopener" href="https://www.zhihu.com/tardis/zm/art/717576337?source_id=1003">这篇博客</a>的分析，我们实现的代码实现复杂度为<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="6.606ex" height="2.452ex" role="img" focusable="false" viewBox="0 -833.9 2919.8 1083.9"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path></g><g data-mml-node="mo" transform="translate(763,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="msup" transform="translate(1152,0)"><g data-mml-node="mi"><path data-c="1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path></g><g data-mml-node="mn" transform="translate(975.3,363) scale(0.707)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g></g><g data-mml-node="mo" transform="translate(2530.8,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g></g></g></svg></mjx-container></span>，即每一次合并都需要遍历一边token序列，设token序列的长度为N，最坏可能需要遍历N-1次，同时删除元素时
+<code>std::vector::erase</code> 还会触发整段内存移动。</p>
+<p>为了优化这部分逻辑，可以采用双向链表结构配合最大堆（<code>std::priority_queue</code>）。通过维护
+<code>prev</code> 和 <code>next</code>数组模拟链表结构，删除 token
+仅需更新索引，而不再触发内存搬移。与此同时，把所有可合并的 token
+对及其分数一次性压入堆中，保证堆顶始终是当前分数最高的候选对。</p>
+<p>合并过程由此简化为：从堆顶弹出一对 → 检查是否仍然有效 →
+若有效则执行合并、更新 alive 状态 →
+仅对合并点左右两条新邻接边重新计算分数并入堆。由于我们采用 <em>lazy
+deletion</em>
+策略（即节点失活后不立即删除堆中对应记录，而是在使用时再验证），因此
+<code>pop</code> 出来的记录可能早已失效，需要做有效性检查。</p>
+<p>举个例子：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">初始序列<span class="token operator">:</span> a b c d
+初始堆<span class="token operator">:</span>   <span class="token punctuation">(</span>a<span class="token punctuation">,</span>b<span class="token punctuation">,</span><span class="token number">0.9</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span><span class="token number">0.8</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span><span class="token number">0.7</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>第一轮合并 (a,b) 得到 ab：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">序列<span class="token operator">:</span> ab c d
+堆中仍有<span class="token operator">:</span> <span class="token punctuation">(</span>b<span class="token punctuation">,</span>c<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>c<span class="token punctuation">,</span>d<span class="token punctuation">)</span>，但 <span class="token punctuation">(</span>b<span class="token punctuation">,</span>c<span class="token punctuation">)</span> 的左边 b 已不再有效<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>当我们再次 <code>pop</code> 出 (b,c) 时，发现 b
+已经不存在，因此这条记录无效，直接跳过。接下来 <code>pop</code> 出
+(c,d)，如果 c 和 d 仍然“活着”，则可以继续合并。</p>
+<p>这种懒惰删除策略避免了在每一次合并时都同步更新堆内容的额外成本，在时间复杂度上维持在
+O(N log N)，实现上也更加简洁。</p>
+<p>不过，还有一种更隐蔽的问题也必须处理：即 left/right
+虽然都还活着，但拼接后的新 token 实际对应的 ID
+与当前堆记录中保存的不一致。举个例子：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">词表<span class="token operator">:</span> <span class="token string">"ab"</span>→<span class="token number">20</span><span class="token punctuation">,</span> <span class="token string">"bc"</span>→<span class="token number">30</span><span class="token punctuation">,</span> <span class="token string">"abc"</span>→<span class="token number">50</span>
+初始序列<span class="token operator">:</span> a b c
+堆中记录<span class="token operator">:</span> <span class="token punctuation">(</span>a<span class="token punctuation">,</span>b<span class="token punctuation">)</span>→<span class="token number">20</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>b<span class="token punctuation">,</span>c<span class="token punctuation">)</span>→<span class="token number">30</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>合并 (a,b) 得到 ab，序列变成 ab c。此时再处理 (b,c) 时，left 实际指向
+"ab"，right 仍是 "c"，拼接后是 "abc"，在词表中对应的是
+50，而不是原先记录的 30：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">chk <span class="token operator">=</span> <span class="token function">vocab_encoder_</span><span class="token punctuation">(</span><span class="token string">"ab"</span><span class="token operator">+</span><span class="token string">"c"</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">50</span>
+m<span class="token punctuation">.</span>merged_token_id           <span class="token operator">=</span> <span class="token number">30</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>由于 50 ≠ 30，这说明这条记录也是“过期”的，应跳过不处理。</p>
+<p>所以我们的检查逻辑是：如果当前记录对应的 pair
+拼接后查不到，或查到了但 token ID
+和堆里存的不一致，就认为这条记录已无效：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">if</span> <span class="token punctuation">(</span>chk <span class="token operator">==</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> chk<span class="token operator">-&gt;</span>second <span class="token operator">!=</span> m<span class="token punctuation">.</span>merged_token_id<span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>最后优化后的代码为：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">encode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token operator">&amp;</span>ids<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// we have vocab_encoder_ and vocab_decoder_ now</span>
+    <span class="token comment">// given the input text, we need first split every text into single string and try to find the first round of token ids</span>
+
+    <span class="token comment">// character like '汉' need use at least three bytes to encode, follow the UTF8 coding rule</span>
+    <span class="token comment">// Code point ↔ UTF-8 conversion</span>
+    <span class="token comment">// First code point	Last code point	Byte 1	Byte 2	Byte 3	Byte 4</span>
+    <span class="token comment">// U+0000	U+007F	    0xxxxxxx</span>
+    <span class="token comment">// U+0080	U+07FF	    110xxxxx	10xxxxxx</span>
+    <span class="token comment">// U+0800	U+FFFF	    1110xxxx	10xxxxxx	10xxxxxx</span>
+    <span class="token comment">// U+10000	U+10FFFF    11110xxx	10xxxxxx	10xxxxxx	10xxxxxx</span>
+    <span class="token comment">// so here we actually perform a simple aggregation of bytes into UTF8, and then query the encoder to get token id</span>
+    <span class="token comment">// 0x80 -&gt; 1000 0000</span>
+    <span class="token comment">// 0xC0 -&gt; 1100 0000</span>
+    std<span class="token double-colon punctuation">::</span>string buf<span class="token punctuation">;</span>
+    buf<span class="token punctuation">.</span><span class="token function">resize</span><span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    size_t ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    
+    <span class="token comment">// add_dummy_prefix is true by default</span>
+    <span class="token comment">// so prepend a dummy prefix token to the input string, but only if text != ""</span>
+    <span class="token comment">// TODO: pretty sure this isn't correct in the general case but I don't have the</span>
+    <span class="token comment">// energy to read more of the sentencepiece code to figure out what it's doing</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>text<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span><span class="token operator">*</span> c <span class="token operator">=</span> text<span class="token punctuation">.</span><span class="token function">c_str</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">*</span>c <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span> c<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// as can be seen in UTF-8 table, a byte start with 10..... means coninuation byte of the code points</span>
+        <span class="token comment">// a byte start with 0..... is ASCII</span>
+        <span class="token comment">// a byte start with 11..... is begining byte of the code points</span>
+        <span class="token comment">// so we can perform &amp; to filter</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">*</span>c <span class="token operator">&amp;</span> <span class="token number">0xC0</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0x80</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">// this means *c contains a byte that is none coninuation byte</span>
+            <span class="token comment">// so we reset ptr to 0</span>
+            ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        buf<span class="token punctuation">[</span>ptr<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">*</span>c<span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span>c<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">0xC0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0x80</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        std<span class="token double-colon punctuation">::</span>string <span class="token function">codepoint</span><span class="token punctuation">(</span>buf<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> ptr<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// now we get the codepoint data</span>
+
+        <span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>codepoint<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">==</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">// can find, byte fall back</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ptr<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span><span class="token punctuation">)</span>buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">+</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+            ids<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        ptr <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    heap_ <span class="token operator">=</span> std<span class="token double-colon punctuation">::</span><span class="token generic-function"><span class="token function">priority_queue</span><span class="token generic class-name"><span class="token operator">&lt;</span>Merge<span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// ----- efficient BPE merge using doubly‑linked index lists -----</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> <span class="token function">prev</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token function">next</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        prev<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>i <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">:</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>i <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        next<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">?</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>i <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">:</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">char</span><span class="token operator">&gt;</span> <span class="token function">alive</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">auto</span> enqueue_pair <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token operator">&amp;</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token keyword">int</span> left<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">int</span> right <span class="token operator">=</span> next<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> it1 <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> it2 <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it1 <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> it2 <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> mit <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>it1<span class="token operator">-&gt;</span>second <span class="token operator">+</span> it2<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>mit <span class="token operator">==</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+        heap_<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>Merge<span class="token punctuation">{</span>scores_<span class="token punctuation">[</span>mit<span class="token operator">-&gt;</span>second<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span>size_t<span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>left<span class="token punctuation">)</span><span class="token punctuation">,</span> mit<span class="token operator">-&gt;</span>second<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// initial heap fill</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">enqueue_pair</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span>heap_<span class="token punctuation">.</span><span class="token function">empty</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">auto</span> m <span class="token operator">=</span> heap_<span class="token punctuation">.</span><span class="token function">top</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        heap_<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> left <span class="token operator">=</span> <span class="token generic-function"><span class="token function">static_cast</span><span class="token generic class-name"><span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">(</span>m<span class="token punctuation">.</span>pos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> right <span class="token operator">=</span> next<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>right <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">||</span> <span class="token operator">!</span>alive<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token operator">!</span>alive<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// verify pair still valid</span>
+        <span class="token keyword">auto</span> it1 <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> it2 <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>it1 <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> it2 <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+        <span class="token keyword">auto</span> chk <span class="token operator">=</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>it1<span class="token operator">-&gt;</span>second <span class="token operator">+</span> it2<span class="token operator">-&gt;</span>second<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>chk <span class="token operator">==</span> vocab_encoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> chk<span class="token operator">-&gt;</span>second <span class="token operator">!=</span> m<span class="token punctuation">.</span>merged_token_id<span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// merge</span>
+        ids<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">=</span> m<span class="token punctuation">.</span>merged_token_id<span class="token punctuation">;</span>
+        alive<span class="token punctuation">[</span>right<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// relink neighbors</span>
+        <span class="token keyword">int</span> nr <span class="token operator">=</span> next<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        next<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">=</span> nr<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>nr <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> prev<span class="token punctuation">[</span>nr<span class="token punctuation">]</span> <span class="token operator">=</span> left<span class="token punctuation">;</span>
+
+        <span class="token comment">// enqueue affected neighbor pairs</span>
+        <span class="token function">enqueue_pair</span><span class="token punctuation">(</span>left<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>prev<span class="token punctuation">[</span>left<span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token function">enqueue_pair</span><span class="token punctuation">(</span>prev<span class="token punctuation">[</span>left<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment">// compact surviving tokens</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> compact<span class="token punctuation">;</span>
+    compact<span class="token punctuation">.</span><span class="token function">reserve</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>alive<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> compact<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ids<span class="token punctuation">.</span><span class="token function">swap</span><span class="token punctuation">(</span>compact<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>benchmark测试结果：</p>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">llama encode naive best<span class="token operator">:</span> <span class="token number">5387.24</span> ms
+llama encode best<span class="token operator">:</span> <span class="token number">12.2617</span> ms
+spm encode best<span class="token operator">:</span>   <span class="token number">2.93758</span> ms
+llama decode best<span class="token operator">:</span> <span class="token number">1.091</span> ms
+spm decode best<span class="token operator">:</span>   <span class="token number">2.82479</span> ms<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>可见速度提升了400多倍。但速度和spm的实现仍然有差距，这涉及到很多细节上的优化点。由于本篇重点在于tokenizer的理解以及工程上主要的优化实现，并不追求极致的性能，目前还未考虑其余的可能性，留给后续学习。</p>
+
+  </div>
+
+</article>
+  </div>
+  <div class="right-content">
+    <div id="toc" class="toc-wrapper"></div>
+  <div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+     
+  <button id="scroll-to-top" class="btn btn-top" aria-label="Scroll To Top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+ 
+
+  </main>
+
+  <div class="footer-wrapper">
+  <div class="left-content"></div>
+  <div class="right-content">
+    <div>Copyright &copy;2025</div>
+    <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
+  </div>
+</div>
+
+  <div id="searchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Search</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-wrapper">
+          <i class="fas fa-search"></i>
+          <input id="search" class="search-input" type="text" placeholder="Input content to search..." />
+        </div>
+        <ul id="result" class="search-list-group result-wrapper">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
+
+
+<script src="/js/prism.js"></script>
+
+
+
+  
+<script src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css">
+
+  
+<script src="/js/nprogress.js"></script>
+
+
+
+ 
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+
+  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+
+ 
+
+
+<script src="/js/event.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+<script src="/js/plugin.js"></script>
+
+
+
+</body>
+
+</html>

@@ -199,6 +199,14 @@ mjx-container[display="true"] + br {
     
   
     
+  
+    
+  
+    
+  
+    
+  
+    
       
 
 <div class="about-wrapper">
@@ -243,14 +251,6 @@ mjx-container[display="true"] + br {
 
     
   
-    
-  
-    
-  
-    
-  
-    
-  
   <br>
   <br>
   <br>
@@ -263,6 +263,74 @@ mjx-container[display="true"] + br {
   <br>
   <br>
   
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2023/08/05/ConcurrencyControl/" target="_self">
+            <h3>CMU 15-445 Concurrency Control</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+Project 4需要我们为bustub添加并发事务的控制和支持。同Project
+1的Buffer Pool
+Manager一样，这里采用的是集中化的控制思路，即抽象出一个管理层——Lock
+Manager（LM）。当不同事务产生获取锁的需求时，统一向LM提出请求，LM负责处理锁冲突、授权获取、释放以及事务级别等等逻辑。Task
+1先实现了Lock Manager，Task 2为LM添加了死锁...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-08-05 12:33" pubdate>
+            2023-08-05
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Database-Management-System/">Database Management System</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2023/08/02/critical-thinking-01/" target="_self">
+            <h3>Critical Thinking Tool - Self-understanding</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+思维（Mind），是我们时时刻刻在使用的东西。大多数人的一生，都没有办法显式的意识到它的存在，或者透彻的理解和熟练的驾驭它，当然包括我自己。对于我个人来说，由于初高中时代的个人学习经历以及学习计算机技术时培养的习惯，对于自己感兴趣的东西是十分想透彻的理解它内部运行的逻辑的。当阅读一些源代码或者使用一些工具，难免会想知道：这个现象怎么来的？它背后有哪些机制支持了它？Under
+the
+hood，整...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-08-02 20:31" pubdate>
+            2023-08-02
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
   
     <article class="row index-post-wrapper">
       
@@ -361,73 +429,6 @@ Tree），并与DBMS内部的数据结构相对应（通过binder）然后进行
             
                
                 <a class="tag" href="/tags/Database-Management-System/">Database Management System</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/06/23/cast-in-cpp/" target="_self">
-            <h3>Cast Operation in C++</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Introduction
-
-在用C++写一些Lab和项目的时候，涉及到cast在C++里的应用。发现自己并不熟悉这些东西，于是也仅仅在阅读一些博客后草草了事，没有很深的记忆。但是过一段时间之后，又全部都忘记了，所以想写一个博客来记录一下加深自己的理解。
-
-C++是一种强类型语言，当需要把一个变量按照使用需求转化为另一个变量的时候，就需要用到类型转换。C++提供了四种类型转换的方法：
-
-static...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-23 09:41" pubdate>
-            2023-06-23
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/C/">C++</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/06/13/BatchNorm-LayerNorm/" target="_self">
-            <h3>BatchNorm｜LayerNorm｜RMSNorm</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-13 17:06" pubdate>
-            2023-06-13
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Deep-Learning-Optimization/">Deep Learning Optimization</a>
                
             
           </div>

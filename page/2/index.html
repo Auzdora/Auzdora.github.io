@@ -199,6 +199,14 @@ mjx-container[display="true"] + br {
     
   
     
+  
+    
+  
+    
+  
+    
+  
+    
       
 
 <div class="about-wrapper">
@@ -243,14 +251,6 @@ mjx-container[display="true"] + br {
 
     
   
-    
-  
-    
-  
-    
-  
-    
-  
   <br>
   <br>
   <br>
@@ -263,6 +263,74 @@ mjx-container[display="true"] + br {
   <br>
   <br>
   
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2024/05/10/leveldb-memory/" target="_self">
+            <h3>Understanding LevelDB Memory Management</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Intro
+这篇文章是我自己通过阅读LevelDB的源代码，有关LevelDB内存管理方案的总结。分为主要的三个部分。第一部分是LevelDB的内存池的实现；第二部分是内存数据库—跳表的实现；第三部分是缓存系统的实现。
+
+Memory pool
+LevelDB的内存池实现在arena.cc以及arena.h中。内存池是池化技术的一种，池化技术的核心内涵是：将程序中需要经常使用的资源预先申请出来，放...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-05-10 14:44" pubdate>
+            2024-05-10
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a href="/2024/04/22/leveldb-iterator/" target="_self">
+            <h3>Understanding LevelDB Iterator</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Intro
+Understanding Iterators
+Before diving into the specifics of LevelDB, let's clarify what an
+iterator is in the context of programming. An iterator is an object that
+enables users to traverse a co...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-04-22 11:15" pubdate>
+            2024-04-22
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
   
     <article class="row index-post-wrapper">
       
@@ -369,73 +437,6 @@ Fil...
             
                
                 <a class="tag" href="/tags/OS/">OS</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/11/17/Time-in-Distributed-System/" target="_self">
-            <h3>分布式系统-时间以及全局状态</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            此博客是对自己学习的总结，有些部分并非原创，具体参考会在最后的reference部分给出。
-What is Time
-什么是时间呢？在我们日常生活中时时刻刻离不开的就是时间这一个概念。但实际上，时间就是帮助人们理清事物发生顺序和先后关系的一个标记，有了时间，我们就知道谁先发生、谁后发生。谁对谁产生了影响。我们可以知道此时该干什么事，知道之前吃饭到这次吃饭间隔了多久等等。可以发现，时间和事件发生顺序...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-11-17 21:02" pubdate>
-            2023-11-17
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Distributed-System/">Distributed System</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/09/11/bustub-primer-2023-fall/" target="_self">
-            <h3>CMU-Bustub 2023-Fall Project 0</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-之前做完了2022
-fall的数据库实现课程。从只会std::cout的c++到整个project完成，了解了很多c++尤其是c++11的特性和STL的用法、选取等。整个过程还是学到了很多有用的知识，无论从语言知识还是系统设计。但之前的实现已经有很多人做过了，并且网上有很多博客记录，时不时看到会给我的实现思路造成一个限制。因此今年想一直跟着这门课推进project，踩一踩坑。
-
-Intro
-这个...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-09-11 16:19" pubdate>
-            2023-09-11
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Database-Management-System/">Database Management System</a>
                
             
           </div>

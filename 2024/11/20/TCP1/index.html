@@ -229,7 +229,7 @@ side作为消费者，从stream中读取数据。</p>
 <p align="center">
 <img src="tcp1.png" width="550">
 </p>
-<blockquote class="callout yellow">
+<blockquote class="callout yellow" style="padding: 10px;">
 Why am I doing
 this？TCP对重排序和重复的鲁棒性来源于其将字节流的任意片段重新拼接回原始流的能力。将此功能实现为一个离散的可测试模块，将使处理接收的数据段更加容易。
 </blockquote>

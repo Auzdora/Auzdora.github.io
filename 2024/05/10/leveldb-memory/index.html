@@ -224,7 +224,7 @@ mjx-container[display="true"] + br {
 <li>内存池可以减少内存碎片，增加内存资源的利用率。</li>
 </ul>
 <p>LevelDB的内存池抽象设计十分简单，在arena的整个生命周期内，只负责内存申请分配，不负责内存的释放。具体的原因我认为有两点：</p>
-<blockquote class="callout green">
+<blockquote class="callout green" style="padding: 10px;">
 <ul>
 <li>第一个是简化设计。如果要考虑内存的释放，内存池的设计必定比现在复杂很多。这里指的是实现复杂度，因为从时间来看，在内存池中释放内存并不需要真正的调用free，只需要移动对应的指针即可。但是会引入很多管理的逻辑，造成维护难度和实现难度增大。</li>
 <li>第二个是我个人的思考，从LevelDB的设计出发，arena的生命周期是由memtable控制的。一个memtable拥有一个arena。观察memtable的实现，只涉及Add和Get操作。如果要从当前的memtable中删除某个entry，由于LevelDB并不需要真正的删除数据，删除也相当于在memtable插入一个delete的操作（插入的内存），因此这种操作根本不涉及内存的释放，也不可以释放（会丢失数据）。只有当memtable满了，可以进行compact操作之后，才能释放内存。（仅仅是我个人根据代码的分析，欢迎大佬们一起讨论交流）</li>
