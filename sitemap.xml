@@ -363,6 +363,13 @@
   </url>
   
   <url>
+    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
+    <lastmod>2025-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/tags/OS/</loc>
     <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -371,13 +378,6 @@
   
   <url>
     <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
-    <lastmod>2025-05-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://auzdora.github.io/tags/Life-Blog/</loc>
     <lastmod>2025-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

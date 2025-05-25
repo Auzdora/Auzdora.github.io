@@ -709,60 +709,60 @@ tokenizer执行结果进行比对。在调试中逐步完善实现以及加深�
 <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p><code>decode</code>的代码就很直观，直接查询vocab
 decoder然后输出对应的text拼接起来即可。</p>
-<pre class="line-numbers language-none"><code class="language-none">void LlamaTokenizer::decode(const std::vector&lt;int&gt;&amp; ids, std::string&amp; text) {
-// decoding is a reverse process compared with encoding
-	for (size_t i = 0; i &lt; ids.size(); i++) {
-		auto it = vocab_decoder_.find(ids[i]);
-		if (it == vocab_decoder_.end()) {
-			std::cerr &lt;&lt; "cannot find token " &lt;&lt; std::endl;
-			continue;
-		}
-		if (it-&gt;second[0] == ' ') {
-			text += it-&gt;second.substr(1);
-		} else {
-			text += it-&gt;second;
-		}
-   }
-}<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token comment">// decoding is a reverse process compared with encoding</span>
+	<span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">auto</span> it <span class="token operator">=</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>it <span class="token operator">==</span> vocab_decoder_<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			std<span class="token double-colon punctuation">::</span>cerr <span class="token operator">&lt;&lt;</span> <span class="token string">"cannot find token "</span> <span class="token operator">&lt;&lt;</span> std<span class="token double-colon punctuation">::</span>endl<span class="token punctuation">;</span>
+			<span class="token keyword">continue</span><span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>it<span class="token operator">-&gt;</span>second<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">' '</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			text <span class="token operator">+=</span> it<span class="token operator">-&gt;</span>second<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+			text <span class="token operator">+=</span> it<span class="token operator">-&gt;</span>second<span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+   <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>但是这个代码会有一个问题，比如如下的测试中：</p>
-<pre class="line-numbers language-none"><code class="language-none">TEST(DECODE_TEST, chinese_emoji_token_test) {
-    std::string TOKENIZER_MODEL_PAHT = "/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.bin";
-    llama::LlamaTokenizer tokenizer(TOKENIZER_MODEL_PAHT, 32000);
-    EXPECT_EQ(tokenizer.load(), true);
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token function">TEST</span><span class="token punctuation">(</span>DECODE_TEST<span class="token punctuation">,</span> chinese_emoji_token_test<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    std<span class="token double-colon punctuation">::</span>string TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.bin"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>LlamaTokenizer <span class="token function">tokenizer</span><span class="token punctuation">(</span>TOKENIZER_MODEL_PAHT<span class="token punctuation">,</span> <span class="token number">32000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    // load sentencepiece tokenizer as ground truth
-    std::string SPM_TOKENIZER_MODEL_PAHT = "/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.model";
-    llama::SentencePieceTokenizer spm_tokenizer(SPM_TOKENIZER_MODEL_PAHT);
-    EXPECT_EQ(spm_tokenizer.load(), true);
+    <span class="token comment">// load sentencepiece tokenizer as ground truth</span>
+    std<span class="token double-colon punctuation">::</span>string SPM_TOKENIZER_MODEL_PAHT <span class="token operator">=</span> <span class="token string">"/Users/drcooper/Developer/LLM/MiniLlama/tools/tokenizer.model"</span><span class="token punctuation">;</span>
+    llama<span class="token double-colon punctuation">::</span>SentencePieceTokenizer <span class="token function">spm_tokenizer</span><span class="token punctuation">(</span>SPM_TOKENIZER_MODEL_PAHT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>spm_tokenizer<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    std::string text = "汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   ";
-    std::vector&lt;int&gt; ids;
-    tokenizer.encode(text, ids);
+    std<span class="token double-colon punctuation">::</span>string text <span class="token operator">=</span> <span class="token string">"汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   "</span><span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> ids<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    std::vector&lt;int&gt; gt_ids;
-    spm_tokenizer.encode(text, gt_ids);
+    std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> gt_ids<span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>text<span class="token punctuation">,</span> gt_ids<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    EXPECT_EQ(ids.size(), gt_ids.size());
-    for (size_t i = 0; i &lt; ids.size(); i++) {
-        EXPECT_EQ(ids[i], gt_ids[i]);
-    }
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>size_t i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> ids<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> gt_ids<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
 
-    std::string out_text;
-    std::string gt_out_text;
-    tokenizer.decode(ids, out_text);
-    spm_tokenizer.decode(gt_ids, gt_out_text);
+    std<span class="token double-colon punctuation">::</span>string out_text<span class="token punctuation">;</span>
+    std<span class="token double-colon punctuation">::</span>string gt_out_text<span class="token punctuation">;</span>
+    tokenizer<span class="token punctuation">.</span><span class="token function">decode</span><span class="token punctuation">(</span>ids<span class="token punctuation">,</span> out_text<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    spm_tokenizer<span class="token punctuation">.</span><span class="token function">decode</span><span class="token punctuation">(</span>gt_ids<span class="token punctuation">,</span> gt_out_text<span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    EXPECT_EQ(out_text, gt_out_text);
-}<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <span class="token function">EXPECT_EQ</span><span class="token punctuation">(</span>out_text<span class="token punctuation">,</span> gt_out_text<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>此时我们自己写好的解析器是有问题的，问题的根源就在当我们build
 tokenizer时，1-255的ASCII码的编码是以&lt;0x9F&gt;这种格式作为字符串处理的，输出就会导致：</p>
-<pre class="line-numbers language-none"><code class="language-none">Expected equality of these values:
+<pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp">Expected equality of these values<span class="token operator">:</span>
   out_text
-    Which is: "\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;\xE5\x90\x91\xE4\xBA\x86&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;\xE6\x97\xA0&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;\xE7\x9A\x84\xE5\xAE\x87&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "
-    As Text: "汉武帝&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;向了&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;无&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;的宇&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "
+    Which is<span class="token operator">:</span> <span class="token string">"\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;\xE5\x90\x91\xE4\xBA\x86&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;\xE6\x97\xA0&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;\xE7\x9A\x84\xE5\xAE\x87&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "</span>
+    As Text<span class="token operator">:</span> <span class="token string">"汉武帝&lt;0xE9&gt;&lt;0xA3&gt;&lt;0x9E&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x9A&gt;&lt;0x80&gt;向了&lt;0xE6&gt;&lt;0xB5&gt;&lt;0xA9&gt;&lt;0xE7&gt;&lt;0x80&gt;&lt;0x9A&gt;无&lt;0xE7&gt;&lt;0xA9&gt;&lt;0xB7&gt;的宇&lt;0xE5&gt;&lt;0xAE&gt;&lt;0x99&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x98&gt;&lt;0x8D&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0xA6&gt;&lt;0x84&gt;&lt;0xF0&gt;&lt;0x9F&gt;&lt;0x90&gt;&lt;0x89&gt;  "</span>
   gt_out_text
-    Which is: "\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D\xE9\xA3\x9E\xF0\x9F\x9A\x80\xE5\x90\x91\xE4\xBA\x86\xE6\xB5\xA9\xE7\x80\x9A\xE6\x97\xA0\xE7\xA9\xB7\xE7\x9A\x84\xE5\xAE\x87\xE5\xAE\x99 \xF0\x9F\x98\x8D \xF0\x9F\xA6\x84 \xF0\x9F\x90\x89   "
-    As Text: "汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   "<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    Which is<span class="token operator">:</span> <span class="token string">"\xE6\xB1\x89\xE6\xAD\xA6\xE5\xB8\x9D\xE9\xA3\x9E\xF0\x9F\x9A\x80\xE5\x90\x91\xE4\xBA\x86\xE6\xB5\xA9\xE7\x80\x9A\xE6\x97\xA0\xE7\xA9\xB7\xE7\x9A\x84\xE5\xAE\x87\xE5\xAE\x99 \xF0\x9F\x98\x8D \xF0\x9F\xA6\x84 \xF0\x9F\x90\x89   "</span>
+    As Text<span class="token operator">:</span> <span class="token string">"汉武帝飞🚀向了浩瀚无穷的宇宙 😍 🦄 🐉   "</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>为了解决这个问题，我们需要将字符串&lt;0x9F&gt;做一个转换。这就用到了我们之前提到的<code>byte_pieces</code>。这里其实做的就是把&lt;0x9F&gt;转化为0x9F。</p>
 <p>因此修正后的实现如下：</p>
 <pre class="line-numbers language-cpp" data-language="cpp"><code class="language-cpp"><span class="token keyword">void</span> <span class="token class-name">LlamaTokenizer</span><span class="token double-colon punctuation">::</span><span class="token function">decode</span><span class="token punctuation">(</span><span class="token keyword">const</span> std<span class="token double-colon punctuation">::</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> ids<span class="token punctuation">,</span> std<span class="token double-colon punctuation">::</span>string<span class="token operator">&amp;</span> text<span class="token punctuation">)</span> <span class="token punctuation">{</span>
