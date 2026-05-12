@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>MapReduce Implementation - Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 
@@ -33,7 +43,7 @@
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -48,11 +58,15 @@
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -63,6 +77,12 @@
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -87,19 +107,20 @@
     MapReduce Implementation
   </h2>
   <div class="post-meta">
-    <time datetime="Invalid date Invalid date ">2024-06-01</time>
     
     
-       
     
+    <span class="post-meta-item">Tech</span>
     
-      
-        <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a> 
-       
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-item">Distributed Systems</span>
+    
+    <span class="post-meta-sep">·</span>
+    <time class="post-meta-item" datetime="June 1, 2024 22:00:24">June 1, 2024</time>
     
     
   </div>
-  
+
   <div id="content">
     <h3 id="introduction">Introduction</h3>
 <p>Google的研发人员在过去处理大数据任务时，经常需要手写实现很多不同的拥有特定功能的程序，比如爬去文档、网络日志等等。这些任务经常需要将任务分布到很多台计算机处理，以提升处理的性能和速度；但在这个前提下，如何实现并行、分布数据、处理异常机器和失败的任务、保证系统正确运行是一个较为复杂和综合性的问题。</p>
@@ -624,6 +645,7 @@ failure时，已经完成的任务需要重新执行（标记为idle，因为这
   </div>
 
 </article>
+
   </div>
   <div class="right-content">
     <div id="toc" class="toc-wrapper"></div>
@@ -647,7 +669,7 @@ failure时，已经完成的任务需要重新执行（标记为idle，因为这
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -710,6 +732,10 @@ failure时，已经完成的任务需要重新执行（标记为idle，因为这
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

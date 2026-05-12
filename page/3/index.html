@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
@@ -145,7 +155,7 @@ mjx-container[display="true"] + br {
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -160,11 +170,15 @@ mjx-container[display="true"] + br {
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -175,6 +189,12 @@ mjx-container[display="true"] + br {
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -195,20 +215,18 @@ mjx-container[display="true"] + br {
             <div class="index-wrapper">
   
     
-  
-    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/dog.jpeg" />
+        <img src="/img/blue.jpeg" />
       </div>
     
     <div class="col title-wrapper">
-      <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love Coding & AI & Systems</div>
+      <div class="title">Auzdora</div>
+      <div class="sub-title">Think & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -251,24 +269,60 @@ mjx-container[display="true"] + br {
   
     
   
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
+    
   
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
   
     <article class="row index-post-wrapper">
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/11/17/Time-in-Distributed-System/" target="_self">
+          <a class="post-link" href="/2024/01/10/OS1/" target="_self">
+            <h3>xv6 Operating System — System calls</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Introduction
+操作系统的目标：
+
+第一个就是抽象硬件。通常来说，你会买一个计算机，里面包含了CPU，内存，但是这是一种非常低层级的资源。幸好我们有一些应用程序实现了高层级的接口和抽象，例如进程，文件系统。这些高层级的接口和抽象（Abstraction）方便了应用的开发，也提供了更好的移植性
+在多个应用程序之间共用硬件资源。你可以在一个操作系统同时运行文本编辑器，程序编译器，多个数据库等...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-01-10 21:16" pubdate>
+            January 10, 2024
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/OS/">OS</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2023/11/17/Time-in-Distributed-System/" target="_self">
             <h3>分布式系统-时间以及全局状态</h3>
           </a>
           
@@ -282,7 +336,7 @@ What is Time
         </div>
         <div class="post-footer">
           <time datetime="2023-11-17 21:02" pubdate>
-            2023-11-17
+            November 17, 2023
           </time>
           <div>
              
@@ -300,7 +354,7 @@ What is Time
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/09/11/bustub-primer-2023-fall/" target="_self">
+          <a class="post-link" href="/2023/09/11/bustub-primer-2023-fall/" target="_self">
             <h3>CMU-Bustub 2023-Fall Project 0</h3>
           </a>
           
@@ -317,13 +371,13 @@ Intro
         </div>
         <div class="post-footer">
           <time datetime="2023-09-11 16:19" pubdate>
-            2023-09-11
+            September 11, 2023
           </time>
           <div>
              
             
                
-                <a class="tag" href="/tags/Database-Management-System/">Database Management System</a>
+                <a class="tag" href="/tags/DB/">DB</a>
                
             
           </div>
@@ -335,27 +389,30 @@ Intro
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/09/03/wle-2023-0903/" target="_self">
-            <h3>Log Entry Sep 03</h3>
+          <a class="post-link" href="/2023/08/05/ConcurrencyControl/" target="_self">
+            <h3>CMU 15-445 Concurrency Control</h3>
           </a>
           
         </div>
         <div class="description">
           
-            Mindset
-最近一直在忙开学相关的事情。所以已经有一到两周没有写周报了，来了学校这边的精神状态从刚开始的郁闷到现在已经完全适应了。我个人在来到一个新环境之前和来到这里的一小段时间总会非常焦虑和抑郁，不适应感让我感到不安。不知道这是大多数人这样还是少部分人。我通常需要花一些时间来熟悉周围的环境，好在我适应速度比较快，一天多一点就和在上海没什么区别了。
-来到学校之后大部分时间放在了oceanbas...
+            
+Project 4需要我们为bustub添加并发事务的控制和支持。同Project
+1的Buffer Pool
+Manager一样，这里采用的是集中化的控制思路，即抽象出一个管理层——Lock
+Manager（LM）。当不同事务产生获取锁的需求时，统一向LM提出请求，LM负责处理锁冲突、授权获取、释放以及事务级别等等逻辑。Task
+1先实现了Lock Manager，Task 2为LM添加了死锁...
           
         </div>
         <div class="post-footer">
-          <time datetime="2023-09-03 19:54" pubdate>
-            2023-09-03
+          <time datetime="2023-08-05 12:33" pubdate>
+            August 5, 2023
           </time>
           <div>
              
             
                
-                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
+                <a class="tag" href="/tags/DB/">DB</a>
                
             
           </div>
@@ -367,64 +424,29 @@ Intro
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/08/20/wle-2023-0820/" target="_self">
-            <h3>Log Entry Aug 20</h3>
+          <a class="post-link" href="/2023/07/31/STL-priority-queue/" target="_self">
+            <h3>STL杂谈：priority_queue</h3>
           </a>
           
         </div>
         <div class="description">
           
-            Mindset
-这一周的情绪比上一周有了很大提高。逐渐将自己的思维重心放回到了程序上，比起上周的萎靡不振的状态，这周能更专注的坐下来解决代码设计问题和一些bug。
-但这一周是临近开学的前一周，夹杂着面对全新同学和全新环境的不适以及开学抵触情绪，导致我每天晚上并不能很快的睡着，通常需要睡眠曲或者一些公开课来助眠。
-对于思维层面的训练，这周并没有很大的提升。
-Fitness
-做了一次肩部训练。两次室外...
+            Intro
+优先队列和队列的区别在与“优先”的概念上。对于普通队列而言，遵循的是先进先出（FIFO）的驱逐原则。而优先队列是默认会驱逐队列中最大的元素，因为插入元素和驱逐元素是会始终保持队内有序。优先队列以对数时间复杂度的插入和提取为代价，提供了O(1)时间的提取最大元素的操作。
+priority_queue的定义为：
+template&lt;class T,
+				 class Contain...
           
         </div>
         <div class="post-footer">
-          <time datetime="2023-08-20 10:26" pubdate>
-            2023-08-20
+          <time datetime="2023-07-31 18:23" pubdate>
+            July 31, 2023
           </time>
           <div>
              
             
                
-                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/08/13/wle-2023-0813/" target="_self">
-            <h3>Log Entry Aug 13</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-尝试开始每周日记录和反思自己这一周的生活和思维。这里将会记录我自己的成长，碎碎念还有一些我认为值得记住的东西。
-
-Mindset
-这一周的情绪和状态进入了低谷期。应该是最近生活太不规律的缘故，导致每天早上起来经常萎靡不振。每天早上起来收拾好自己的状态做到电脑前，总会产生一股莫名烦躁的情绪，这种情绪来源于我对目前所做的事情的感觉，无意义感和迷茫感。这周最开始的一两天是情绪低迷的巅峰，以至于这样的消...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-08-13 17:31" pubdate>
-            2023-08-13
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
+                <a class="tag" href="/tags/C/">C++</a>
                
             
           </div>
@@ -437,7 +459,7 @@ Mindset
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+      <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
  -->
@@ -458,7 +480,7 @@ Mindset
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -521,6 +543,10 @@ Mindset
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

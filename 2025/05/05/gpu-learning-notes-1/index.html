@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>CUDA Basics - Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
@@ -145,7 +155,7 @@ mjx-container[display="true"] + br {
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -160,11 +170,15 @@ mjx-container[display="true"] + br {
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -175,6 +189,12 @@ mjx-container[display="true"] + br {
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -199,19 +219,20 @@ mjx-container[display="true"] + br {
     CUDA Basics
   </h2>
   <div class="post-meta">
-    <time datetime="Invalid date Invalid date ">2025-05-05</time>
     
     
-       
     
+    <span class="post-meta-item">Tech</span>
     
-      
-        <a class="tag" href="/tags/CUDA/">CUDA</a> 
-       
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-item">CUDA</span>
+    
+    <span class="post-meta-sep">·</span>
+    <time class="post-meta-item" datetime="May 5, 2025 23:26:17">May 5, 2025</time>
     
     
   </div>
-  
+
   <div id="content">
     <blockquote>
 <p>最近打算实现一个支持CPU/GPU后端计算的大模型推理框架，写GPU的算子需要一些CUDA编程的基础。虽然之前自己写过一个简单的类似Pytorch的基于Python前端，CUDA后端的AI训练框架，在当时学过一点CUDA，同时硕士期间也上过有关CUDA的课程，但由于都是几年前的知识，而且当时也没有即使做笔记记录，导致现在已经全部忘光了。这篇博客的主要目的就是记录一下有关GPU/CUDA的基础知识，方便之后快速复习。</p>
@@ -371,6 +392,7 @@ Reference
   </div>
 
 </article>
+
   </div>
   <div class="right-content">
     <div id="toc" class="toc-wrapper"></div>
@@ -394,7 +416,7 @@ Reference
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -457,6 +479,10 @@ Reference
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

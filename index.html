@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
@@ -145,7 +155,7 @@ mjx-container[display="true"] + br {
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -160,11 +170,15 @@ mjx-container[display="true"] + br {
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -175,6 +189,12 @@ mjx-container[display="true"] + br {
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -195,20 +215,18 @@ mjx-container[display="true"] + br {
             <div class="index-wrapper">
   
     
-  
-    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/dog.jpeg" />
+        <img src="/img/blue.jpeg" />
       </div>
     
     <div class="col title-wrapper">
-      <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love Coding & AI & Systems</div>
+      <div class="title">Auzdora</div>
+      <div class="sub-title">Think & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -251,24 +269,62 @@ mjx-container[display="true"] + br {
   
     
   
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
+    
   
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
   
     <article class="row index-post-wrapper">
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2025/05/05/gpu-learning-notes-1/" target="_self">
+          <a class="post-link" href="/2025/06/19/llm-infer/" target="_self">
+            <h3>关于LLM Infra的思考和总结</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+最近刷到一篇有关传统Infra和AI Infra之间联系的知乎文章，目前也在基架岗位实习，结合工作的内容以及自己目前关于LLM推理学习到的一些知识，触发了一些联想。想把这些不成熟的个人想法记录下来，也顺便作为一个学习的总结。
+
+
+What is Infra
+
+基础架构指的是支撑软件系统正常运行的一整套底层技术和资源，包括计算、存储、网络、操作系统、中间件等等。举一个例子，对于一个社会或者国家的运...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2025-06-19 21:20" pubdate>
+            June 19, 2025
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Large-Language-Models/">Large Language Models</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2025/05/05/gpu-learning-notes-1/" target="_self">
             <h3>CUDA Basics</h3>
           </a>
           
@@ -281,7 +337,7 @@ mjx-container[display="true"] + br {
         </div>
         <div class="post-footer">
           <time datetime="2025-05-05 23:26" pubdate>
-            2025-05-05
+            May 5, 2025
           </time>
           <div>
              
@@ -299,7 +355,7 @@ mjx-container[display="true"] + br {
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2025/03/10/tokenizer/" target="_self">
+          <a class="post-link" href="/2025/03/10/tokenizer/" target="_self">
             <h3>Build your own tokenizer in LLM</h3>
           </a>
           
@@ -313,13 +369,13 @@ Karpathy的视频"Let's build ...
         </div>
         <div class="post-footer">
           <time datetime="2025-03-10 15:19" pubdate>
-            2025-03-10
+            March 10, 2025
           </time>
           <div>
              
             
                
-                <a class="tag" href="/tags/LLM/">LLM</a>
+                <a class="tag" href="/tags/Large-Language-Models/">Large Language Models</a>
                
             
           </div>
@@ -331,7 +387,7 @@ Karpathy的视频"Let's build ...
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2025/01/02/TCP2/" target="_self">
+          <a class="post-link" href="/2025/01/02/TCP2/" target="_self">
             <h3>Networking TCP Reciever</h3>
           </a>
           
@@ -348,7 +404,7 @@ sender发送一个消息，通过send()方法。...
         </div>
         <div class="post-footer">
           <time datetime="2025-01-02 19:33" pubdate>
-            2025-01-02
+            January 2, 2025
           </time>
           <div>
              
@@ -366,7 +422,7 @@ sender发送一个消息，通过send()方法。...
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2024/11/20/TCP1/" target="_self">
+          <a class="post-link" href="/2024/11/20/TCP1/" target="_self">
             <h3>Networking Reassembler</h3>
           </a>
           
@@ -384,7 +440,7 @@ sender的角度讲，它会把字节流分割成segment...
         </div>
         <div class="post-footer">
           <time datetime="2024-11-20 12:11" pubdate>
-            2024-11-20
+            November 20, 2024
           </time>
           <div>
              
@@ -397,45 +453,13 @@ sender的角度讲，它会把字节流分割成segment...
         </div>
       </div>
     </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/06/01/mapreduce/" target="_self">
-            <h3>MapReduce Implementation</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Introduction
-Google的研发人员在过去处理大数据任务时，经常需要手写实现很多不同的拥有特定功能的程序，比如爬去文档、网络日志等等。这些任务经常需要将任务分布到很多台计算机处理，以提升处理的性能和速度；但在这个前提下，如何实现并行、分布数据、处理异常机器和失败的任务、保证系统正确运行是一个较为复杂和综合性的问题。
-为了解决这样的问题，Google的研发人员开发了一套系统——Mapre...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-06-01 22:00" pubdate>
-            2024-06-01
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
    
 </div>
 
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
  -->
@@ -456,7 +480,7 @@ Google的研发人员在过去处理大数据任务时，经常需要手写实�
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -519,6 +543,10 @@ Google的研发人员在过去处理大数据任务时，经常需要手写实�
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

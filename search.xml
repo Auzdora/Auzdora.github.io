@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>关于LLM Infra的思考和总结</title>
+      <link href="/2025/06/19/llm-infer/"/>
+      <url>/2025/06/19/llm-infer/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>最近刷到一篇有关传统Infra和AI Infra之间联系的<ahref="https://zhuanlan.zhihu.com/p/1916694074750132757">知乎文章</a>，目前也在基架岗位实习，结合工作的内容以及自己目前关于LLM推理学习到的一些知识，触发了一些联想。想把这些不成熟的个人想法记录下来，也顺便作为一个学习的总结。</p></blockquote><h3 style="color: #76B900;">What is Infra</h3><p>基础架构指的是支撑软件系统正常运行的一整套底层技术和资源，包括计算、存储、网络、操作系统、中间件等等。举一个例子，对于一个社会或者国家的运转，最重要的就是基础建设，包括水利、电力、交通等等方方面面，这些东西支撑着我们日常，可以使我们的生活有保障、出行更加便捷。同样，基础架构在计算机体系里，也充当着这一角色。</p><p>无论是传统Infra还是AIInfra，都属于基础架构的范畴。传统的Infra可以包括数据库、分布式系统、存储，继续稍微往业务靠拢一些也可以囊括基础中台。AIInfra则是由于大模型的发展而催生出来的新型基础架构。</p><h3 style="color: #76B900;">Why Infra</h3><p>我觉得关于为什么需要基础架构可以从两方面来考虑。</p><blockquote class="callout yellow" style="padding: 10px;"><ul><li>为什么需要基础架构的存在？</li><li>为什么要持续的优化基础架构？</li></ul></blockquote><p>试着从第一性原理的角度来考虑一下这两个问题。如果一开始没有基础架构会怎样？</p><blockquote><p>假设现在有两个程序员，程序员A和B。A需要写一个外卖软件，B需要开发一个视频播放软件。那么我们来思考一下，如何从头开始构建这些app。做一个外卖软件，从最底层来说，应该考虑数据应该存放在哪里，怎么放数据，怎么取数据，ok我们需要实现一个这样的抽象；解决了这个问题，我们需要考虑如果一个请求发过来，我们应该怎么根据请求返回对应的数据，比如请求获取当前有哪些外卖可点，我们就应该去利用刚才的抽象，查询得到对应数据再返回，ok我们需要封装一些行为的抽象；接下来，用户和我们的服务器之间怎么实现通信呢？ok我们需要实现一个请求和响应的抽象，解决网络通信问题（这里可以继续递归，怎么确保消息可靠，怎么保证消息一定能到达等等）；进一步，用户这边得到了想要的数据，怎么显示，提供一个让他们有食欲的界面？ok我们需要考虑实现一些好看的样式，定义一些显示的模版，把数据解析（如何解析）呈现。同样，对于程序员B来说，也要考虑类似的问题。</p></blockquote><p>通过上面的例子可以发现，每实现一个app，如果都要从0到1造轮子，那对于程序员来说无疑是巨大的负担，并且这是完全不现实的。人的精力是有限的，这样一个庞杂的体系，基本不可能靠一个人或一个团队来完成，即使做出来，也是一个基本不可用的状态。</p><p>当然，现实我们肯定有解决方案。从学习计算机开始，CPU、内存、汇编、编译器、编程语言、数据库、网络、Spring、前端等等，一个非常重要的思想贯穿始终，即<strong>封装复杂度，提高复用率</strong>。这也是基础架构出现的原因，对于如何存取数据，我们专门凑齐一堆人，封装出一个这样的抽象，为上层提供服务。这也是分而治之思想的体现。这样做的好处就是可以降低复杂度，提高开发速度和降低成本。</p><p>那既然有了基础架构，我们为什么要持续优化它？</p><p>我觉得根本原因是因为人类这一日益增长的群体产生出的庞大需求导致的。回到刚才的外卖app例子，我们现在找人专门做了一个处理数据读入和写入的封装，并且也实现了工具的复用，但是随之而来的问题就是，如果此时有一万个人同时访问数据，怎么保证能让每个人的体验相同且丝滑？如果仅限于一个很小规模的群体，其实根本不需要在乎什么性能的问题，因为请求压力远远小于计算机处理能力上限。正是因为人数量众多，且每个人请求的次数也众多，相乘起来的总请求量就是天文数字。</p><p>在这样的背景下，对基础架构的优化就是重中之重，毕竟体验差对人来说是不可容忍的，毕竟LLM卡住或者找不出来代码的bug我们还要对AI骂上几句。</p><h3 style="color: #76B900;">Traditonal Infra vs AI Infra</h3><p>正如前言中提到的那篇知乎文章所说，传统Infra和AIInfra从本质上来讲是相通的。这里说的相通并不是说他们业务场景一致，也不是所使用的工具一模一样（传统：Cpp，AIInfra：CUDA、Python、Cpp，当然这只是一个例子），而是底层思路是可迁移的。</p><p>毕竟<strong>计算机底下无新鲜事</strong>，这里总结五个在计算机领域常见的想法：</p><blockquote class="callout yellow" style="padding: 10px;"><ul><li><strong>并行</strong>：一个worker干的慢？让一堆worker来帮忙；</li><li><strong>负载均衡</strong>：这么多worker就我活多？给别人分点；</li><li><strong>隐藏延迟，也即latencyhiding</strong>：烧水要20分钟，收拾床要10分钟，刷牙洗脸5分钟，如何安排任务所花费的时间最短？</li><li><strong>资源复用</strong>：物尽其用；</li><li><strong>压缩</strong>：无损压缩，省时间省空间；有损压缩，牺牲精度换取时间空间；</li></ul></blockquote><p>同时，计算机领域还存在着一个永恒不变的真理：</p><ul><li><strong>天下没有免费的午餐，任何选择都有好的一面和坏的一面（pros andcons）</strong></li></ul><p>因此任何系统进行设计时，都是根据所面向的场景，做最佳的权衡（trade-off）。</p><p>传统的Infra解决的是以CPU为中心的计算、存储和通信问题，而当下的AIInfra则解决的是以GPU为中心的计算、存储和通信问题。比如，为了更好利用多核的CPU性能，需要并行编程，而为了更好利用GPU的性能，需要CUDA编程。</p><p>下文就当前LLM时代背景下，AIInfra是如何运用上述五个常见的计算机领域的想法的。由于本文主要是整理AIInfra的内容，传统Infra的例子不做过多的探讨，只会在每个部分的开头引入一个例子，来看一下不同场景下相同的思想是如何运用的。</p><h3 style="color: #76B900;">Parallel</h3><p>在传统Infra的视角下，一个CPU可能会有8、16、32、64等等多个核心，每一个核心都是为了进行通用逻辑计算而设计的。为了能让一个事情完成的更快，很直观的一个想法就是采取多个核心同时做一件事情的分片。例如，在数据库中，可以大致将其划分为计算和存储两个阶段，第一个阶段负责解析sql，第二个阶段负责从存储引擎获取/写入数据。如果一个查询需要的数据量非常大，单个sql查询的时候是线性时间，会产生非常大的延迟。为了解决这个问题，就可以引入并行查询：将一个sql从逻辑上拆分为数个sql片段，每个sql片段当作一个完整的sql发送给存储引擎，存储引擎有多个实例，可以实现并行的处理请求。这就需要在计算层设计一个类似于workercollector的东西，执行的操作抽象来说和all reduce十分类似。</p><p>在LLM训练和推理时，也需要使用并行的思想来加速任务。常见的有DataParallel（DP）、Tensor Parallel（TP）、Pipeline Parallel（PP）、ExpertParallel（EP）等。</p><p align="center"><img src="llm1.png" width="750"></p><h4 style="color: #76B900;">Data Parallel</h3><p>数据并行要做的就是对输入模型的数据分为N个batch，并且把模型的副本放到N个物理GPU上，将这N个batch数据分别发往N个机器上进行训练或者推理。</p><p>数据并行需要考虑的问题有调度问题（batch如何拆分，每一个节点上的负载是多少，如何做到更平衡的利用每个节点的算力，防止出现“热”节点等）、通信问题（通信的带宽如果不够很容易成为系统速度的瓶颈，数据如何高效传输是一个很重要的问题）。</p><h4 style="color: #76B900;">Pipline Parallel</h3><p>Pipeline Parallel其实是模型并行的一种，还有一种是下面的TensorParallel，都是为了解决一张卡的显存放不下以及单卡运算效率太慢的一种手段。Transformer是多层Block堆叠而成的一个结构，并且每一层结构都是完全一致的，这样就可以将逻辑上的N层Block，组成G个小组，分别存储在G个物理GPU上，每一个GPU含有N/G层。</p><p>这样的做法相当于在模型层面进行层与层之间的解耦，<strong>解耦就意味着可以并行的空间</strong>（这个思想在PD分离也同样适用，PD分离本文也归为并行的一部分，会在下文进行介绍）。</p><blockquote><p>设想一个这样的场景，比如我们现在想部署Llama270B的模型，采用BF16进行推理，因此大概需要2*70=140GB的空间。假设现在有4块GPU，每一块只有40GB的显存，这肯定放不下Llama270b，但是4块正正好好可以放下。每一个GPU放大约1/4的模型，M1，M2，M3，M4。这样就可以采用计算机系统中学到的指令并行的思想，time1:M1处理第一个batch，time2:M2处理第一个batch，M1就可以处理第二个batch，以此类推，实现流水线并行。</p></blockquote><p>流水线并行（推理）仍然需要考虑通信开销，即数据传输的通信开销。另外，对于单个GPU上不同batch的数据，还会产生额外的中间结果（比如KVcache），这些中间结果都是需要额外显存来存储的。</p><h4 style="color: #76B900;">Tensor Parallel</h3><p>如果说流水线并行是对模型的水平拆分（如果把Transformer竖着看），那么TensorParallel可以理解对对模型的垂直拆分。这些不同的拆分思想在传统的Infra的并行策略中也十分常见，例如数据库的并行查询本质上是对查询计划的拆分，也会有水平拆分和垂直拆分的两种策略。</p><p>对于Multi HeadAttention的并行，由于其天生具有多块的特性（多头注意力），因此可以按头来拆分张量，拆分之后的计算并不会影响最终的结果，只需要在计算前将数据做broadcast，完成之后做一个Allgather即可。</p><p>对于MatMul的操作，可以按列切分和按行切分。如果按列切分，</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Large Language Models </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>CUDA Basics</title>
       <link href="/2025/05/05/gpu-learning-notes-1/"/>
       <url>/2025/05/05/gpu-learning-notes-1/</url>
@@ -33,7 +52,7 @@
       
         <tags>
             
-            <tag> LLM </tag>
+            <tag> Large Language Models </tag>
             
         </tags>
       
@@ -109,7 +128,7 @@
       
         <tags>
             
-            <tag> LevelDB </tag>
+            <tag> Systems </tag>
             
         </tags>
       
@@ -128,7 +147,7 @@
       
         <tags>
             
-            <tag> LevelDB </tag>
+            <tag> Systems </tag>
             
         </tags>
       
@@ -223,64 +242,7 @@
       
         <tags>
             
-            <tag> Database Management System </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Log Entry Sep 03</title>
-      <link href="/2023/09/03/wle-2023-0903/"/>
-      <url>/2023/09/03/wle-2023-0903/</url>
-      
-        <content type="html"><![CDATA[<h3 id="mindset">Mindset</h3><p>最近一直在忙开学相关的事情。所以已经有一到两周没有写周报了，来了学校这边的精神状态从刚开始的郁闷到现在已经完全适应了。我个人在来到一个新环境之前和来到这里的一小段时间总会非常焦虑和抑郁，不适应感让我感到不安。不知道这是大多数人这样还是少部分人。我通常需要花一些时间来熟悉周围的环境，好在我适应速度比较快，一天多一点就和在上海没什么区别了。</p><p>来到学校之后大部分时间放在了oceanbase大赛的准备上。最近在拿miniob练手，不得不说配置环境和debug真的很折磨。今天几乎花了一天的时间去找一个bug，关于bug的问题和学到的东西在后面做记录。</p><p>来到学校也被迫养成了早睡早起的习惯，因为早上有课，而且特别饿，也逐渐开始吃早饭了。</p><h3 id="fitness">Fitness</h3><p>关于运动，我每天上课要从宿舍到教室走将近20分钟。回宿舍、扔垃圾什么的需要爬上爬下五楼。肉眼可见我脸上养出来的水肿消失了，脸部形状恢复到了之前比较瘦的状态。</p><p>我还打算办一张健身卡继续我的健身，以及游泳卡。但迟迟没有行动，争取下个星期搞定。</p><h3 id="entertainment">Entertainment</h3><p>来学校后的娱乐也仅限于打打游戏了。</p><p>这周六去电影院看了IMAX的奥本海默。这部片子给我最大的共鸣就是，当科学家们在考虑自己的研究是否会毁灭世界时，那些势利的政客们仍然抛不开猜疑嫉妒别人的心理，渴望用自己的权利来教科学家“做人”。还有一幕相当讽刺，在讨论轰炸日本哪里时，美国的政客轻描淡写的指点炸哪，却不考虑老百姓的生命。奥本海默要求与苏联共享成果，为了确保人类和平而不陷入军备战争，却遭到杜鲁门的强烈拒绝...</p><h3 id="learn">Learn</h3><p>最近书没怎么读，时间在上课和完成miniob的练习上。</p><p>周日花了接近一整个下午的时间（8h左右）去找一个bug。</p><p>这个bug的问题是：当miniob在vscode中，如果采用gdb或者lldb进行debug，首先创建一个table，然后在这个table上创建一个index。这一切暂时没有问题。如果我退出debugger，再次启动时，server端会报错。</p><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">Successfully load /Users/drcooper/cslab/miniob/etc/observer.iniInvalid arguments, item_size:0, pool_num:1, item_num_per_pool:128, this-<span class="token operator">></span>name:./miniob/db/sys/t-t_idx.index.Failed to <span class="token function">open</span> index. <span class="token assign-left variable">table</span><span class="token operator">=</span>t, <span class="token assign-left variable">index</span><span class="token operator">=</span>t_idx, <span class="token assign-left variable">file</span><span class="token operator">=</span>./miniob/db/sys/t-t_idx.index, <span class="token assign-left variable">rc</span><span class="token operator">=</span><span class="token number">12</span>:NOMEMFailed to <span class="token function">open</span> table. <span class="token assign-left variable">filename</span><span class="token operator">=</span>t.tableFailed to <span class="token function">open</span> db: sys. <span class="token assign-left variable">error</span><span class="token operator">=</span><span class="token number">12</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre><p>通过一步步的debug，定位到问题在于index的文件创建是成功了，但有关index的必要信息没有写到index文件里。也就是说index文件没有任何有效信息，因此在server重启，做index文件合法性校验时，会产生报错。</p><p>但令人奇怪的是，tablemeta文件的校验没有出错，而且我如果insert数据到table里，重启sever也还是可以查询到table里插入的数据的。</p><p>又一轮debug发现，原来是执行阶段（executestage）在执行插入操作的时候，会把相关的操作append到日志文件，并且进行刷盘操作。保证数据的持久性。当重启server时，数据库会读取log，并且执行recover函数，恢复内存中table的数据，具体细节打算之后写一篇记录。</p><p>而在创建index的时候，miniob的test分支的代码没有实现写入log的操作。更不提恢复index一说。</p><p>所以就会出现，第二次启动server，index检查失败的情况。因为第一次的index数据是存在于内存中的，既没有写入log也没有写入硬盘。</p><p>解决方案有两个：</p><ol type="1"><li>加入index写入log的支持操作，但限于时间原因，我打算后续实现（可能会涉及很多修改，比较繁杂）。</li><li>不支持index写入log，进一步探寻问题的本质。我选择方案二。</li></ol><p>进一步问题的本质是什么呢？</p><p>通过阅读日志文件，我发现在结束debugger时，和在终端启动server结束终端时，日志信息有区别。</p><p>在正常终端中结束server时，miniob在背后启动着一个捕获信号的线程，这个线程会捕获用户输入的ctrl+c指令（UNIX信号为SIGINT）。在macos下，我需要输入两次ctrl+c才可以终止终端的server。进程捕获这些后，会执行serverquit函数。最后执行cleanup函数，cleanup会释放内存中所有的object并且对重要信息进行flushto disk。</p><p>而我终止debugger时，所有一切就戛然而止了，没有任何的flush todisk日志信息。</p><p>这就把问题引到了，为什么debugger终止时不会让server正常退出。观察条是控制台发现是因为它执行的是强制杀死进程的命令，不会执行任何后续操作。解决办法是手动输入processsignal SIGINT。</p><p>但在macos环境下，使用lldb还会出现一个问题。无论我输入process signalSIGINT，还是process signal SIGSTOP，还是process signalSIGTERM，都会暂停debugger，而不是退出。</p><p>进一步排查发现，有一个叫做信号拦截的概念。可以输入process signalhandle SIGINT查看。</p><p>我们需要输入process handle --pass true --stop false --notify trueSIGINT，把PASSSTOP以及NOTIFY标识为正确设置（默认是false，true，true）。然后我们需要手动输入两次processsignalSIGINT（在调试控制台），模拟两次ctrl+c。会发现，进程正确退出了，而且也执行了cleanup的所有操作。再启动进程，发现没有任何报错，成功启动。</p><p>NOTE：每次启动debugger都要执行一次process handle --pass true --stopfalse --notify true SIGINT，因此可以在launch.json中设置：</p><pre class="line-numbers language-json" data-language="json"><code class="language-json"><span class="token property">"configurations"</span><span class="token operator">:</span> <span class="token punctuation">[</span>    <span class="token punctuation">&#123;</span>        <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"(lldb) 启动"</span><span class="token punctuation">,</span>        <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"lldb"</span><span class="token punctuation">,</span>        <span class="token property">"request"</span><span class="token operator">:</span> <span class="token string">"launch"</span><span class="token punctuation">,</span>        <span class="token property">"program"</span><span class="token operator">:</span> <span class="token string">"$&#123;workspaceFolder&#125;/build/bin/observer"</span><span class="token punctuation">,</span>        <span class="token property">"args"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"-f"</span><span class="token punctuation">,</span> <span class="token string">"$&#123;workspaceFolder&#125;/etc/observer.ini"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>        <span class="token property">"cwd"</span><span class="token operator">:</span> <span class="token string">"$&#123;workspaceFolder&#125;/.vscode"</span><span class="token punctuation">,</span>        <span class="token property">"preLaunchTask"</span><span class="token operator">:</span> <span class="token string">"CMake Build"</span><span class="token punctuation">,</span>        <span class="token property">"preRunCommands"</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">"process handle --pass true --stop false --notify true SIGINT"</span><span class="token punctuation">]</span><span class="token punctuation">,</span>        <span class="token property">"sourceMap"</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/yacc_sql.y"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/yacc_sql.y"</span><span class="token punctuation">,</span>            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/yacc_sql.tab.c"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/yacc_sql.tab.c"</span><span class="token punctuation">,</span>            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/lex_sql.l"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/lex_sql.;"</span><span class="token punctuation">,</span>            <span class="token property">"/Users/drcooper/cslab/miniob/build/src/observer/lex.yy.c"</span><span class="token operator">:</span> <span class="token string">"/Users/drcooper/cslab/miniob/src/observer/sql/parser/lex.yy.c"</span><span class="token punctuation">,</span>          <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>    <span class="token punctuation">&#125;</span><span class="token punctuation">]</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p>这时自然而然会想，那我可以设置一个exitCommands，内部包含两次processsignalSIGINT，然后直接点关闭debugger。但这样不会成功，正确的方法仍然是需要手动输入两次processsignal SIGINT，具体原因还没排查。</p>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> Life Blog </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Log Entry Aug 20</title>
-      <link href="/2023/08/20/wle-2023-0820/"/>
-      <url>/2023/08/20/wle-2023-0820/</url>
-      
-        <content type="html"><![CDATA[<h3 id="mindset">Mindset</h3><p>这一周的情绪比上一周有了很大提高。逐渐将自己的思维重心放回到了程序上，比起上周的萎靡不振的状态，这周能更专注的坐下来解决代码设计问题和一些bug。</p><p>但这一周是临近开学的前一周，夹杂着面对全新同学和全新环境的不适以及开学抵触情绪，导致我每天晚上并不能很快的睡着，通常需要睡眠曲或者一些公开课来助眠。</p><p>对于思维层面的训练，这周并没有很大的提升。</p><h3 id="fitness">Fitness</h3><p>做了一次肩部训练。两次室外6km步行，虽然只是简单散散步。</p><h3 id="entertainment">Entertainment</h3><p>Apex这周也玩的很少了，基本隔一两天才会上一次线。</p><p>这周的空余时间回顾了《我们的父辈》，一部德国视角下的二战片。片中的弟弟从刚开始的反对战争逐渐变得麻木不仁，之前五个好朋友相聚在酒馆一起喝酒的日子再不复返。战争会放大一个人邪恶的一面，希望我们仍能保持和平，远离战争给所有人带来的痛苦。</p><p>周六中午吃了一顿大餐，晚上又吃了一顿火锅，简直是对我胃的挑战🫠。</p><p><strong>Music in this week：</strong>Alright - By Fulton Lee调子给人一种焕然一新的感觉，但遗憾的是Applemusic没找到，只能换到网易云去听。</p><h3 id="learn">Learn</h3><p><strong>Books：</strong></p><ul><li>DDIA: part of Chapter 3</li><li>Database Management Systems: Chapter 18 Concurrency Control -2PL</li></ul><p>上周读了DDIA第三章对于索引的介绍，这周对事务处理和分析处理（OLTP&amp;OLAP）的workload做了一个简单的回顾。基于读写特征而言，二者之间的区别是OLTP倾向于随机访问并且返回较少数量的数据，而OLAP需要对大量数据进行分析和汇总；基于面向用户角度而言，OLTP大多面向终端用户，而OLAP则是通过对数据分析，为公司决策提供数据支持。</p><p>简要阅读和回顾了DBMS的二阶段锁协议，书中也提到了对LockManager这一中心化管理锁的实现。LockManager的基本思路是，维护系统中当前的资源锁表，table lock以及rowlock，来标识某一个table或者row当前被哪些事务所访问，又有哪些事务等待这个资源。LockManager负责统筹安排锁分配的流程，并由于其有全局的视角，在LockManager内部就可以并行构建一个事务有向图，来检测当前是否存在死锁状况，并解除死锁。</p><p><strong>Coding：</strong></p><p>这周重心基本在15-445的project 4上面，完成了Lock Manager和Deadlockdetection算法。对于LockManager的实现，lock和unlock的基本思路较为简单，复杂的地方在于对于不同的事物隔离级别以及事务状态的条件判断。通过跑gradescope的在线测试，发现之前让chatgpt写的锁兼容矩阵完全是错的，找这个bug找了整整一下午...，没想到问题出在了这里。实现Deadlockdetection的过程显得没有很得心应手，一个原因是因为对STL的很多容器特性还不够熟悉，分析一个算法时，不会熟练的考虑这个场景下使用哪种容器最合适，这一部分需要加强；另一个部分就是对DFS的算法使用还不是很熟练，实现起来总是磕磕绊绊，考虑的东西复杂。在Deadlockdetection中也解决了两个bug：</p><ul><li>Lock Manager的condition check中，如果当前事务被deadlock detectionabort，那么在唤醒进程之后应该返回true，然后对其abort状态处理。之前的实现中，没有对其进行判断，所以会导致出现在死锁检测算法中无限循环的情况。</li><li>Deadlockdetection构建的waits-for图不是有序的，项目要求从低transactionid到高id依次遍历，所以需要对构建好的图进行排序。</li></ul><p>还没有实现concurrent query execution。</p><p>最近Oceanbase大赛开启报名了，打算先把15-445刷完再开始找队友。</p>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> Life Blog </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Log Entry Aug 13</title>
-      <link href="/2023/08/13/wle-2023-0813/"/>
-      <url>/2023/08/13/wle-2023-0813/</url>
-      
-        <content type="html"><![CDATA[<blockquote><p>尝试开始每周日记录和反思自己这一周的生活和思维。这里将会记录我自己的成长，碎碎念还有一些我认为值得记住的东西。</p></blockquote><h3 id="mindset">Mindset</h3><p>这一周的情绪和状态进入了低谷期。应该是最近生活太不规律的缘故，导致每天早上起来经常萎靡不振。每天早上起来收拾好自己的状态做到电脑前，总会产生一股莫名烦躁的情绪，这种情绪来源于我对目前所做的事情的感觉，无意义感和迷茫感。这周最开始的一两天是情绪低迷的巅峰，以至于这样的消耗极大影响了我的精神状态，疲惫感在不到十一点就席卷全身。</p><p>其实刻意的去分析一下这个现象产生的原因，我认为有以下几点：</p><ul><li>生活不规律导致精神状态难以掌控，更容易受其他因素的影响</li><li>网上冲浪看到了很多负面信息</li><li>和别人对比产生焦虑、急躁的感觉</li><li>我的卧室没空调😭...每天热到我窒息，坐着汗滴往下掉</li></ul><p>精神状态的好坏决定了我克服外界阻力的能力的强弱。我觉得应该赶紧做一些调整，每天加入冥想训练15min并且养成十一点睡觉的习惯。保证自己的精力在最好的状态。</p><p>这周也看了很多关于未来职业的负面信息，这些东西是现实没错，但我觉得过于提前全盘接受这些负面能量很大的信息会导致自己没有办法辨别未来的方向，产生焦虑感和迷茫感。做事就会觉得没有意义。所以，保持一颗燃起来的内心还是很重要的，也应当尽量避免过度带入这些负面信息的情景，做好自己当下应该做的事情。</p><p>关于学习环境，这确实没得说...家里的空调安在客厅，开到22度都没办法对我的卧室温度有什么显著的改善。每天写代码或者玩游戏，我就感觉在卧薪尝胆，汗珠子一颗一颗往下掉，我还暗暗咬牙坚持...就差来个刻苦奋斗的音乐了🥲。</p><p>这周的后面几天也逐渐通过阅读和及时反思自己的状态慢慢调整了，虽然熬夜的习惯还是没彻底改过来...</p><h3 id="fitness">Fitness</h3><p>这周一次力量训练也没有做。回来没有买健身卡，想着在家应该能练。我还是低估了高楼层的温度了。空调开了基本没有任何效果，还是我太懒了😭，这种汗流浃背我根本扛不住。想要做一个卧推只能躺床上，如果这样的话床会湿一大片...</p><p>只有周六晚上在外面走了5.5km，只有这一天运动圆环是闭合的。健身这块严重不达标。</p><h3 id="entertainment">Entertainment</h3><p>这周和还留在身边的两个朋友聚了一聚，一起看了新上映的《封神》还有《孤注一掷》。《封神》说实话特效方面还是希望加强一下，对于剧情来说不做评价，本身就是图个乐子，对封神榜这类故事也不是很了解。《孤注一掷》最近比较热门，讲了被骗去缅北然后诈骗的事情。男主用的是ubuntu系统和python写脚本😂，因为没有当上CTO愤怒离职，离职前还搞了一波emoji恶搞。整体来讲故事挺平淡的，没有实实在在能引起情绪上的共鸣。后面的抓捕环节显得很仓促。也许是我看了很多电视剧的原因，感觉现在的电影节奏都好快。</p><p>看完电影去撸了烧烤，啤酒加烧烤还是相当快乐的。</p><p align="center"><img src="food.jpeg" width="300"></p><p>第二天又一起去吃了肯德基，蹿稀套餐实锤，让我直接疯狂星期六了。</p><p><strong>Music in this week:</strong> Everyone Who Falls in Love - ByCian Ducrot</p><h3 id="learn">Learn</h3><p><strong>Paper：</strong></p><ul><li>The Log-Structured Merge-Tree</li><li>BigTable: A Distributed Storage System for Structured Data</li></ul><p>这周阅读的paper是谷歌当年的大作之一BigTable，是一个分布式的闭源存储系统。Paper简单介绍了数据模型，API，组建还有系统实现。在组建部分，GFS用来存储日志和数据文件（GFS是很久以前阅读的论文了，记得是6.824第二课要求阅读的，完全忘记讲了什么，下周回顾一下）；SSTable存储BigTable的数据，这是对LSM-Tree的工业级应用；还用了一个叫做Chubby的分布式锁服务，在单机情况下我理解为数据库的LockManager，用于中心化的管理锁和分配锁（算法内部还需要一致性协议来实现）。</p><p>周内开始了对LevelDB的理解和学习。看了很多讲解的很棒的博客，可以让我对LevelDB的架构有一个很初级的认知，先mark在这里：</p><ul><li><a href="https://draveness.me/bigtable-leveldb/">浅析Bigtable和LevelDB的实现</a></li><li><a href="https://leveldb-handbook.readthedocs.io/zh/latest/sstable.html">LevelDBhandbook</a></li></ul><p>LevelDB称为level的原因是：它存储的模型是分层的，逐级增大的。内存里有一个跳表实现的memtable用于加入key-value数据，当memtable溢出时会触发后台的minorcompaction或majorcompaction，逐级的将数据固化到磁盘。由于LevelDB是基于LSM-Tree的思路实现，因此适合写多读少的场景。</p><p><strong>Books：</strong></p><ul><li>DDIA: part of Chapter 3</li><li>Database Management Systems: Chapter 17 Transaction</li><li>Critical Thinking: Self-Understanding</li></ul><p>DDIA第三章关于检索做了介绍。其中我认为不错的点是，采用哈希作为索引结构，查找时间复杂度为<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex;" xmlns="http://www.w3.org/2000/svg" width="4.618ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 2041 1000"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D442" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path></g><g data-mml-node="mo" transform="translate(763,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mn" transform="translate(1152,0)"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path></g><g data-mml-node="mo" transform="translate(1652,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g></g></g></svg></mjx-container></span>，可以说查询速度相当快。但为什么不在磁盘上维护哈希索引而是使用LSM-Tree呢？原因是哈希索引如果维护在磁盘，需要涉及大量的随机磁盘I/O，这是很影响读写性能的。因此哈希表必须维护在内存中，然而当面临大量数据和崩溃恢复问题上，哈希表的构建和插入速度将会收到影响。LSM-Tree采用了追加的方式，这样可以充分利用顺序写速度远快于随机写的特性，增大磁盘I/O。</p><p>有关B+Tree和LSM-Tree，B+Tree的读取十分迅速，但LSM-Tree由于维护了多层SSTable，一级读取不到则需要从磁盘读下一级，读性能无法与B+Tree媲美。但B+Tree的写效率没有LSM-Tree的高，是因为它要维护树平衡、处理节点的分裂合并。</p><p>最近打算做15-445的p4，需要实现事务并发。因此阅读了数据库管理系统第17章，主要了解了事务的ACID特性还有可串行化的概念。对于接下来的实现，最重要的莫过于隔离级别了。隔离级别分为四种：串行、可重复读、读已提交、读未提交。隔离级别越高，串行化越高，执行得到的结果越严格，但并发性能会严重降低。隔离级别越低，并发性能越高，但得到的数据会不同程度的不一致。工业界一般默认使用读已提交的隔离级别，满足绝大部分场景的需求。还有一种隔离是快照隔离，这里涉及到多版本并发控制（MVCC），做的事情就是执行一个事务时复制一个当前数据的快照，事务在这个快照上处理，不受其他事务的影响。</p><p><strong>Coding：</strong></p><p>这周没有在一些项目上花时间，而重心放在了Leetcode上。开始刷leetcode的第一周。做了一些常见的动态规划类题目，2sum（哈希优化），3sum（排序+双指针）。不得不说动态规划做的真是头皮发麻🤯，做这么点下来总结的经验是：首先先考虑如何定义dp数组还有dp[i]的i的意义；然后考虑最小的问题的解；开始遍历dp数组，不断的扩大dp解的规模得到最后的答案。值得品味的一句话：<strong>大多数算法解决问题时做的都是遍历，问题在于我们如何利用已知信息聪明的遍历</strong>。</p><p>愿望：以后每天能完成一道leetcode。</p>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> Life Blog </tag>
+            <tag> DB </tag>
             
         </tags>
       
@@ -299,26 +261,7 @@
       
         <tags>
             
-            <tag> Database Management System </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Critical Thinking Tool - Self-understanding</title>
-      <link href="/2023/08/02/critical-thinking-01/"/>
-      <url>/2023/08/02/critical-thinking-01/</url>
-      
-        <content type="html"><![CDATA[<blockquote><p>思维（Mind），是我们时时刻刻在使用的东西。大多数人的一生，都没有办法显式的意识到它的存在，或者透彻的理解和熟练的驾驭它，当然包括我自己。对于我个人来说，由于初高中时代的个人学习经历以及学习计算机技术时培养的习惯，对于自己感兴趣的东西是十分想透彻的理解它内部运行的逻辑的。当阅读一些源代码或者使用一些工具，难免会想知道：这个现象怎么来的？它背后有哪些机制支持了它？Underthehood，整体是如何运作的？理清庞杂代码之间内部关联的逻辑是一种令人上瘾的东西，一开始便需要很长时间才能停下来。这里我想说的是，我这种所谓“刨根问底”的热情目前仅限于计算机这一庞大而底层运作逻辑又异常单一的领域。面对思维等等外部的东西思考的很少。</p><p>我想这是由于我对技术和其他事物的定义不同而导致的。对于技术，我的定义是“工具”，是“爱好”，同时可以产生相对应的经济价值的东西，因此我会花时间花精力在这上面。而对于思维，我的定义是并不需要我去刻意关注和关心，是非技术的东西。而事实是，思维也是工具，甚至是我们与世界交互的底层工具，是人的基础框架和系统。我们使用技术这一工具时，需要理解、转化和应用，而这一过程中，支持我们做出这样一系列操作的，正是我们的思维。所以我个人觉得，把思维看成一种“技术”也未尝不可。我们需要花时间，花精力去了解它内部运转的逻辑；我们需要和技术一样不断的练习和锻炼达到内化和熟练。并在此基础上，更好的使用它，服务于我们日常的生活、学习和对事物的看法上。</p><p>我把它放在Life的文档下的原因，是因为思维不仅仅被框定在“技术”或“工具”这一维度。无论在debug或实现复杂系统时遇到的困难，还是对现实生活不满意、感到不开心，都是思维（情绪、想法）运行的结果。我希望通过从工具和技术的角度去理解思维，但并不单一服务于技术，因为人的一生除技术外，还有生活。</p><p>这些笔记是我阅读《批判性思维工具》这一本书的所想。写博客的原因，是因为在学习技术过程中，写博客会驱使我探索和思考更加深入的东西，而不仅仅浮于表面。因此我希望这样的附带效应可以应用到思维工具的学习上。</p></blockquote><h3 id="intro">Intro</h3><p>在我们没有意识到思维这一工具的存在之前，我们很多行为和观点都来自于自己的潜意识。当我们面对眼前的一系列情况的时候，我们所做的决定、采取的行动以及发表的观点都可以认为是“不假思索”的，并且由于人的自私本性，对外界作出的反馈通常是自我中心的。从小到大所生活的环境、父母的培养以及自己的所见所闻塑造了今天这样自我中心的我们，我们沉浸于这样的牢笼中且不自知。我们通常对别人的很多观点都毫无条件的相信，不做任何判断。</p><p>尤其是当今的互联网时代，每个人都拥有在网上发表观点和看法的能力，无形之中也影响着很多“看客”的思维。生于互联网时代的我们，在自己身上很容易看到被他人思维左右和影响的影子。我们在网上看了太多的想法和他人的生活，在这样一个内卷的时代，会有开摆的想法，也会有自命不凡的傲气；会早早担心自己考不上研或找不到工作而过度焦虑，同时也会不断的安慰自己过得开心就好；羡慕财富自由，有想改变世界的梦，却又看到太多现实的残酷而觉得遥不可及。我们的思维十分的矛盾，成分也相当复杂。究其原因，就是自我中心、没有自己的精神壁垒而导致的。这里，自我中心并不是完全是自私自利的思维，而是我们倾向于相信我们想相信的、符合自身利益的、能让自己共情的、可以让我们喊出“太真实了”的种种观点和事件。我们选择相信所有，但到头来却迷失了自己的方向。</p><p>这篇博客的标题叫做自我理解（self-understanding）。当然并不全是什么对自我的反思之类的，而是我们需要理解自己的思维是什么样的组成？底层是如何运作的？情绪和想法是什么关系？我们应当如何控制自己的思维？理解内在的运行逻辑之后，我们才能利用好这个工具，作为我们面对如此纷繁复杂的互联网环境的坚实后盾，让我们不再矛盾。</p><h3 id="case">Case</h3><p>首先我们需要知道的一点是，<strong>我们对事件的看法是影响我们能否完成这件事的关键因素</strong>。这点尤其重要。如果做某件事需要什么动力的话，对事件的看法也可以理解为我们的<strong>内源动力</strong>。</p><p>举个例子，现在有一个特别复杂的任务需要去完成。假设有两个员工需要各自完成这个任务，且两人的知识储备和技能一致。员工1面对复杂的任务时，对它的看法是”啊，这个任务是特别复杂的么？我一个人会不会完不成啊？会不会做的很差劲？别人做的会不会比我又快又好？完了完了，这可怎么办...“。这个想法带来的精神压力是很大的。特别复杂的任务证明需要员工消耗极大的时间成本和脑力劳动去完成，员工1立马产生被任务淹没了一样窒息的感受，随之而来的是消极、疲惫的情绪。而后产生了和别人对比的想法，担心自己完不成，衍生出来焦虑和急躁的情绪。产生这样的看法导致这样的情绪滋生，在双重debuff下，行动力变得很差，这个特别复杂的任务和他自己形成了完美的负反馈。</p><p>员工2面对这个复杂的任务时，对它的看法是“这个任务从来没见过，而且还相当复杂。是时候看看我拆解复杂任务的能力了！看看我能不能很好的运用分而治之的思想，对，用分而治之，把这个问题化为很多小问题，一步步去解决它，不要急，一定可以成功”。诚然，复杂的任务也会给员工2带来一定的精神压力。但员工2的想法是不是先考虑自己行不行，而是考虑如何解决，并且对这项挑战抱有信息，把它当作一个培养自身能力的契机。这样员工2产生的情绪是积极的、兴奋的，并且会迫不及待的去实践和完成。靠着分而治之的思想，一步步去解决这个复杂的任务。</p><p>我相信阅读了这个例子的各位也肯定有过类似的经历。就我而言，当我面对同一个project时，如果我的想法是员工1的想法，我会很快失去信息和动力，并开始摆烂。如果我的想法是员工2的想法，我会逐步去拆解整个project的复杂度，画系统架构图，先理解整体然后深入细节，完成设计之后再开始编写代码。如果没有过类似的经历，可以试着转变一下看法，可以明显地看到想法对自己行动的影响有多大。</p><p>这说明，<strong>内源动力是十分重要的。做一件事如果驱动自己去做的是某种纯“功利性”的目标，那么不可避免的会收到外界和他人的干扰。迫切想要完成这件事的需求会被无限放大，急躁和焦虑的情绪随之而来，最终导致任务失败，陷入自我怀疑</strong>。</p><h3 id="thought-model">Thought Model</h3><p>看了上面的例子之后，我们可以从机制角度来分析一下大脑干了什么。我们首先从思维模型开始。</p><p>把我们的思维比作一个盒子，周围时时刻刻发生了各种各样的事件（Events）。这个盒子的作用，就是接受这个事件，在盒子里处理好之后，给外界反馈。</p><p><img src="ct1.png" /></p><p>这个没有必要刻意关注，我们希望理解的是，在盒子内部到底发生了什么。大多数人会把思维模型看成一个整体，盒子就是盒子，接受外界的信息，盒子处理后作出反馈。也就是我们常常隐式的使用了思维模型。接收到一个任务时，或者听到别人的一个观点是，我们通常会不假思索的，根据我们过往的经验和当前精神状态（对任务复杂度的认知、这个观点是否符合自己的价值观或利益，伤心、难受、开心、积极消极）直接给出回应和反馈。现在我们想要改变想法，必须知道默认情况下会发生什么，必须显式的改变这个过程。</p><p>思维模型，如书中说的那样，由三个部分组成。分别是：</p><ul><li>思维：赋予事件意义，根据过往经验寻找应对事件的固定模式。理解发生在我们周围的事件。</li><li>感受：对思维赋予意义的事件做出评估。思维（了解这个事件是干什么）处理后，感受会时时评估自我面对这个事件的态度和情绪（这个事件对我好还是不好）。</li><li>需求：（个人认为）内源动力。作为能量来驱动我们对事件做出反馈。</li></ul><p>打开我们之前不透明的思维盒子，我们可以看到：</p><p><img src="ct2.png" /></p><h3 id="todo">Todo</h3><ul class="task-list"><li><label><input type="checkbox" checked="" />Aug 2:完成引入</label></li><li><label><input type="checkbox" checked="" />Aug 3:完成Intro和思维建模</label></li></ul>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> Life Blog </tag>
+            <tag> DB </tag>
             
         </tags>
       
@@ -413,26 +356,7 @@
       
         <tags>
             
-            <tag> Deep Learning Optimization </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Life Blog - Trip to Qingdao</title>
-      <link href="/2023/06/11/Life-001/"/>
-      <url>/2023/06/11/Life-001/</url>
-      
-        <content type="html"><![CDATA[<blockquote><p>因为疫情的原因，19年上大学的我整整三年没有怎么出去旅行。大四下学期是一个比较惬意的时候，没有繁琐的课程、需要参加的活动等等，时间相对空闲。也算是弥补一下前三年的遗憾，赶着毕业前，去一趟青岛和蓬莱。</p></blockquote><h3 id="前言">01 前言</h3><p>还是花了一些时间规划的。对于像我这样的穷游党而言，主要的开销就是出行和住宿。刚开始制定的旅游计划相当极限，青岛、烟台、蓬莱和济南要在五天四夜之间全部游览完。有两天晚上都需要在火车上度过，尤其是返程上海时，凌晨2点的普快，一直要坐到第二天12点...来回往复并算上中间所有旅游地点的车费，大约需要1.5k。</p><p>后来听取了一些同学的建议，去掉了济南的行程。在青岛呆两天半，第四天早上青岛北站出发到蓬莱，当天下午六点从蓬莱出发到烟台。烟台游玩一天，第六天返程。出行所需的费用被优化到了700块。大成功哈哈哈🤣。</p><p>自己非常喜欢旅游，因为小时候旅游带给我的感觉是全身心的放松。处于与自己生活环境截然不同的地方，暂时抛去学习和日常生活，去短暂感受没有任何枷锁束缚的舒畅。</p><h3 id="青岛">02 青岛🍾</h3><h4 id="day-1">Day 1</h4><p>去了青岛的第一天已经到了下午了，由于比较累，直接在住的酒店睡了一下午。当天没有任何行程。</p><h4 id="day-2">Day 2</h4><p>当然在第一天也不是什么都没干。在床上躺着的时间整理了一下需要去的景点。整理景点的时候才发现，订酒店订的位置在青岛市市北...而青岛几乎所有景点都在市南的沿海。</p><p>旅游的路线是从西向东规划的。第一天要去的地方是：</p><ul><li>栈桥</li><li>海军博物馆</li><li>小青岛公园</li><li>小鱼山公园</li></ul><p>栈桥就是在青岛市西南侧的一个小角落，栈桥右侧是布满礁石的海滩，而左侧是细石沙。它的尽头有立着回澜阁。通过照片能看出来今天不适合旅游，肉眼可见的大雾，直接压在头顶上，把每一个高楼的头部擦除。</p><p><img src="qd1.png" /></p><p>中午去吃了一碗面，20元...，没吃饱又点了一个夹肉馍，说实话不太好吃，但要10块。一顿饭30，让我第一次觉得青岛的物价也可以赶超上海（有可能是景点附近缘故？）。吃饭的附近还有个church。</p><p>从吃饭的地方坐几分钟公交就到了海军博物馆，去里面浏览了一些海军的历史和展出的物品，也去海军博物馆后面的两艘舰上绕了一圈。从舰上可以看到小青岛公园。不得不说沿海各个景点离的是真近。</p><p><img src="qd2.png" /></p><p>小青岛绕着海边走了走，海浪拍击在石头上的声音很清脆，海风也很大。走到海边会感觉很冷，走到不靠海的地方又马上热了起来。</p><p><img src="qd3.png" /></p><p>下午快四五点到了小鱼山山顶，据说这里可以一览无余青岛市，可以欣赏大海，也可以看城市的建筑风格。这时，大雾的伏笔显现了...</p><p><img src="qd4.png" /></p><p>晚上我去见了在青岛上学的同学，一起吃了一顿烧烤后去五四广场和奥帆中心看了一眼。这个时候的大雾沉到地面上，和下雨一样，走了一圈直接浑身湿掉了。</p><p><img src="qd5.png" /></p><p>完全什么都看不见。</p><p>End of this day.</p><h4 id="day-3">Day 3</h4><p>第三天似乎是对第二天糟糕天气的补偿，天气格外的好。乘坐青岛3号线地铁继续前往海边的景点，先去了第二浴场。人还是相当的多，在青岛这个旅游城市，我想“一个人漫步在海边沙滩上”这样的场景在全年都没办法找到几个时间节点吧😭。</p><p>今天的旅途还算简单，但是特别累。到达第二浴场也快中午了，在沙滩上捏了把十年没捏过的沙子，海的气味和沙子的触感直接把我拉回到十岁出头的时候在山东日照生活了一个月的日子。那时候热播一个电视剧，具体什么名字忘记了，是一个透明人小玩具，主角把它当作手机，然后可以召唤出一个红衣的有特异功能的女生。在日照的时候，不出门在家的时间大多数是在看剧和cosplay剧中的角色。<img src="qd6.png" /></p><p>参观完第二浴场就一直沿着海边的路走，很废腿的一段路。有n多对新人在这里拍婚纱照。还有很长一段路里面飞满了白色的小飞虫，走一会儿就能爬满一身，为了防止吸进嘴里，这段路基本都戴了口罩🥲。<img src="qd7.png" /></p><p>走着走着又找到一个绝美拍照的地方，但这里有栏杆，还写着不让跨越注意安全。我还是跨进去了，这是右很多黄色岩石组成的地方。远处可以看到奥帆中心，海上还时不时有帆船飘过。耳边充斥着海拍击在石头的声音。远处的城市在这个视角下若隐若现。我还专门录了一段视频说着“Lookat this, this is so amazing!”来表达我此时的心情。 <imgsrc="qd8.png" /></p><p>然后就是继续沿着海边走，夕阳已经快落山了。</p><p>到达第三浴场（大概）。这个浴场和不远处的城市接轨，显得有点突兀，但却又很和谐。傍晚这边有很多唱歌的人开直播，走累了坐在沙滩的台阶上，快落山的太阳把海面染成金黄色。</p><p>晚上的月亮也很远，到了五四广场。买了点淀粉肠和CoCo充饥。简要逛了一下就去了台东步行街。<img src="qd9.png" /></p><p>End of this day.</p>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> Life Blog </tag>
+            <tag> Large Language Models </tag>
             
         </tags>
       
@@ -451,7 +375,7 @@
       
         <tags>
             
-            <tag> Study </tag>
+            <tag> Large Language Models </tag>
             
         </tags>
       
@@ -470,7 +394,7 @@
       
         <tags>
             
-            <tag> Database Management System </tag>
+            <tag> Database System </tag>
             
         </tags>
       
@@ -508,7 +432,7 @@
       
         <tags>
             
-            <tag> Database Management System </tag>
+            <tag> DB </tag>
             
         </tags>
       

@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
@@ -145,7 +155,7 @@ mjx-container[display="true"] + br {
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -160,11 +170,15 @@ mjx-container[display="true"] + br {
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -175,6 +189,12 @@ mjx-container[display="true"] + br {
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -195,20 +215,18 @@ mjx-container[display="true"] + br {
             <div class="index-wrapper">
   
     
-  
-    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/dog.jpeg" />
+        <img src="/img/blue.jpeg" />
       </div>
     
     <div class="col title-wrapper">
-      <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love Coding & AI & Systems</div>
+      <div class="title">Auzdora</div>
+      <div class="sub-title">Think & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -251,158 +269,26 @@ mjx-container[display="true"] + br {
   
     
   
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
+    
   
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/06/23/cast-in-cpp/" target="_self">
-            <h3>Cast Operation in C++</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Introduction
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
 
-在用C++写一些Lab和项目的时候，涉及到cast在C++里的应用。发现自己并不熟悉这些东西，于是也仅仅在阅读一些博客后草草了事，没有很深的记忆。但是过一段时间之后，又全部都忘记了，所以想写一个博客来记录一下加深自己的理解。
-
-C++是一种强类型语言，当需要把一个变量按照使用需求转化为另一个变量的时候，就需要用到类型转换。C++提供了四种类型转换的方法：
-
-static...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-23 09:41" pubdate>
-            2023-06-23
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/C/">C++</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
   
     <article class="row index-post-wrapper">
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2023/06/13/BatchNorm-LayerNorm/" target="_self">
-            <h3>BatchNorm｜LayerNorm｜RMSNorm</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-最近在复习之前学过的Transformer的底层原理，又一次碰到了LayerNorm。之前在做一些深度估计项目的时候，使用ViT架构，也用到了LayerNorm。但仅仅将它作为了一个黑箱，并没有深刻的理解它的原理。而且与LayerNorm对应的BatchNorm，虽然之前阅读过原论文，但仍处于一知半解的阶段，大部分也忘记了。借助这个blog，重新学习和回忆一下。并对比两者的不同，并动手实现相应的...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-13 17:06" pubdate>
-            2023-06-13
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Deep-Learning-Optimization/">Deep Learning Optimization</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/06/11/Life-001/" target="_self">
-            <h3>Life Blog - Trip to Qingdao</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-因为疫情的原因，19年上大学的我整整三年没有怎么出去旅行。大四下学期是一个比较惬意的时候，没有繁琐的课程、需要参加的活动等等，时间相对空闲。也算是弥补一下前三年的遗憾，赶着毕业前，去一趟青岛和蓬莱。
-
-01 前言
-还是花了一些时间规划的。对于像我这样的穷游党而言，主要的开销就是出行和住宿。刚开始制定的旅游计划相当极限，青岛、烟台、蓬莱和济南要在五天四夜之间全部游览完。有两天晚上都需要在火车上度过...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-06-11 18:25" pubdate>
-            2023-06-11
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Life-Blog/">Life Blog</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/05/27/LLM/" target="_self">
-            <h3>Workflow in the era of LLM</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            
-在大语言模型时代，我们的学习和工作方式都有了很大的变化。依赖于生成式AI的强大能力，当前的LLM已经成为了各种APP、甚至操作系统的一部分。ChatGPT以及new
-bing的出现，展现出LLM的可能性。在写代码、学习新知识、撰写文档、归纳总结、阅读文献等众多任务中，可以成为很智能的Copilot。
-之前学习的流程十分的复杂，东一块西一块，被各种所谓的“生产力”APP迷的眼花缭乱。我觉得也是时候...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2023-05-27 15:21" pubdate>
-            2023-05-27
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/Study/">Study</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2023/04/01/Buffer_Pool_Manager/" target="_self">
+          <a class="post-link" href="/2023/04/01/Buffer_Pool_Manager/" target="_self">
             <h3>CMU 15-445 Buffer Pool Manager</h3>
           </a>
           
@@ -421,7 +307,39 @@ Mechanism
         </div>
         <div class="post-footer">
           <time datetime="2023-04-01 10:46" pubdate>
-            2023-04-01
+            April 1, 2023
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Database-System/">Database System</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2023/03/26/LRU-K_Replacement_Policy/" target="_self">
+            <h3>CMU 15-445 LRU-K Replacement Policy</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+实现LRU-K的时候，先去完成了LeetCode的146题LRU，实现的时候运用了哈希链表结构，题目中要求get和put操作都是O(1)的时间复杂度。一种实现方式就是用STL的list和unordered
+map，list本质是双向链表，但实现出来最后的结果总是不尽人意。因此将list结构换成自己实现的双向链表，运行起来的速度和内存都优于list的实现。因此在15-445的LRU的实现中，我也采...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-03-26 20:11" pubdate>
+            March 26, 2023
           </time>
           <div>
              
@@ -434,13 +352,117 @@ Mechanism
         </div>
       </div>
     </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2023/03/22/Extendible_Hash_Table/" target="_self">
+            <h3>CMU 15-445 Extendible Hash Table</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+最近在学习CMU的15-445 DB课程，在做Project1的Extendible Hash
+Table的时候，由于是先看了课程，过了一个多星期才做的Lab，对extendible
+hash
+table只能说是知道大体的意思，并没有透彻的了解它，尤其是bucket指针和数据重分配这一部分，涉及到比较tricky的位运算，在一知半解的情况下实现它，完全没办法找到对应的bug，Concurrent...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2023-03-22 12:39" pubdate>
+            March 22, 2023
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/DB/">DB</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2022/12/23/Monodepth2/" target="_self">
+            <h3>Monodepth2 Paper Note</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            
+Abstract: Per-pixel ground truth depth data is
+challenging to acquire at scale. To overcome this limitation,
+self-supervised learning has emerged as a promising alternative for
+training models to per...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2022-12-23 21:20" pubdate>
+            December 23, 2022
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Paper-Reading-Note/">Paper Reading Note</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2022/11/10/SSIM/" target="_self">
+            <h3>The Structural SIMilarity Index</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            1. Over all Purpose
+The luminance information computation method is:  However, based on our prior knowledge
+
+The structures of the objects in the scene are independent of
+the illumination.
+
+Then we ca...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2022-11-10 09:20" pubdate>
+            November 10, 2022
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Paper-Reading-Note/">Paper Reading Note</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
    
 </div>
 
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right"></i></a>
+      <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
     </div>
   </div>
  -->
@@ -461,7 +483,7 @@ Mechanism
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -524,6 +546,10 @@ Mechanism
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

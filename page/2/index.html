@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
@@ -145,7 +155,7 @@ mjx-container[display="true"] + br {
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -160,11 +170,15 @@ mjx-container[display="true"] + br {
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -175,6 +189,12 @@ mjx-container[display="true"] + br {
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -195,20 +215,18 @@ mjx-container[display="true"] + br {
             <div class="index-wrapper">
   
     
-  
-    
       
 
 <div class="about-wrapper">
   <div class="row">
      
       <div class="col avatar">
-        <img src="/img/dog.jpeg" />
+        <img src="/img/blue.jpeg" />
       </div>
     
     <div class="col title-wrapper">
-      <div class="title">Auzdora Lan</div>
-      <div class="sub-title">Love Coding & AI & Systems</div>
+      <div class="title">Auzdora</div>
+      <div class="sub-title">Think & AI & Systems</div>
     </div>
     <div class="col">
       
@@ -251,110 +269,40 @@ mjx-container[display="true"] + br {
   
     
   
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
+    
   
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/05/10/leveldb-memory/" target="_self">
-            <h3>Understanding LevelDB Memory Management</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Intro
-这篇文章是我自己通过阅读LevelDB的源代码，有关LevelDB内存管理方案的总结。分为主要的三个部分。第一部分是LevelDB的内存池的实现；第二部分是内存数据库—跳表的实现；第三部分是缓存系统的实现。
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
 
-Memory pool
-LevelDB的内存池实现在arena.cc以及arena.h中。内存池是池化技术的一种，池化技术的核心内涵是：将程序中需要经常使用的资源预先申请出来，放...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-05-10 14:44" pubdate>
-            2024-05-10
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
   
     <article class="row index-post-wrapper">
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2024/04/22/leveldb-iterator/" target="_self">
-            <h3>Understanding LevelDB Iterator</h3>
+          <a class="post-link" href="/2024/06/01/mapreduce/" target="_self">
+            <h3>MapReduce Implementation</h3>
           </a>
           
         </div>
         <div class="description">
           
-            Intro
-Understanding Iterators
-Before diving into the specifics of LevelDB, let's clarify what an
-iterator is in the context of programming. An iterator is an object that
-enables users to traverse a co...
+            Introduction
+Google的研发人员在过去处理大数据任务时，经常需要手写实现很多不同的拥有特定功能的程序，比如爬去文档、网络日志等等。这些任务经常需要将任务分布到很多台计算机处理，以提升处理的性能和速度；但在这个前提下，如何实现并行、分布数据、处理异常机器和失败的任务、保证系统正确运行是一个较为复杂和综合性的问题。
+为了解决这样的问题，Google的研发人员开发了一套系统——Mapre...
           
         </div>
         <div class="post-footer">
-          <time datetime="2024-04-22 11:15" pubdate>
-            2024-04-22
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/LevelDB/">LevelDB</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/03/20/GFS/" target="_self">
-            <h3>Google File System</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Why distributed storage
-system are hard?
-首先任何一个系统，尤其是文件存储系统，我们需要的是high
-performence。这就意味着你需要用很多server存储数据。
-然而，一旦用了很多server或者机器，那就会导致一个问题，某些机器会failure，如果一个集群足够庞大，那么就会导致constant
-faults。
-这就意味着，你需要设计一个具有Fa...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-03-20 21:50" pubdate>
-            2024-03-20
+          <time datetime="2024-06-01 22:00" pubdate>
+            June 1, 2024
           </time>
           <div>
              
@@ -372,7 +320,111 @@ faults。
       
       <div class="col-12 col-md-12 mx-auto post-intro">
         <div class="post-header ">
-          <a href="/2024/02/12/OS2/" target="_self">
+          <a class="post-link" href="/2024/05/10/leveldb-memory/" target="_self">
+            <h3>Understanding LevelDB Memory Management</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Intro
+这篇文章是我自己通过阅读LevelDB的源代码，有关LevelDB内存管理方案的总结。分为主要的三个部分。第一部分是LevelDB的内存池的实现；第二部分是内存数据库—跳表的实现；第三部分是缓存系统的实现。
+
+Memory pool
+LevelDB的内存池实现在arena.cc以及arena.h中。内存池是池化技术的一种，池化技术的核心内涵是：将程序中需要经常使用的资源预先申请出来，放...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-05-10 14:44" pubdate>
+            May 10, 2024
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Systems/">Systems</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2024/04/22/leveldb-iterator/" target="_self">
+            <h3>Understanding LevelDB Iterator</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Intro
+Understanding Iterators
+Before diving into the specifics of LevelDB, let's clarify what an
+iterator is in the context of programming. An iterator is an object that
+enables users to traverse a co...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-04-22 11:15" pubdate>
+            April 22, 2024
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Systems/">Systems</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2024/03/20/GFS/" target="_self">
+            <h3>Google File System</h3>
+          </a>
+          
+        </div>
+        <div class="description">
+          
+            Why distributed storage
+system are hard?
+首先任何一个系统，尤其是文件存储系统，我们需要的是high
+performence。这就意味着你需要用很多server存储数据。
+然而，一旦用了很多server或者机器，那就会导致一个问题，某些机器会failure，如果一个集群足够庞大，那么就会导致constant
+faults。
+这就意味着，你需要设计一个具有Fa...
+          
+        </div>
+        <div class="post-footer">
+          <time datetime="2024-03-20 21:50" pubdate>
+            March 20, 2024
+          </time>
+          <div>
+             
+            
+               
+                <a class="tag" href="/tags/Distributed-Systems/">Distributed Systems</a>
+               
+            
+          </div>
+        </div>
+      </div>
+    </article>
+  
+    <article class="row index-post-wrapper">
+      
+      <div class="col-12 col-md-12 mx-auto post-intro">
+        <div class="post-header ">
+          <a class="post-link" href="/2024/02/12/OS2/" target="_self">
             <h3>xv6 Operating System — File System</h3>
           </a>
           
@@ -396,41 +448,7 @@ Fil...
         </div>
         <div class="post-footer">
           <time datetime="2024-02-12 14:01" pubdate>
-            2024-02-12
-          </time>
-          <div>
-             
-            
-               
-                <a class="tag" href="/tags/OS/">OS</a>
-               
-            
-          </div>
-        </div>
-      </div>
-    </article>
-  
-    <article class="row index-post-wrapper">
-      
-      <div class="col-12 col-md-12 mx-auto post-intro">
-        <div class="post-header ">
-          <a href="/2024/01/10/OS1/" target="_self">
-            <h3>xv6 Operating System — System calls</h3>
-          </a>
-          
-        </div>
-        <div class="description">
-          
-            Introduction
-操作系统的目标：
-
-第一个就是抽象硬件。通常来说，你会买一个计算机，里面包含了CPU，内存，但是这是一种非常低层级的资源。幸好我们有一些应用程序实现了高层级的接口和抽象，例如进程，文件系统。这些高层级的接口和抽象（Abstraction）方便了应用的开发，也提供了更好的移植性
-在多个应用程序之间共用硬件资源。你可以在一个操作系统同时运行文本编辑器，程序编译器，多个数据库等...
-          
-        </div>
-        <div class="post-footer">
-          <time datetime="2024-01-10 21:16" pubdate>
-            2024-01-10
+            February 12, 2024
           </time>
           <div>
              
@@ -449,7 +467,7 @@ Fil...
 <!-- 
   <div class="py-5 pagination-wrapper" aria-label="pagination">
     <div>
-      <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+      <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
  -->
@@ -470,7 +488,7 @@ Fil...
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -533,6 +551,10 @@ Fil...
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 

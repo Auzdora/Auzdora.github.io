@@ -7,8 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="">
-  <meta name="author" content="">
+  <meta name="description" content="Hey there! This is Auzdora">
+  <meta name="author" content="Auzdora">
   <link rel="icon" href="/img/AAA.png">
 
   
@@ -22,8 +22,18 @@
 <link rel="stylesheet" href="/css/style.css">
 
 
-  
   <title>CMU 15-445 Query Execution - Auzdora&#39;s Blog</title>
+
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 
@@ -33,7 +43,7 @@
   <div class="container">
     <div class="mark-wrapper">
        
-      <div class="title-mark">Auzdora</div>
+      <div class="title-mark">Auzdora's Blog</div>
     </div>
   
     <button id="menu-btn" class="btn menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#nav-menu">
@@ -48,11 +58,15 @@
           </li>
         
           <li>
-            <a href="/archives">Archives </a>
+            <a href="/archives">Techs </a>
           </li>
         
           <li>
-            <a href="/Life">Life </a>
+            <a href="/thoughts">Thoughts </a>
+          </li>
+        
+          <li>
+            <a href="/snapshots">Snapshots </a>
           </li>
         
           <li>
@@ -63,6 +77,12 @@
             <a href="/about2">About </a>
           </li>
         
+        <li class="theme-toggle">
+          <button id="theme-toggle-btn" class="btn" type="button" aria-label="Toggle color theme">
+            <i class="fas fa-sun theme-icon-light"></i>
+            <i class="fas fa-moon theme-icon-dark"></i>
+          </button>
+        </li>
         <li class="search-icon">
           <button class="btn" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
             <i class="fas fa-search"></i>
@@ -87,19 +107,20 @@
     CMU 15-445 Query Execution
   </h2>
   <div class="post-meta">
-    <time datetime="Invalid date Invalid date ">2023-07-17</time>
     
     
-       
     
+    <span class="post-meta-item">Tech</span>
     
-      
-        <a class="tag" href="/tags/Database-Management-System/">Database Management System</a> 
-       
+      <span class="post-meta-sep">·</span>
+      <span class="post-meta-item">Database Management System</span>
+    
+    <span class="post-meta-sep">·</span>
+    <time class="post-meta-item" datetime="July 17, 2023 22:10:26">July 17, 2023</time>
     
     
   </div>
-  
+
   <div id="content">
     <blockquote>
 <p>在完成bustub的project 3 query
@@ -518,6 +539,7 @@ manager层之上的应用层，可以看到SQL执行层和这两者之间的调�
   </div>
 
 </article>
+
   </div>
   <div class="right-content">
     <div id="toc" class="toc-wrapper"></div>
@@ -541,7 +563,7 @@ manager层之上的应用层，可以看到SQL执行层和这两者之间的调�
   <div class="footer-wrapper">
   <div class="left-content"></div>
   <div class="right-content">
-    <div>Copyright &copy;2025</div>
+    <div>Copyright &copy;2026</div>
     <!-- <div>Powered By <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a> - Theme <a target="_blank" rel="noopener" href="https://github.com/thomasyu929/hexo-theme-peomas">Peomas</a></div> -->
   </div>
 </div>
@@ -604,6 +626,10 @@ manager层之上的应用层，可以看到SQL执行层和这两者之间的调�
 
 
 <script src="/js/plugin.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
 
 
 
