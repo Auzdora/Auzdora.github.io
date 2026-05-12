@@ -306,6 +306,13 @@
   </url>
   
   <url>
+    <loc>https://auzdora.github.io/tags/Database-System/</loc>
+    <lastmod>2026-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://auzdora.github.io/tags/DB/</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
@@ -320,7 +327,7 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Database-System/</loc>
+    <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -334,13 +341,6 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Database-Management-System/</loc>
-    <lastmod>2026-05-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://auzdora.github.io/tags/Paper-Reading-Note/</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
@@ -348,14 +348,14 @@
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/C/</loc>
+    <loc>https://auzdora.github.io/tags/Computer-Network/</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://auzdora.github.io/tags/Computer-Network/</loc>
+    <loc>https://auzdora.github.io/tags/C/</loc>
     <lastmod>2026-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

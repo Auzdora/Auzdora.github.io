@@ -2620,8 +2620,23 @@ a {
 .tag:hover {
   color: #8a6c51 !important;
 }
-#nprogress .bar {
-  background: #888888 !important;
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  background: transparent;
+}
+#scroll-progress .scroll-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: #888888;
+  will-change: transform;
 }
 .row {
   margin-left: 0;

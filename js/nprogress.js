@@ -1,23 +1,25 @@
-listenToSetNProgress();
+(function () {
+  const bar = document.querySelector('#scroll-progress .scroll-progress-bar');
+  if (!bar) return;
 
-function listenToSetNProgress() {
-  NProgress.configure({
-    showSpinner: false,
-    minimum: 0,
-  });
+  let ticking = false;
 
-  $(window).scroll(() => {
-    const percent = getScrollPercentage();
+  function update() {
+    const doc = document.documentElement;
+    const scrollTop = doc.scrollTop || document.body.scrollTop;
+    const max = doc.scrollHeight - doc.clientHeight;
+    const ratio = max > 0 ? Math.min(1, Math.max(0, scrollTop / max)) : 0;
+    bar.style.transform = 'scaleX(' + ratio + ')';
+    ticking = false;
+  }
 
-    NProgress.set(percent);
-  });
-}
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
 
-function getScrollPercentage() {
-  const scrollTop = document.documentElement.scrollTop;
-  const scrollHeight = document.documentElement.scrollHeight;
-  const clientHeight = document.documentElement.clientHeight;
-  const percentage = scrollTop / (scrollHeight - clientHeight);
-
-  return scrollHeight ? (percentage >= 1 ? 0.999 : percentage) : 0;
-}
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+})();
